@@ -24,24 +24,24 @@ df_all <- rbind(gather(df_past, key="Year", value="Value", -title),
 df_all$Year <- as.numeric(df_all$Year)
 view(df_all)
 
-df_forMerge <- select(df_all, c("REGION","Year")
-         ) %>% distinct()
-view(df_forMerge)
-
 # df_yokogata <- spread(df_all, key="Year",value="Value")
 # view(df_yokogata)
 
 
 #指標名とシナリオ名 で繰り返し処理 -------------------------------------------------------
 
-indicators <- c("GDP_Capita")   # c("GDP_Capita","Electricity_Rate_Total","ChangeRate_Electricity_Rate_Total")
-scenarionames <- c("Baseline")    # c("Baseline","2C","1.5C","2.5C","WB2C")
+indicators <- c("GDP_Capita","Electricity_Rate_Total","ChangeRate_Electricity_Rate_Total")
+scenarionames <- c("Baseline","2C")    # c("Baseline","2C","1.5C","2.5C","WB2C")
 
 for (scenarioname in scenarionames) {
-  view(scenarioname)
+  # view(scenarioname)
+
+  df_forMerge <- select(df_all, c("REGION","Year",)
+           ) %>% distinct()
+  view(df_forMerge)
   
   for (indicator in indicators) {
-    view(indicator)
+    # view(indicator)
   
     df_Graph <- filter(df_all, VARIABLE==indicator, SCENARIO %in% c("Historical",scenarioname))
     View(df_Graph)
@@ -55,74 +55,31 @@ for (scenarioname in scenarionames) {
     filename <- paste(scenarioname,"_Year-",indicator)
     ggsave(file=paste("./../4_output/",filename,".pdf"))
 
-    
-#   eval保留＞GDPcapita vs. ER, CRER プロット用のdf作成
-#   eval(parse(text=paste("df_",indicator))) <- select(df_Graph, "SCENARIO","REGION","Year","Value")
-#                              ) %% rename(Indicator="Value")
-#   View(eval(parse(text=paste("df_",indicator))))
-    df_Graph_forMerge <- select(df_Graph, -c("MODEL","UNIT")) # MODEL(冗長) UNIT(不統一)を削除
-    
-    }
+    # df_Graph_tmp1 <- rename(df_Graph, GDP_Capita=Value)
+
+    df_Graph_tmp <- select(df_Graph, -c("MODEL","UNIT","VARIABLE"))
+    df_Graph_tmp <- eval(parse(text=paste0("rename(df_Graph_tmp,", indicator, "=Value)")))
+    View(df_Graph_tmp)
+
+    df_forMerge <- merge(df_forMerge, df_Graph_tmp)    
+    View(df_forMerge)
+  }
+
+  # GDPcapita vs. ER, CRER プロット用のdf作成
+  g <- ggplot(df_forMerge, aes(x=GDP_Capita, y=Electricity_Rate_Total, color=REGION, shape=SCENARIO)) +
+    geom_line() +
+    geom_point() + 
+    scale_shape_manual(values=c(19,21)) 
+  plot(g)
+  filename <- paste(scenarioname,"_GDPcapita-Electricity_Rate")
+  ggsave(file=paste("./../4_output/",filename,".pdf"))
   
-  df_forMerge <- mutate(df_forMerge,GDP_Capita=df_Graph$Value)
-  view(df_forMerge)  
+  g <- ggplot(df_forMerge, aes(x=GDP_Capita, y=ChangeRate_Electricity_Rate_Total, color=REGION, shape=SCENARIO)) +
+    geom_line() +
+    geom_point() + 
+    scale_shape_manual(values=c(19,21)) 
+  plot(g)
+  filename <- paste(scenarioname,"_GDPcapita-CR_Electricity_Rate")
+  ggsave(file=paste("./../4_output/",filename,".pdf"))
   
 }
-
-# GDPcapita vs. ER, CRER プロット用のdf作成
-
-
-
-
-
-
-#GDP_Capita vs. ChangeRate_Electricity_Rate_Total の表示 -------------------------------------------------------
-
-df_GDP_ER <- merge(df_GDPcapita[, !(colnames(df_GDPcapita) %in% c("VARIABLE", "UNIT"))], 
-                     df_ER[, !(colnames(df_ER) %in% c("VARIABLE", "UNIT"))], 
-                     all=T) %>%
-               merge(df_CR_ER[, !(colnames(df_CR_ER) %in% c("VARIABLE", "UNIT"))], 
-                     all=T)
-View(df_GDP_ER)
-write_csv(df_GDP_ER, "./../4_output/df_GDP_ER.csv")
-
-# GDP 出力
-g <- ggplot(df_GDP_ER, aes(x=Year,y=GDPcapita,color=REGION)) + 
-        geom_line() + 
-        geom_point(shape=21)
-plot(g)
-ggsave(file = "./../4_output/Year-GDPcapita.pdf")
-
-# ER 出力
-g <- ggplot(df_GDP_ER, aes(x=Year,y=Electricity_Rate,color=REGION)) + 
-        geom_line() + 
-        geom_point(shape=21)
-plot(g)
-ggsave(file = "./../4_output/Year-Electricity_Rate.pdf")
-
-g <- ggplot(df_GDP_ER, aes(x=GDPcapita,y=Electricity_Rate,color=REGION)) + 
-        geom_line() + 
-        geom_point(shape=21) 
-plot(g)
-ggsave(file = "./../4_output/GDPcapita-Electricity_Rate.pdf")
-
-
-# CR_ER 出力
-g <- ggplot(df_GDP_ER, aes(x=Year,y=CR_Electricity_Rate,color=REGION)) + 
-  geom_line() + 
-  geom_point(shape=21)
-plot(g)
-ggsave(file = "./../4_output/Year-CR_Electricity_Rate.pdf")
-
-g <- ggplot(df_GDP_ER, aes(x=GDPcapita,y=CR_Electricity_Rate,color=REGION)) + 
-  geom_line() + 
-  geom_point(shape=21) 
-plot(g)
-ggsave(file = "./../4_output/GDPcapita-CR_Electricity_Rate.pdf")
-
-
-# g <- ggplot(df_GDP_ER, aes(x=GDPcapita,y=CR_Electricity_Rate,color=REGION)) + 
-#   geom_line() + geom_point(x=GDPcapita,y=CR_Electricity_Rate,shape = 21) + scale_shape_identity()
-# plot(g)
-# ggsave(file = "./../4_output/Test.pdf")
-
