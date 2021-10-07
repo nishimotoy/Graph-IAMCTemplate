@@ -77,17 +77,18 @@ for (scenarioname in scenarionames) {
   ggsave(file=paste("./../4_output/",filename,".pdf"))
 
 
-  # x=GDP_Capita, y=ChangeRate_Electricity_Rate_Total
+  # グラフ描画 by XYのテキスト指定
 
   xname <- "GDP_Capita"
   yname <- "Electricity_Rate_Total"
   
-  g <- ggplot(df_forMerge, aes(x=GDP_Capita, y=ChangeRate_Electricity_Rate_Total, color=REGION, shape=SCENARIO)) +
+  g <- eval(parse(text=paste0(
+            "ggplot(df_forMerge, aes(x=",xname,",y=",yname, ",color=REGION,shape=SCENARIO)) +
     geom_line() +
     geom_point() + 
-    scale_shape_manual(values=c(19,21)) 
+    scale_shape_manual(values=c(19,21))")))
   plot(g)
-  filename <- paste(scenarioname,"_GDPcapita-CR_Electricity_Rate")
-  ggsave(file=paste("./../4_output/",filename,".pdf"))
+  filename <- paste(scenarioname,"_",xname,"-",yname)
+  ggsave(file=paste("./../4_output/",filename,".png"))
   
 }
