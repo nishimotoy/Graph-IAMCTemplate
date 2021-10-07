@@ -31,7 +31,7 @@ view(df_all)
 #指標名とシナリオ名 で繰り返し処理 -------------------------------------------------------
 
 indicators <- c("GDP_Capita","Electricity_Rate_Total","ChangeRate_Electricity_Rate_Total")
-scenarionames <- c("Baseline","2C")    # c("Baseline","2C","1.5C","2.5C","WB2C")
+scenarionames <- c("Baseline")    # c("Baseline","2C","1.5C","2.5C","WB2C")
 
 for (scenarioname in scenarionames) {
   # view(scenarioname)
@@ -66,6 +66,8 @@ for (scenarioname in scenarionames) {
   }
 
   # GDPcapita vs. ER, CRER プロット用のdf作成
+
+  # x=GDP_Capita, y=Electricity_Rate_Total
   g <- ggplot(df_forMerge, aes(x=GDP_Capita, y=Electricity_Rate_Total, color=REGION, shape=SCENARIO)) +
     geom_line() +
     geom_point() + 
@@ -73,6 +75,12 @@ for (scenarioname in scenarionames) {
   plot(g)
   filename <- paste(scenarioname,"_GDPcapita-Electricity_Rate")
   ggsave(file=paste("./../4_output/",filename,".pdf"))
+
+
+  # x=GDP_Capita, y=ChangeRate_Electricity_Rate_Total
+
+  xname <- "GDP_Capita"
+  yname <- "Electricity_Rate_Total"
   
   g <- ggplot(df_forMerge, aes(x=GDP_Capita, y=ChangeRate_Electricity_Rate_Total, color=REGION, shape=SCENARIO)) +
     geom_line() +
