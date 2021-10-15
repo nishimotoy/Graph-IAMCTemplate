@@ -101,6 +101,7 @@ for (scenarioname in scenarionames) {
 
   # グラフ描画 by XYのテキスト指定
   pdf(file=paste("./../4_output/figures_",scenarioname,".pdf", sep=""))    
+  par(mfrow = c(4, 4))
   for (num in 1:length(x_names)) {
 
     g <- eval(parse(text=paste0(
