@@ -50,7 +50,7 @@ for (scenarioname in scenarionames) {
   for (indicator in indicators) {
     
     df_Graph <- filter(df_all, VARIABLE==indicator, SCENARIO %in% c('Historical',scenarioname)
-    ) %>% select(-c('MODEL','UNIT','VARIABLE'))
+          ) %>% select(-c('MODEL','UNIT','VARIABLE'))
     df_Graph <- eval(parse(text=paste0("rename(df_Graph,", indicator, "=Value)")))
     df_Graph <- df_Graph[order(df_Graph$Year),]
     df_forMerge <- merge(df_forMerge, df_Graph)
@@ -58,7 +58,7 @@ for (scenarioname in scenarionames) {
     
   }
   
-  # グラフ描画 by XYのテキスト指定
+  # グラフ描画 by XYの散布図
   pdf(file=paste("./../4_output/figures_",scenarioname,".pdf", sep=""))    
   for (num in 1:length(x_names)) {
     
@@ -67,10 +67,29 @@ for (scenarioname in scenarionames) {
       ",color=REGION,shape=SCENARIO)) +
         geom_line() +
         geom_point() + 
-        scale_shape_manual(values=c(19,21))")))
+        scale_shape_manual(values=c(19,2))")))
+    # par(mfrow = c(4, 4))  # 効かない、指定場所が違う？
     plot(g)
     filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
     # ggsave(file=paste("./../4_output/",filename,".png"))
   }
   dev.off() 
 }
+
+
+# テスト画面
+pdf(file=paste("./../4_output/figures_test.pdf", sep=""))    
+# View(df_forMerge)
+for (num in length(x_names)) {
+  g <- eval(parse(text=paste0(
+    "ggplot(df_forMerge, aes(x=","REGION",",y=","ChangeRate_Electricity_Rate_Total", 
+    ",color=SCENARIO)) +
+        geom_violin() + 
+        geom_jitter(shape=20, position=position_dodge(0.9)) ")))
+  # par(mfrow = c(4, 4))  # 効かない、指定場所が違う？
+  plot(g)
+  # filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
+  # ggsave(file=paste("./../4_output/",filename,".png"))
+}
+dev.off() 
+
