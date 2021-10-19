@@ -3,6 +3,8 @@
 library(ggplot2)
 # update.packages("tidyverse")
 library(tidyverse)
+# update.packages("tidyverse")
+library(patchwork)
 
 getwd() 
 # setwd("c:/usr") 
@@ -73,4 +75,21 @@ for (scenarioname in scenarionames) {
     # ggsave(file=paste("./../4_output/",filename,".png"))
   }
   dev.off() 
+  
+  # グラフのレイアウト
+  pdf(file=paste("./../5_test/figures_",scenarioname,".pdf", sep=""))    
+  for (num in 1:length(x_names)) {
+    
+    p1 <- eval(parse(text=paste0(
+      "ggplot(df_forMerge, aes(x=",x_names[num],",y=",y_names[num], 
+      ",color=REGION,shape=SCENARIO)) +
+        geom_line() +
+        geom_point() + 
+        scale_shape_manual(values=c(19,21))")))
+    
+    if ( num%%4==1 ) { p <- p1 } else { p <- p + p1 }
+    if ( num%%4==0 ) { plot(p) } 
+  }
+  dev.off() 
+  
 }
