@@ -3,17 +3,17 @@
 library(ggplot2)
 # update.packages("tidyverse")
 library(tidyverse)
-# update.packages("tidyverse")
+# update.packages("patchwork")
 library(patchwork)
 
 getwd() 
-# setwd("c:/usr") 
+setwd("C:/_Nishimoto/R/WBAL_R02/") 
 
 # データの読み込み---------------------------------------------------------------
-df_past <- read_csv("./../2_data/REF2/IAMCTemplate_i_past.csv")
+df_past <- read_csv("./2_data/REF2/IAMCTemplate_i_past.csv")
 # view(df_past)
 
-df_future <- read_csv("./../2_data/REF2/IAMCTemplate_i_future.csv")
+df_future <- read_csv("./2_data/REF2/IAMCTemplate_i_future.csv")
 # view(df_future)
 
 titlerow <- c("MODEL","SCENARIO","REGION","VARIABLE","UNIT")
@@ -55,13 +55,14 @@ for (scenarioname in scenarionames) {
     ) %>% select(-c('MODEL','UNIT','VARIABLE'))
     df_Graph <- eval(parse(text=paste0("rename(df_Graph,", indicator, "=Value)")))
     df_Graph <- df_Graph[order(df_Graph$Year),]
+    View(df_Graph)
     df_forMerge <- merge(df_forMerge, df_Graph)
     View(df_forMerge)
     
   }
   
   # グラフ描画 by XYのテキスト指定
-  pdf(file=paste("./../4_output/figures_",scenarioname,".pdf", sep=""))    
+  pdf(file=paste("./4_output/figures_",scenarioname,".pdf", sep=""))    
   for (num in 1:length(x_names)) {
     
     g <- eval(parse(text=paste0(
@@ -72,12 +73,12 @@ for (scenarioname in scenarionames) {
         scale_shape_manual(values=c(19,21))")))
     plot(g)
     filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
-    # ggsave(file=paste("./../4_output/",filename,".png"))
+    # ggsave(file=paste("./4_output/",filename,".png"))
   }
   dev.off() 
   
   # グラフのレイアウト
-  pdf(file=paste("./../5_test/figures_",scenarioname,".pdf", sep=""))    
+  pdf(file=paste("./5_test/figures_",scenarioname,".pdf", sep=""))    
   for (num in 1:length(x_names)) {
     
     p1 <- eval(parse(text=paste0(
