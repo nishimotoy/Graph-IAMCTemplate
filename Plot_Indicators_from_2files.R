@@ -126,15 +126,24 @@ for (scenarioname in scenarionames) {
         geom_histogram(bins=50) +
         ylab('Count of Region-Year')")))
     plot(g)
+    filename <- paste("histogram_",scenarioname,"_",indicator, sep="")
+    ggsave(file=paste("./4_output/",filename,".png", sep=""), width=6, height=4, dpi=100)
+  }
+  dev.off() 
+
+  # 確率密度分布
+  pdf(file=paste("./4_output/density_",scenarioname,".pdf", sep=""))    
+  for (indicator in indicators) {
+    
+    g <- eval(parse(text=paste0(
+      "ggplot(df_forMerge, aes(x=",indicator, 
+      ",color=SCENARIO)) +
+        geom_density() +
+        ylab('Density (Count scaled to 1) of Region-Year')")))
+    plot(g)
+    filename <- paste("density_",scenarioname,"_",indicator, sep="")
+    ggsave(file=paste("./4_output/",filename,".png", sep=""), width=6, height=4, dpi=100)
   }
   dev.off() 
   
 }
-
-# 頻度分布を作る
-# g <- ggplot(df_forMerge, aes(x = ChangeRate_Electricity_Rate_Total))
-# g <- g + geom_histogram(binwidth=0.005) # set histogram chart
-# g <- g + xlab("Class value (cm)") # x label
-# g <- g + ylab("Frequency")        # y label 
-# g <- g + ggtitle("Histogram by ggplot") # title
-# plot(g)  
