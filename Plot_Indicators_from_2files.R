@@ -44,26 +44,26 @@ y2_names <- indicators[c(3,5,7)]
 
 for (scenarioname in scenarionames) {
   
-  df_forMerge <- select(df_all, c("REGION","Year")) %>% distinct()
-  #  view(df_forMerge)
+  df_Graph <- select(df_all, c("REGION","Year")) %>% distinct()
+  #  view(df_Graph)
   
   for (indicator in indicators) {
     
-    df_Graph <- filter(df_all, VARIABLE==indicator, SCENARIO %in% c('Historical',scenarioname)
+    df_toMerge <- filter(df_all, VARIABLE==indicator, SCENARIO %in% c('Historical',scenarioname)
     ) %>% select(-c('MODEL','UNIT','VARIABLE'))
-    df_Graph <- eval(parse(text=paste0("rename(df_Graph,", indicator, "=Value)")))
-    df_Graph <- df_Graph[order(df_Graph$Year),]
-    View(df_Graph)
-    df_forMerge <- merge(df_forMerge, df_Graph)
+    df_toMerge <- eval(parse(text=paste0("rename(df_toMerge,", indicator, "=Value)")))
+    df_toMerge <- df_toMerge[order(df_toMerge$Year),]
+    View(df_toMerge)
+    df_Graph <- merge(df_Graph, df_toMerge)
   }
-  View(df_forMerge)
+  View(df_Graph)
   
   # XY散布図 by 軸名のテキスト指定
   pdf(file=paste("./4_output/XY_",scenarioname,".pdf", sep=""))    
   for (num in 1:length(x_names)) {
     
     g <- eval(parse(text=paste0(
-      "ggplot(df_forMerge, aes(x=",x_names[num],",y=",y_names[num], 
+      "ggplot(df_Graph, aes(x=",x_names[num],",y=",y_names[num], 
       ",color=REGION,shape=SCENARIO)) +
         geom_line() +
         geom_point() + 
@@ -79,7 +79,7 @@ for (scenarioname in scenarionames) {
   for (num in 1:length(x_names)) {
     
     p1 <- eval(parse(text=paste0(
-      "ggplot(df_forMerge, aes(x=",x_names[num],",y=",y_names[num], 
+      "ggplot(df_Graph, aes(x=",x_names[num],",y=",y_names[num], 
       ",color=REGION,shape=SCENARIO)) +
         geom_line() +
         geom_point() + 
@@ -88,6 +88,10 @@ for (scenarioname in scenarionames) {
     if ( num%%4==1 ) { p <- p1 } else { p <- p + p1 }
     if ( num%%4==0 ) { plot(p) } 
   }
+  if ( length(x_names)%%4!=0 ) { 
+    for (num in 1:(4-(length(x_names)%%4))) { p <- p + ggplot() } 
+    plot(p) 
+  } 
   dev.off() 
   
   # バイオリン
@@ -95,7 +99,7 @@ for (scenarioname in scenarionames) {
   for (indicator in indicators) {
 
     g <- eval(parse(text=paste0(
-      "ggplot(df_forMerge, aes(x=","REGION",",y=",indicator, 
+      "ggplot(df_Graph, aes(x=","REGION",",y=",indicator, 
       ",color=SCENARIO)) +
         geom_violin() + 
         geom_jitter(shape=20, position=position_dodge(1.0))")))
@@ -108,7 +112,7 @@ for (scenarioname in scenarionames) {
   for (indicator in indicators) {
     
     g <- eval(parse(text=paste0(
-      "ggplot(df_forMerge, aes(x=","REGION",",y=",indicator, 
+      "ggplot(df_Graph, aes(x=","REGION",",y=",indicator, 
       ",color=SCENARIO)) +
         geom_boxplot() + 
         geom_jitter(shape=20, position=position_dodge(0.8))")))
@@ -121,7 +125,7 @@ for (scenarioname in scenarionames) {
   for (indicator in indicators) {
     
     g <- eval(parse(text=paste0(
-      "ggplot(df_forMerge, aes(x=",indicator, 
+      "ggplot(df_Graph, aes(x=",indicator, 
       ",color=SCENARIO)) +
         geom_histogram(bins=50) +
         ylab('Count of Region-Year')")))
@@ -136,7 +140,7 @@ for (scenarioname in scenarionames) {
   for (indicator in indicators) {
     
     g <- eval(parse(text=paste0(
-      "ggplot(df_forMerge, aes(x=",indicator, 
+      "ggplot(df_Graph, aes(x=",indicator, 
       ",color=SCENARIO)) +
         geom_density() +
         ylab('Density (Count scaled to 1) of Region-Year')")))
