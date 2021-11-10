@@ -25,6 +25,7 @@ view(df_all)
 
 #指標名とシナリオ名 で繰り返し処理＠グラフ出力 -------------------------------------------------------
 
+setwd("C:/_Nishimoto/R/WBAL_R02/4_output/") 
 scenarionames <- c("Baseline","2C")    # c("Baseline","2C","1.5C","2.5C","WB2C")
 indicators <- c("GDP_Capita",
                 "Electricity_Rate_Total","ChangeRate_Electricity_Rate_Total",
@@ -50,7 +51,7 @@ for (scenarioname in scenarionames) {
   for (indicator in indicators) {
     
     df_toMerge <- filter(df_all, VARIABLE==indicator, SCENARIO %in% c('Historical',scenarioname)
-    ) %>% select(-c('MODEL','UNIT','VARIABLE'))
+            ) %>% select(-c('MODEL','UNIT','VARIABLE'))
     df_toMerge <- eval(parse(text=paste0("rename(df_toMerge,", indicator, "=Value)")))
     df_toMerge <- df_toMerge[order(df_toMerge$Year),]
     View(df_toMerge)
@@ -59,23 +60,23 @@ for (scenarioname in scenarionames) {
   View(df_Graph)
   
   # XY散布図 by 軸名のテキスト指定
-  pdf(file=paste("./4_output/XY_",scenarioname,".pdf", sep=""))    
+  pdf(file=paste("./",scenarioname,"_XY.pdf", sep=""))    
   for (num in 1:length(x_names)) {
     
     g <- eval(parse(text=paste0(
       "ggplot(df_Graph, aes(x=",x_names[num],",y=",y_names[num], 
       ",color=REGION,shape=SCENARIO)) +
-        geom_line() +
+#       geom_line() +
         geom_point() + 
         scale_shape_manual(values=c(19,21))")))
     plot(g)
     filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
-    # ggsave(file=paste("./4_output/",filename,".png"))
+    ggsave(file=paste("./png/",filename,".png"))
   }
   dev.off() 
 
   # 4in1 レイアウト
-  pdf(file=paste("./5_test/figures_",scenarioname,".pdf", sep=""))    
+  pdf(file=paste("./../5_test/",scenarioname,"_XY.pdf", sep=""))    
   for (num in 1:length(x_names)) {
     
     p1 <- eval(parse(text=paste0(
@@ -95,7 +96,7 @@ for (scenarioname in scenarionames) {
   dev.off() 
   
   # バイオリン
-  pdf(file=paste("./4_output/violin_",scenarioname,".pdf", sep=""))    
+  pdf(file=paste("./",scenarioname,"_violin.pdf", sep=""))    
   for (indicator in indicators) {
 
     g <- eval(parse(text=paste0(
@@ -108,7 +109,7 @@ for (scenarioname in scenarionames) {
   dev.off() 
   
   # 箱ヒゲ図
-  pdf(file=paste("./4_output/boxplot_",scenarioname,".pdf", sep=""))    
+  pdf(file=paste("./",scenarioname,"_boxplot.pdf", sep=""))    
   for (indicator in indicators) {
     
     g <- eval(parse(text=paste0(
@@ -121,7 +122,7 @@ for (scenarioname in scenarionames) {
   dev.off() 
   
   # 頻度分布
-  pdf(file=paste("./4_output/histogram_",scenarioname,".pdf", sep=""))    
+  pdf(file=paste("./",scenarioname,"_histogram.pdf", sep=""))    
   for (indicator in indicators) {
     
     g <- eval(parse(text=paste0(
@@ -130,13 +131,13 @@ for (scenarioname in scenarionames) {
         geom_histogram(bins=50) +
         ylab('Count of Region-Year')")))
     plot(g)
-    filename <- paste("histogram_",scenarioname,"_",indicator, sep="")
-    ggsave(file=paste("./4_output/",filename,".png", sep=""), width=6, height=4, dpi=100)
+    filename <- paste(scenarioname,"_","histogram_",indicator, sep="")
+    ggsave(file=paste("./png/",filename,".png", sep=""), width=6, height=4, dpi=100)
   }
   dev.off() 
 
   # 確率密度分布
-  pdf(file=paste("./4_output/density_",scenarioname,".pdf", sep=""))    
+  pdf(file=paste("./",scenarioname,"_density.pdf", sep=""))    
   for (indicator in indicators) {
     
     g <- eval(parse(text=paste0(
@@ -145,8 +146,8 @@ for (scenarioname in scenarionames) {
         geom_density() +
         ylab('Density (Count scaled to 1) of Region-Year')")))
     plot(g)
-    filename <- paste("density_",scenarioname,"_",indicator, sep="")
-    ggsave(file=paste("./4_output/",filename,".png", sep=""), width=6, height=4, dpi=100)
+    filename <- paste(scenarioname,"_","density_",indicator, sep="")
+    ggsave(file=paste("./png/",filename,".png", sep=""), width=6, height=4, dpi=100)
   }
   dev.off() 
   
