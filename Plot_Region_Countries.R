@@ -11,7 +11,7 @@ Titlerow3 <- c('YEAR','Value')
 
 # 単位の連想配列＞ファイル名にマッチさせる予定
 df_unit <- read.delim(file="./unit.txt", header=T)
-view(df_unit)
+# view(df_unit)
 Unit_of_Var        <- df_unit$unit
 names(Unit_of_Var) <- df_unit$filename
 # Unit_of_Var[names(Unit_of_Var)]
@@ -19,7 +19,7 @@ names(Unit_of_Var) <- df_unit$filename
 # 国コードの連想配列
 df_CC <- read.delim(file="./CC.txt", header=T) 
 df_CC <- rename(df_CC, 'Country_Name'='IEA国名')
-view(df_CC)
+# view(df_CC)
 Region_Code        <- df_CC$AIM17
 names(Region_Code) <- df_CC$Country_Name
 # Region_Code[names(Region_Code)]
@@ -60,8 +60,9 @@ Year5 <- c(1960, 1965, 1970, 1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010, 201
 Year5 <- all_of(Year5) %>% as.character()
 df_past <- df_past %>% select(all_of(Titlerow2), all_of(Year5))
 
+
 # 指標の処理
-# Variable_Names_for_Indicators df_vni <- Indicator, numerator, denominator
+# Variable_Names_for_Indicators df_vni <- indicator, numerator, denominator
 df_vni <- matrix(c(
     "GDP_Capita",	"GDP_IEA", "POP_IEA", 
     "Energy_Intensity",	"TES_Total", "GDP_IEA", 
@@ -88,11 +89,16 @@ df_Graph <- tmp3 %>% select(c('Country_Name','Year')
                ) %>% distinct() 
 
 for (i in 1:4) {
-  for (indicator in c(df_vni[2,i], df_vni[3,i])) {
-    df_toMerge <- tmp3 %>% filter(VARIABLE==indicator
+  
+  indicator   <- df_vni[1,i]
+  numerator   <- df_vni[2,i]
+  denominator <- df_vni[3,i]
+
+  for (variable_name in c(df_vni[2,i], df_vni[3,i])) {
+    df_toMerge <- tmp3 %>% filter(VARIABLE==variable_name
                      ) %>% select(-c('VARIABLE')
                      ) %>% arrange(Year)
-    df_toMerge <- eval(parse(text=paste0("rename(df_toMerge,", indicator, "=Value)")))
+    df_toMerge <- eval(parse(text=paste0("rename(df_toMerge,", variable_name,"=Value)")))
     View(df_toMerge)
     df_Graph <- full_join(df_Graph, df_toMerge)
   }
@@ -100,13 +106,16 @@ for (i in 1:4) {
   df_Graph <- eval(parse(text=paste0(
               "df_Graph %>% mutate(",df_vni[1,i],"=",df_vni[2,i],"/",df_vni[3,i],")")))
 
+  # df_Graph <- df_Graph %>% group_by(Country_Name)
+  
   # 指標の変化率　RatePre_Indicator=I(t)/I(t-1)  ChangeRate_Indicator=(I(t)-I(t-1))/((t)-(t-1))
   df_Graph <- eval(parse(text=paste0(
-    "df_Graph %>% arrange(Country_Name
-            ) %>% mutate(",df_vni[1,i],"_pre=lag(",df_vni[1,i],", n=1) 
-            ) %>% mutate(RatePre_",df_vni[1,i],"=",df_vni[1,i],"/",df_vni[1,i],"_pre
+    "df_Graph %>% group_by(Country_Name
+            ) %>% arrange(Year
             ) %>% mutate(","Year","_pre=lag(","Year",", n=1) 
             ) %>% mutate(RatePre_","Year","=","Year","/","Year","_pre
+            ) %>% mutate(",df_vni[1,i],"_pre=lag(",df_vni[1,i],", n=1) 
+            ) %>% mutate(RatePre_",df_vni[1,i],"=",df_vni[1,i],"/",df_vni[1,i],"_pre
             ) %>% mutate(ChangeRate_",df_vni[1,i],"=(",df_vni[1,i],"-",df_vni[1,i],"_pre)/(","Year","-","Year","_pre)
             ) %>% mutate(SCENARIO='Historical'
             )")))
@@ -115,8 +124,10 @@ for (i in 1:4) {
      
 }
 View(df_Graph)
+write_csv(df_Graph, "./../df_Graph_written.csv") 
 
 
+for (tmp in 0) {
 #指標名とシナリオ名 で繰り返し処理＠グラフ出力 -------------------------------------------------------
 
 setwd("C:/_Nishimoto/R/WBAL_R02/4_output/") 
@@ -147,7 +158,7 @@ for (scenarioname in scenarionames) {
     g <- eval(parse(text=paste0(
       "ggplot(df_Graph, aes(x=",x_names[num],",y=",y_names[num], 
       ",color=REGION,shape=SCENARIO)) +
-        geom_line() +
+#       geom_line() +
         geom_point() + 
         scale_shape_manual(values=c(19,21))")))
     plot(g)
@@ -155,7 +166,24 @@ for (scenarioname in scenarionames) {
     ggsave(file=paste("./png/",filename,".png"))
   }
   dev.off() 
-
+  
+  # XY散布図 by 国別
+  pdf(file=paste("./",scenarioname,"_XY_CN.pdf", sep=""))    
+  for (num in 1:length(x_names)) {
+    
+    g <- eval(parse(text=paste0(
+      "ggplot(df_Graph, aes(x=",x_names[num],",y=",y_names[num], 
+      ",color=Country_Name,shape=SCENARIO)) +
+        geom_line() +
+        geom_point() +
+        theme(legend.position='none') +
+        scale_shape_manual(values=c(19,21))")))
+    plot(g)
+    filename <- paste(scenarioname,"_",num,"_",x_names[num],"-",y_names[num],"_CN", sep="")
+    ggsave(file=paste("./png/",filename,".png"))
+  }
+  dev.off() 
+  
   # 頻度分布
   pdf(file=paste("./",scenarioname,"_histogram.pdf", sep=""))    
   for (indicator in indicators) {
@@ -186,4 +214,5 @@ for (scenarioname in scenarionames) {
   }
   dev.off() 
   
+}
 }
