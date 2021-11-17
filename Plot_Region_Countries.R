@@ -5,29 +5,27 @@ library(patchwork)
 
 setwd("C:/_Nishimoto/R/WBAL_R02/2_data/REF") 
 
-Titlerow1 <- c("MODEL","SCENARIO","REGION","VARIABLE","UNIT")
-Titlerow2 <- c('REGION','Country_Name','VARIABLE')
-Titlerow3 <- c('YEAR','Value')
-
-# 単位の連想配列＞ファイル名にマッチさせる予定
-df_unit <- read.delim(file="./unit.txt", header=T)
-# view(df_unit)
-Unit_of_Var        <- df_unit$unit
-names(Unit_of_Var) <- df_unit$filename
-# Unit_of_Var[names(Unit_of_Var)]
+if (0) {
+  # 単位の連想配列＞ファイル名にマッチさせる予定
+  df_unit <- read.delim(file="./unit.txt", header=T)
+  # view(df_unit)
+  Unit_of_Var        <- df_unit$unit
+  names(Unit_of_Var) <- df_unit$filename
+  # Unit_of_Var[names(Unit_of_Var)]
+}
 
 # 国コードの連想配列
 df_CC <- read.delim(file="./CC.txt", header=T) 
-df_CC <- rename(df_CC, 'Country_Name'='IEA国名')
+df_CC <- rename(df_CC, 'Country'='IEA国名')
 # view(df_CC)
 Region_Code        <- df_CC$AIM17
-names(Region_Code) <- df_CC$Country_Name
+names(Region_Code) <- df_CC$Country
 # Region_Code[names(Region_Code)]
 
 # タイトル行（ダミー）の作成
 df_past <- read_csv("./POP_IEA.csv") 
 df_past <- df_past  %>% mutate('REGION'='region', 'VARIABLE'='variable'
-                  ) %>% rename('Country_Name'='TIME') # 'TIME' OR 'X1'
+                  ) %>% rename('Country'='TIME') # 'TIME' OR 'X1'
 df_past <- df_past[1,c(ncol(df_past),ncol(df_past)-1,1:(ncol(df_past)-2))] # 列の入替
 # View(df_past)
 
@@ -42,93 +40,145 @@ for (file.name in files) {
   
   # 国コード付与
   d  <- d   %>% mutate(AIM17=Region_Code[d$REGION]
-          ) %>% rename('Country_Name'='REGION'
+          ) %>% rename('Country'='REGION'
           ) %>% rename('REGION'='AIM17'
           ) %>% na.omit()    # 国コードのない行は無視
 # View(d)
   df_past <- rbind(df_past, d) %>% na.omit()
 }
 View(df_past)
-write_csv(df_past, "./../df_past_written.csv") # VARIABLE REGION Country_Name 
+write_csv(df_past, "./../df_past_written.csv") # VARIABLE REGION Country 
+
+Titlerow1 <- c('MODEL','SCENARIO','REGION','VARIABLE','UNIT')
+Titlerow2 <- c('REGION','Country','VARIABLE')
+Titlerow3 <- c('SCENARIO','Country')
+
+scenarioname <- 'Baseline'
 
 # df_past を5年置きにする 
 # names_df_past <- names(df_past)   
 # names_df_past <- names_df_past[-which(names_df_past %in% all_of(Titlerow2))]
 # Year_all <- as.numeric(names_df_past)
 # 列名から5年置きの年を取得＞先送り＞直接入力（仮）
-Year5 <- c(1960, 1965, 1970, 1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010, 2015)
-Year5 <- all_of(Year5) %>% as.character()
+Year5 <- c(1960, 1965, 1970, 1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010, 2015) %>% as.character()
 df_past <- df_past %>% select(all_of(Titlerow2), all_of(Year5))
+View(df_past)
+
+df_past <- df_past %>% mutate(SCENARIO='Historical')   # 書式を揃える
+View(df_past)
+
+# 将来シナリオの読込
+df_future <- read_csv("C:/_Nishimoto/R/WBAL_R02/2_data/REF2/IAMCTemplate.csv")
+# View(df_future)
+
+df_future <- df_future %>% select(-c('MODEL','UNIT')
+                     ) %>% filter(SCENARIO == 'Baseline'
+                     ) %>% filter(!REGION %in% c('ASIA2', 'World')
+                     ) %>% mutate(Country = REGION) # 書式を揃える #シナリオ名
+df_future <- df_future %>% mutate(VARIABLE = str_replace_all(VARIABLE, pattern = c(
+GDP.MER = "GDP_IEA", 
+"Emissions|CO2|Energy" = "CO2_fuel_Total", 
+"Final Energy|Electricity" = "TFC_Elec_Total" )))
+View(df_future)
+
+# 過去と将来を結合する
+df_long_past <- gather(df_past, key="Year", value="Value", -all_of(Titlerow2),-SCENARIO)
+View(df_long_past)
+df_long_future <- gather(df_future, key="Year", value="Value", -all_of(Titlerow2),-SCENARIO)
+View(df_long_future)
+
+df_long <- rbind(gather(df_past, key="Year", value="Value", -all_of(Titlerow2),-SCENARIO),
+                gather(df_future, key="Year", value="Value", -all_of(Titlerow2),-SCENARIO))
+df_long$Year  <- as.numeric(df_long$Year) 
+df_long$Value <- as.numeric(df_long$Value)   # NA warning ＞ 確認済 
+df_long <- df_long %>% na.omit()
+View(df_long)
+write_csv(df_long, "./../df_long_written.csv")  
+
+# df_long <- gather(df_past, key="Year", value="Value", -all_of(Titlerow2))
+# df_long_f <- gather(df_future, key="Year", value="Value", -all_of(Titlerow1))
 
 
 # 指標の処理
 # Variable_Names_for_Indicators df_vni <- indicator, numerator, denominator
-df_vni <- matrix(c(
-    "GDP_Capita",	"GDP_IEA", "POP_IEA", 
-    "Energy_Intensity",	"TES_Total", "GDP_IEA", 
-    "Carbon_Intensity",	"CO2_fuel_Total",	"TES_Total", 
-    "Electricity_Rate_Total",	"TFC_Elec_Total",	"TFC_Total_Total", 
-    "Electricity_Rate_Ind",	"TFC_Elec_Ind",	"TFC_Total_Ind", 
-    "Electricity_Rate_Tra",	"TFC_Elec_Tra",	"TFC_Total_Tra", 
-    "Electricity_Rate_Res",	"TFC_Elec_Res",	"TFC_Total_Res", 
-    "Electricity_Rate_Com",	"TFC_Elec_Com",	"TFC_Total_Com"), 
+df_vni_past <- matrix(c(
+    'GDP_Capita',	'GDP_IEA', 'POP_IEA', 
+    'Energy_Intensity',	'TES_Total', 'GDP_IEA', 
+    'Carbon_Intensity',	'CO2_fuel_Total', 'TES_Total', 
+    'Electricity_Rate_Total',	'TFC_Elec_Total', 'TFC_Total_Total', 
+    'Electricity_Rate_Ind',	'TFC_Elec_Ind',	'TFC_Total_Ind', 
+    'Electricity_Rate_Tra',	'TFC_Elec_Tra',	'TFC_Total_Tra', 
+    'Electricity_Rate_Res',	'TFC_Elec_Res',	'TFC_Total_Res', 
+    'Electricity_Rate_Com',	'TFC_Elec_Com',	'TFC_Total_Com'), 
     ncol=8, nrow=3)
 
-# 縦型にして、as.numeric()する
-tmp3 <- gather(df_past, key="Year", value="Value", -all_of(Titlerow2))
-tmp3$Year  <- as.numeric(tmp3$Year) 
-tmp3$Value <- as.numeric(tmp3$Value)   # NA warning ＞ 確認済 
-tmp3 <- tmp3 %>% na.omit()
-View(tmp3)
+df_vni_future <- matrix(c(
+  'GDP_Capita',	"GDP|MER", 'Population', 
+  'Energy_Intensity',	'Primary Energy', "GDP|MER", 
+  'Carbon_Intensity',	'Emissions|CO2|Energy',	'Primary Energy', 
+  'Electricity_Rate_Total',	'Final Energy|Electricity', 'Final Energy', 
+  'Electricity_Rate_Ind',	'Final Energy|Industry|Electricity', 'Final Energy|Industry', 
+  'Electricity_Rate_Tra',	'Final Energy|Transportation|Electricity', 'Final Energy|Transportation', 
+  'Electricity_Rate_Res',	'Final Energy|Residential|Electricity',	'Final Energy|Residential', 
+  'Electricity_Rate_Com',	'Final Energy|Commercial|Electricity', 'Final Energy|Commercial'), 
+  ncol=8, nrow=3)
 
-# 縦型で列がVARIABLE
+df_vni <- matrix(c(
+  'GDP_Capita',	'GDP_IEA', 'POP_IEA', 
+  'Energy_Intensity',	'TES_Total', 'GDP_IEA', 
+  'Carbon_Intensity',	'CO2_fuel_Total', 'TES_Total', 
+  'Electricity_Rate_Total',	'TFC_Elec_Total', 'TFC_Total_Total', 
+  'GDP_Capita',	'GDP|MER', 'Population', 
+  'Energy_Intensity',	'Primary Energy', 'GDP|MER', 
+  'Carbon_Intensity',	'Emissions|CO2|Energy',	'Primary Energy', 
+  'Electricity_Rate_Total',	'Final Energy|Electricity', 'Final Energy'), 
+  ncol=8, nrow=3)
+
+
+
 # タイトル列の作成
-# df_Graph <- data.frame()
-df_Graph <- tmp3 %>% select(c('Country_Name','Year')
-               ) %>% arrange(Year, Country_Name
+df_Graph <- df_long %>% select(c('Country','Year')
+               ) %>% arrange(Year, Country
                ) %>% distinct() 
 
-for (i in 1:4) {
+# 指標毎の処理
+for (i in 1:8) {
   
   indicator   <- df_vni[1,i]
   numerator   <- df_vni[2,i]
   denominator <- df_vni[3,i]
 
-  for (variable_name in c(df_vni[2,i], df_vni[3,i])) {
-    df_toMerge <- tmp3 %>% filter(VARIABLE==variable_name
+  for (variable_name in c(numerator, denominator)) {
+    df_toMerge <- df_long %>% filter(VARIABLE==variable_name
                      ) %>% select(-c('VARIABLE')
                      ) %>% arrange(Year)
     df_toMerge <- eval(parse(text=paste0("rename(df_toMerge,", variable_name,"=Value)")))
-    View(df_toMerge)
+    # View(df_toMerge)
     df_Graph <- full_join(df_Graph, df_toMerge)
   }
   # 指標
   df_Graph <- eval(parse(text=paste0(
-              "df_Graph %>% mutate(",df_vni[1,i],"=",df_vni[2,i],"/",df_vni[3,i],")")))
+              "df_Graph %>% mutate(",indicator,"=",numerator,"/",denominator,")")))
 
-  # df_Graph <- df_Graph %>% group_by(Country_Name)
-  
   # 指標の変化率　RatePre_Indicator=I(t)/I(t-1)  ChangeRate_Indicator=(I(t)-I(t-1))/((t)-(t-1))
   df_Graph <- eval(parse(text=paste0(
-    "df_Graph %>% group_by(Country_Name
+    "df_Graph %>% group_by(Country
             ) %>% arrange(Year
             ) %>% mutate(","Year","_pre=lag(","Year",", n=1) 
             ) %>% mutate(RatePre_","Year","=","Year","/","Year","_pre
-            ) %>% mutate(",df_vni[1,i],"_pre=lag(",df_vni[1,i],", n=1) 
-            ) %>% mutate(RatePre_",df_vni[1,i],"=",df_vni[1,i],"/",df_vni[1,i],"_pre
-            ) %>% mutate(ChangeRate_",df_vni[1,i],"=(",df_vni[1,i],"-",df_vni[1,i],"_pre)/(","Year","-","Year","_pre)
-            ) %>% mutate(SCENARIO='Historical'
+            ) %>% mutate(",indicator,"_pre=lag(",indicator,", n=1) 
+            ) %>% mutate(RatePre_",indicator,"=",indicator,"/",indicator,"_pre
+            ) %>% mutate(ChangeRate_",indicator,"=(",indicator,"-",indicator,"_pre)/(","Year","-","Year","_pre)
             )")))
 
-  # 予定＞("Year","-","Year","_pre) がマイナスの場合は ChangeRate_Indicator=Na とする or ロジック変更
-     
 }
+View(df_toMerge)
 View(df_Graph)
 write_csv(df_Graph, "./../df_Graph_written.csv") 
 
 
-for (tmp in 0) {
-#指標名とシナリオ名 で繰り返し処理＠グラフ出力 -------------------------------------------------------
+# if (0) {
+# 指標名とシナリオ名 で繰り返し処理＠グラフ出力 -------------------------------------------------------
 
 setwd("C:/_Nishimoto/R/WBAL_R02/4_output/") 
 # scenarionames <- c("Baseline","2C")    # c("Baseline","2C","1.5C","2.5C","WB2C")
@@ -168,12 +218,12 @@ for (scenarioname in scenarionames) {
   dev.off() 
   
   # XY散布図 by 国別
-  pdf(file=paste("./",scenarioname,"_XY_CN.pdf", sep=""))    
+  pdf(file=paste("./",scenarioname,"_XY_Country.pdf", sep=""))    
   for (num in 1:length(x_names)) {
     
     g <- eval(parse(text=paste0(
       "ggplot(df_Graph, aes(x=",x_names[num],",y=",y_names[num], 
-      ",color=Country_Name,shape=SCENARIO)) +
+      ",color=Country,shape=SCENARIO)) +
         geom_line() +
         geom_point() +
         theme(legend.position='none') +
@@ -215,4 +265,4 @@ for (scenarioname in scenarionames) {
   dev.off() 
   
 }
-}
+# }
