@@ -1,7 +1,7 @@
 #Packages------------------------------------------------------
 library(ggplot2)
 library(tidyverse)
-library(recipes)
+library(imputeTS)
 
 setwd("C:/_Nishimoto/R/WBAL_R02/2_data/REF") 
 
@@ -44,7 +44,8 @@ for (file.name in files) {
           ) %>% rename('REGION'='AIM17'
           ) %>% drop_na('REGION')  # 国コードのない行は無視
 #         ) %>% na.omit()         # 空行は無視
-  d <- d %>% mutate(Country = str_replace_all(Country, pattern = c("Memo.: "= "", "Memo: "= "")))
+  d <- d %>% mutate(Country = str_replace_all(Country, 
+                              pattern = c("Memo.: "="", "Memo: "="", " .if no detail."="")))
 #  d <- d[1,c(ncol(d),1:(ncol(d)-1))] # 列の入替
   View(d)
   df_past <- rbind(df_past, d)
@@ -53,21 +54,23 @@ View(df_past)
 write_csv(df_past, "./../df_past_written_everyYear.csv") # VARIABLE REGION Country 
 
 Titlerow1 <- c('MODEL','SCENARIO','REGION','VARIABLE','UNIT')
-Titlerow2 <- c('REGION','Country','VARIABLE')
+Titlerow2 <- c('REGION','Country','VARIABLE') # 'SCENARIO'は別
 Titlerow3 <- c('SCENARIO','Country')
+
+# （課題）df_past の基準年値を補間する＞補間後に5年置きにする
 
 # df_past を5年置きにする 
 # names_df_past <- names(df_past)   
 # names_df_past <- names_df_past[-which(names_df_past %in% all_of(Titlerow2))]
 # Year_all <- as.numeric(names_df_past)
 # 列名から5年置きの年を取得＞先送り＞直接入力（仮）
-Year5 <- c(1960, 1965, 1970, 1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010, 2015) %>% as.character()
+Year5 <- c(1970, 1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010, 2015) %>% as.character()
 df_past <- df_past %>% select(all_of(Titlerow2), all_of(Year5))
 df_past <- df_past %>% mutate(SCENARIO='Historical')   # 書式を揃える
 View(df_past)
 # write_csv(df_past, "./../df_past_written.csv") # VARIABLE REGION Country 
 
-scenarioname <- 'Baseline'  # 読込対象のシナリオ（今は読込の時点でシナリオを絞っている）
+scenarioname <- 'Baseline'  # 読込対象の将来シナリオ（今は読込の時点でシナリオを絞っている）
 
 # while (0) {  # 将来シナリオの読込
   df_future <- read_csv("C:/_Nishimoto/R/WBAL_R02/2_data/REF2/IAMCTemplate.csv")
@@ -78,18 +81,18 @@ scenarioname <- 'Baseline'  # 読込対象のシナリオ（今は読込の時�
                        ) %>% filter(!REGION %in% c('ASIA2', 'World')
                        ) %>% mutate(Country = REGION) # 書式を揃える #シナリオ名
 
-  
-    df_future <- df_future %>% mutate(VARIABLE = str_replace_all(VARIABLE, pattern = c(
-    "GDP.MER" = "GDP_IEA", 
-    "Population" = "POP_IEA", 
-    "Primary Energy" = "TES_Total", 
-    "Emissions.CO2.Energy" = "CO2_fuel_Total", 
-    "Final Energy.Electricity" = "TFC_Elec_Total", 
-    "Final Energy.Industry.Electricity" = "TFC_Elec_Ind", 
-    "Final Energy.Transportation.Electricity" = "TFC_Total_Tra", 
-    "Final Energy.Residential.Electricity" = "TFC_Elec_Res", 
-    "Final Energy.Commercial.Electricity" = "TFC_Elec_Com", 
-    "Final Energy" = "TFC_Total_Total" )))
+  # IAMCTemplete の名前を IEA に揃える＠ '|'対策  
+  df_future <- df_future %>% mutate(VARIABLE = str_replace_all(VARIABLE, pattern = c(
+    'GDP.MER' = 'GDP_IEA',
+    'Population' = 'POP_IEA',
+    'Primary Energy' = 'TES_Total',
+    'Emissions.CO2.Energy' = 'CO2_fuel_Total',
+    'Final Energy.Electricity' = 'TFC_Elec_Total',
+    'Final Energy.Industry.Electricity' = 'TFC_Elec_Ind',
+    'Final Energy.Transportation.Electricity' = 'TFC_Total_Tra',
+    'Final Energy.Residential.Electricity' = 'TFC_Elec_Res',
+    'Final Energy.Commercial.Electricity' = 'TFC_Elec_Com',
+    'Final Energy' = 'TFC_Total_Total' )))
   View(df_future)
   write_csv(df_future, "./../df_future_written.csv") 
 # }  # 将来シナリオの読込
@@ -125,8 +128,8 @@ while (0) {  # rbind 前チェック
   View(df_long_future)
 }  # rbind 前チェック
   
-df_long <- rbind(gather(df_past, key="Year", value="Value", -all_of(Titlerow2)),
-                gather(df_future, key="Year", value="Value", -all_of(Titlerow2)))
+df_long <- rbind(gather(df_past, key="Year", value="Value", -all_of(Titlerow2), -SCENARIO),
+                gather(df_future, key="Year", value="Value", -all_of(Titlerow2), -SCENARIO))
 df_long$Year  <- as.numeric(df_long$Year) 
 df_long$Value <- as.numeric(df_long$Value)   # NA warning ＞ 確認済 
 # df_long <- df_long %>% na.omit()
@@ -176,16 +179,32 @@ for (i in 1) { # テスト後に戻す (i in 1:ncol(df_vni))
     
   
   # 指標の基準年値 I(t=BaseYear)
-  # を作成する前に、基準年データがない国の処理　(1)2010 ＞ (2)2015 ＞(3)データがある中で最終年
-  # とりあえず基準年値がない国は飛ばして
-  
-  while (0)   { # step_impute_linear テスト for (dummyloop in 1)
-    
-    df_Graph_test <- df_Graph %>% step_impute_linear(GDP_Capita)
-    
-  } # step_impute_linear テスト
+  # 基準年データがない国の処理　(1)2010 ＞ (2)2015 ＞(3)データがある中で最終年
+  # GDP(2010)がない国
+  Sample_Country <- c('Former Soviet Union','Former Yugoslavia','South Sudan','Bosnia and Herzegovina')
+  Option_na_interpolation <- 'linear'
+  for (dummyloop in 1) { # na_interpolation テスト 
+    df_Graph_BaseYear <- df_Graph %>% group_by(Country) %>% filter(Year==2010)
+    df_Graph_interpolated <- df_Graph %>% mutate(GDP_Capita2=na_interpolation(x=GDP_Capita, option=Option_na_interpolation) 
+                                    ) %>% filter(Country %in% Sample_Country
+                                    ) %>% mutate(SCENARIO2=if_else(is.na(GDP_Capita), Option_na_interpolation, SCENARIO))
 
-  for (dummyloop in 1) { # df_Graph_test 無効
+# XY散布図 by 国別
+    pdf(file="./../XY_Country.pdf")    
+      g <- ggplot(df_Graph_interpolated, aes(x=Year,y=GDP_Capita2, 
+          color=Country, shape=SCENARIO2)) +
+          geom_line() +
+          geom_point() +
+        # theme(legend.position='none') +
+          scale_shape_manual(values=c(19,24))
+      plot(g)
+      filename <- paste("Test_interpolation_",Option_na_interpolation, sep="")
+      ggsave(file=paste("./../",filename,".png", sep=""))
+    dev.off() 
+
+  } # na_interpolation テスト
+
+  while (0) { # df_Graph_test 無効  for (dummyloop in 1)
     df_Graph_test <- df_Graph %>% group_by(Country
                               ) %>% arrange(Year
                               ) %>% filter(Year==2010
@@ -248,23 +267,27 @@ View(df_Graph)
 write_csv(df_Graph, "./../df_Graph_written.csv") 
 
 
-setwd("C:/_Nishimoto/R/WBAL_R02/4_output/") 
-while (0) {  # グラフ出力 
-# for (dummyloop in 1) {  
+setwd("C:/_Nishimoto/R/WBAL_R02/4_output/test/") 
+while (0) {  # グラフ出力 for (dummyloop in 1)
 
-    # scenarionames <- c("Baseline","2C")    # c("Baseline","2C","1.5C","2.5C","WB2C")
+  # scenarionames <- c('Baseline','2C')    # c('Baseline','2C','1.5C','2.5C','WB2C')
   scenarionames <- c('Baseline')
-  indicators <- c("GDP_Capita",
-                  "Energy_Intensity","ChangeRate_Energy_Intensity",
-                  "Carbon_Intensity","ChangeRate_Carbon_Intensity",
-                  "Electricity_Rate_Total","ChangeRate_Electricity_Rate_Total",
-                  "Electricity_Rate_Ind","ChangeRate_Electricity_Rate_Ind")
+
+  # imputeTS チェック用変数
+  df_Graph <- df_Graph_interpolated
+  indicators <- c('GDP_Capita','GDP_Capita2')
+
+  # indicators <- c('GDP_Capita',
+  #                 'Energy_Intensity','ChangeRate_Energy_Intensity',
+  #                 'Carbon_Intensity','ChangeRate_Carbon_Intensity',
+  #                 'Electricity_Rate_Total','ChangeRate_Electricity_Rate_Total',
+  #                 'Electricity_Rate_Ind','ChangeRate_Electricity_Rate_Ind')
   
   # 出力対象のXY軸を指定する　x_names(n) vs y_names(n)のグラフが出力される
   
-  x_names <- c(rep("Year",length(indicators)),
-               rep("GDP_Capita",length(indicators)-1),
-               rep("REGION",length(indicators)-1)
+  x_names <- c(rep('Year',length(indicators)),
+               rep('GDP_Capita',length(indicators)-1),
+               rep('REGION',length(indicators)-1)
   )
   y_names <- c(indicators,
                indicators[-1],
