@@ -1,9 +1,9 @@
 #Packages------------------------------------------------------
 library(ggplot2)
 library(tidyverse)
-library(imputeTS)
 
 setwd("C:/_Nishimoto/R/WBAL_R02/2_data/REF") 
+BaseYear <- 2010  # %>% as.numeric()  # 基準年値
 
 while (0) {
   # 単位の連想配列＞ファイル名にマッチさせる予定
@@ -50,6 +50,8 @@ for (file.name in files) {
   View(d)
   df_past <- rbind(df_past, d)
 }
+df_past <- df_past %>% filter(REGION!='region')  # ダミー行のデータを削除
+
 View(df_past)
 write_csv(df_past, "./../df_past_written_everyYear.csv") # VARIABLE REGION Country 
 
@@ -59,16 +61,13 @@ Titlerow3 <- c('SCENARIO','Country')
 
 # （課題）df_past の基準年値を補間する＞補間後に5年置きにする
 
-# df_past を5年置きにする 
-# names_df_past <- names(df_past)   
-# names_df_past <- names_df_past[-which(names_df_past %in% all_of(Titlerow2))]
-# Year_all <- as.numeric(names_df_past)
+# while (0) {  # df_past を5年置きにする 
 # 列名から5年置きの年を取得＞先送り＞直接入力（仮）
-Year5 <- c(1970, 1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010, 2015) %>% as.character()
-df_past <- df_past %>% select(all_of(Titlerow2), all_of(Year5))
+Year5 <- c(1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010, 2015) %>% as.character()
+# df_past <- df_past %>% select(all_of(Titlerow2), all_of(Year5)) # 後工程でで処理する
 df_past <- df_past %>% mutate(SCENARIO='Historical')   # 書式を揃える
 View(df_past)
-# write_csv(df_past, "./../df_past_written.csv") # VARIABLE REGION Country 
+# }  # df_past を5年置きにする 
 
 scenarioname <- 'Baseline'  # 読込対象の将来シナリオ（今は読込の時点でシナリオを絞っている）
 
@@ -97,37 +96,6 @@ scenarioname <- 'Baseline'  # 読込対象の将来シナリオ（今は読込�
   write_csv(df_future, "./../df_future_written.csv") 
 # }  # 将来シナリオの読込
 
-while (0) {  # 過去/将来の変数名
-  df_vni_past <- matrix(c(
-    'GDP_Capita',	'GDP_IEA', 'POP_IEA', 
-    'Energy_Intensity',	'TES_Total', 'GDP_IEA', 
-    'Carbon_Intensity',	'CO2_fuel_Total', 'TES_Total', 
-    'Electricity_Rate_Total',	'TFC_Elec_Total', 'TFC_Total_Total', 
-    'Electricity_Rate_Ind',	'TFC_Elec_Ind',	'TFC_Total_Ind', 
-    'Electricity_Rate_Tra',	'TFC_Elec_Tra',	'TFC_Total_Tra', 
-    'Electricity_Rate_Res',	'TFC_Elec_Res',	'TFC_Total_Res', 
-    'Electricity_Rate_Com',	'TFC_Elec_Com',	'TFC_Total_Com'), 
-    ncol=8, nrow=3)
-  
-  df_vni_future <- matrix(c(
-    'GDP_Capita',	"GDP|MER", 'Population', 
-    'Energy_Intensity',	'Primary Energy', "GDP|MER", 
-    'Carbon_Intensity',	'Emissions|CO2|Energy',	'Primary Energy', 
-    'Electricity_Rate_Total',	'Final Energy|Electricity', 'Final Energy', 
-    'Electricity_Rate_Ind',	'Final Energy|Industry|Electricity', 'Final Energy|Industry', 
-    'Electricity_Rate_Tra',	'Final Energy|Transportation|Electricity', 'Final Energy|Transportation', 
-    'Electricity_Rate_Res',	'Final Energy|Residential|Electricity',	'Final Energy|Residential', 
-    'Electricity_Rate_Com',	'Final Energy|Commercial|Electricity', 'Final Energy|Commercial'), 
-    ncol=8, nrow=3)
-}  # 過去/将来の変数名
-
-while (0) {  # rbind 前チェック
-  df_long_past <- gather(df_past, key="Year", value="Value", -all_of(Titlerow2))
-  View(df_long_past)
-  df_long_future <- gather(df_future, key="Year", value="Value", -all_of(Titlerow2))
-  View(df_long_future)
-}  # rbind 前チェック
-  
 df_long <- rbind(gather(df_past, key="Year", value="Value", -all_of(Titlerow2), -SCENARIO),
                 gather(df_future, key="Year", value="Value", -all_of(Titlerow2), -SCENARIO))
 df_long$Year  <- as.numeric(df_long$Year) 
@@ -149,14 +117,11 @@ df_vni <- matrix(c(
   'Electricity_Rate_Com',	'TFC_Elec_Com',	'TFC_Total_Com'), 
   ncol=8, nrow=3)
 
-BaseYear <- 2010  # %>% as.numeric()  # 基準年値
-
 # while (0) { # 国名のみのダミー列の作成
 for (dummyloop in 1) {  
   df_Graph <- df_long %>% select(c('Country')) %>% arrange(Country) %>% distinct() 
 }  # ダミー列の作成
-# df_Graph <- data.frame()
-                               
+
 # 指標毎の処理
 for (i in 1) { # テスト後に戻す (i in 1:ncol(df_vni))
   
@@ -185,7 +150,7 @@ for (i in 1) { # テスト後に戻す (i in 1:ncol(df_vni))
   Sample_Country <- c('Former Soviet Union','Former Yugoslavia','South Sudan','Bosnia and Herzegovina')
   Interpolation_NA <- 'fill_down&up'
   for (dummyloop in 1) { # na_interpolation テスト 
-    df_Graph_BaseYear <- df_Graph %>% group_by(Country) %>% filter(Year==2010)
+    df_Graph_BaseYear <- df_Graph %>% group_by(Country) %>% filter(Year==BaseYear)
     df_Graph_interpolated <- df_Graph %>% group_by(Country
                                     ) %>% mutate(GDP_Capita2=GDP_Capita
                                     ) %>% fill(GDP_Capita2, .direction="down"
@@ -193,7 +158,7 @@ for (i in 1) { # テスト後に戻す (i in 1:ncol(df_vni))
                                     ) %>% mutate(SCENARIO2=if_else(is.na(GDP_Capita), Interpolation_NA, SCENARIO)
                                     ) %>% filter(Country %in% Sample_Country)
     View(df_Graph_interpolated)
-    
+
     # XY散布図 by 国別
       g <- ggplot(df_Graph_interpolated, aes(x=Year,y=GDP_Capita2, 
           color=Country, shape=SCENARIO2)) +
@@ -223,7 +188,7 @@ for (i in 1) { # テスト後に戻す (i in 1:ncol(df_vni))
     
   } # df_Graph_test             
     
-   while (0) { # df_Graph_test
+  while (0) { # df_Graph_test
     df_Graph_test <- df_Graph %>% group_by(Country
     ) %>% arrange(Year
     ) %>% mutate(Year_pre=lag(Year, n=1) 
