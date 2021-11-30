@@ -174,6 +174,7 @@ for (i in 1) { # テスト後に戻す (i in 1:ncol(df_vni))
   }
   df_Graph <- df_Graph %>% drop_na('REGION','Year')  # ダミー列のデータを削除
 
+  # 指標の算出
   df_Graph <- eval(parse(text=paste0(
               "df_Graph %>% mutate(",indicator,"=",numerator,"/",denominator,")")))
     
@@ -182,15 +183,16 @@ for (i in 1) { # テスト後に戻す (i in 1:ncol(df_vni))
   # 基準年データがない国の処理　(1)2010 ＞ (2)2015 ＞(3)データがある中で最終年
   # GDP(2010)がない国
   Sample_Country <- c('Former Soviet Union','Former Yugoslavia','South Sudan','Bosnia and Herzegovina')
-  Option_na_interpolation <- 'linear'
+  Interpolation_NA <- 'fill_up'
   for (dummyloop in 1) { # na_interpolation テスト 
     df_Graph_BaseYear <- df_Graph %>% group_by(Country) %>% filter(Year==2010)
-    df_Graph_interpolated <- df_Graph %>% mutate(GDP_Capita2=na_interpolation(x=GDP_Capita, option=Option_na_interpolation) 
-                                    ) %>% filter(Country %in% Sample_Country
-                                    ) %>% mutate(SCENARIO2=if_else(is.na(GDP_Capita), Option_na_interpolation, SCENARIO))
-
-# XY散布図 by 国別
-    pdf(file="./../XY_Country.pdf")    
+    df_Graph_interpolated <- df_Graph %>% mutate(GDP_Capita2=GDP_Capita 
+                          ) %>% fill(GDP_Capita2,.direction="up"
+                          ) %>% filter(Country %in% Sample_Country
+                          ) %>% mutate(SCENARIO2=if_else(is.na(GDP_Capita), Interpolation_NA, SCENARIO))
+    View(df_Graph_interpolated)
+    
+    # XY散布図 by 国別
       g <- ggplot(df_Graph_interpolated, aes(x=Year,y=GDP_Capita2, 
           color=Country, shape=SCENARIO2)) +
           geom_line() +
@@ -198,9 +200,8 @@ for (i in 1) { # テスト後に戻す (i in 1:ncol(df_vni))
         # theme(legend.position='none') +
           scale_shape_manual(values=c(19,24))
       plot(g)
-      filename <- paste("Test_interpolation_",Option_na_interpolation, sep="")
+      filename <- paste("Test_interpolation_",Interpolation_NA, sep="")
       ggsave(file=paste("./../",filename,".png", sep=""))
-    dev.off() 
 
   } # na_interpolation テスト
 
