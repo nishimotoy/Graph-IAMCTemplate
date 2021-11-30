@@ -4,6 +4,7 @@ library(tidyverse)
 
 setwd("C:/_Nishimoto/R/WBAL_R02/2_data/REF") 
 BaseYear <- 2010  # %>% as.numeric()  # 基準年値
+Year5 <- c(0, 1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010, 2015) # %>% as.character()
 
 while (0) {
   # 単位の連想配列＞ファイル名にマッチさせる予定
@@ -47,12 +48,12 @@ for (file.name in files) {
   d <- d %>% mutate(Country = str_replace_all(Country, 
                               pattern = c("Memo.: "="", "Memo: "="", " .if no detail."="")))
 #  d <- d[1,c(ncol(d),1:(ncol(d)-1))] # 列の入替
-  View(d)
+# View(d)
   df_past <- rbind(df_past, d)
 }
 df_past <- df_past %>% filter(REGION!='region')  # ダミー行のデータを削除
 
-View(df_past)
+# View(df_past)
 write_csv(df_past, "./../df_past_written_everyYear.csv") # VARIABLE REGION Country 
 
 Titlerow1 <- c('MODEL','SCENARIO','REGION','VARIABLE','UNIT')
@@ -63,10 +64,9 @@ Titlerow3 <- c('SCENARIO','Country')
 
 # while (0) {  # df_past を5年置きにする 
 # 列名から5年置きの年を取得＞先送り＞直接入力（仮）
-Year5 <- c(1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010, 2015) %>% as.character()
 # df_past <- df_past %>% select(all_of(Titlerow2), all_of(Year5)) # 後工程でで処理する
 df_past <- df_past %>% mutate(SCENARIO='Historical')   # 書式を揃える
-View(df_past)
+# View(df_past)
 # }  # df_past を5年置きにする 
 
 scenarioname <- 'Baseline'  # 読込対象の将来シナリオ（今は読込の時点でシナリオを絞っている）
@@ -92,7 +92,7 @@ scenarioname <- 'Baseline'  # 読込対象の将来シナリオ（今は読込�
     'Final Energy.Residential.Electricity' = 'TFC_Elec_Res',
     'Final Energy.Commercial.Electricity' = 'TFC_Elec_Com',
     'Final Energy' = 'TFC_Total_Total' )))
-  View(df_future)
+  # View(df_future)
   write_csv(df_future, "./../df_future_written.csv") 
 # }  # 将来シナリオの読込
 
@@ -101,7 +101,7 @@ df_long <- rbind(gather(df_past, key="Year", value="Value", -all_of(Titlerow2), 
 df_long$Year  <- as.numeric(df_long$Year) 
 df_long$Value <- as.numeric(df_long$Value)   # NA warning ＞ 確認済 
 # df_long <- df_long %>% na.omit()
-View(df_long)
+# View(df_long)
 write_csv(df_long, "./../df_long_written.csv")  
 
 # 指標の処理
@@ -147,31 +147,46 @@ for (i in 1) { # テスト後に戻す (i in 1:ncol(df_vni))
   # 指標の基準年値 I(t=BaseYear)
   # 基準年データがない国の処理　(1)2010 ＞ (2)2015 ＞(3)データがある中で最終年
   # GDP(2010)がない国
+  
   Sample_Country <- c('Former Soviet Union','Former Yugoslavia','South Sudan','Bosnia and Herzegovina')
-  Interpolation_NA <- 'fill_down&up'
+  Interpolate_NA <- 'fill_down&up'
   for (dummyloop in 1) { # na_interpolation テスト 
-    df_Graph_BaseYear <- df_Graph %>% group_by(Country) %>% filter(Year==BaseYear)
     df_Graph_interpolated <- df_Graph %>% group_by(Country
                                     ) %>% mutate(GDP_Capita2=GDP_Capita
-                                    ) %>% fill(GDP_Capita2, .direction="down"
-                                    ) %>% fill(GDP_Capita2, .direction="up"
-                                    ) %>% mutate(SCENARIO2=if_else(is.na(GDP_Capita), Interpolation_NA, SCENARIO)
-                                    ) %>% filter(Country %in% Sample_Country)
-    View(df_Graph_interpolated)
+                                    ) %>% fill(GDP_Capita2, .direction='down' # 前年値を優先
+                                    ) %>% fill(GDP_Capita2, .direction='up'
+                                    ) %>% mutate(SCENARIO2=if_else(is.na(GDP_Capita), Interpolate_NA, SCENARIO))
 
-    # XY散布図 by 国別
-      g <- ggplot(df_Graph_interpolated, aes(x=Year,y=GDP_Capita2, 
+    df_Graph_BaseYear <- df_Graph_interpolated %>% filter(Year==BaseYear
+                                             ) %>% mutate(Year=0
+                                             ) %>% select(-GDP_Capita2, -SCENARIO2)
+
+    # XY散布図 by サンプル国
+    df_Graph_interpolated <- df_Graph_interpolated %>% filter(Country %in% Sample_Country)
+    g <- ggplot(df_Graph_interpolated, aes(x=Year,y=GDP_Capita2, 
           color=Country, shape=SCENARIO2)) +
         # geom_line() +
           geom_point() +
         # theme(legend.position='none') +
           scale_shape_manual(values=c(19,24))
-      plot(g)
-      filename <- paste("Test_interpolation_",Interpolation_NA, sep="")
-      ggsave(file=paste("./../",filename,".png", sep=""))
+    plot(g)
+    filename <- paste("Test_interpolation_",Interpolate_NA, sep="")
+    ggsave(file=paste("./../",filename,".png", sep=""))
 
   } # na_interpolation テスト
 
+  for (dummyloop in 1) { # 基準年値を追加する
+
+    df_Graph <- df_Graph %>% rbind(df_Graph_BaseYear
+                       ) %>% filter(Year %in% Year5
+                       ) %>% group_by(Country
+                       ) %>% arrange(Country, Year)
+    # df_Graph$GDP_Capita[Year=0]
+    #df_Graph <- df_Graph %>% mutate()
+ 
+  } # 基準年値を追加する
+  
+  
   while (0) { # df_Graph_test 無効  for (dummyloop in 1)
     df_Graph_test <- df_Graph %>% group_by(Country
                               ) %>% arrange(Year
