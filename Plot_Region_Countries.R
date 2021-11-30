@@ -183,19 +183,21 @@ for (i in 1) { # テスト後に戻す (i in 1:ncol(df_vni))
   # 基準年データがない国の処理　(1)2010 ＞ (2)2015 ＞(3)データがある中で最終年
   # GDP(2010)がない国
   Sample_Country <- c('Former Soviet Union','Former Yugoslavia','South Sudan','Bosnia and Herzegovina')
-  Interpolation_NA <- 'fill_down'
+  Interpolation_NA <- 'fill_down&up'
   for (dummyloop in 1) { # na_interpolation テスト 
     df_Graph_BaseYear <- df_Graph %>% group_by(Country) %>% filter(Year==2010)
-    df_Graph_interpolated <- df_Graph %>% mutate(GDP_Capita2=GDP_Capita 
-                          ) %>% fill(GDP_Capita2,.direction="down"
-                          ) %>% filter(Country %in% Sample_Country
-                          ) %>% mutate(SCENARIO2=if_else(is.na(GDP_Capita), Interpolation_NA, SCENARIO))
+    df_Graph_interpolated <- df_Graph %>% group_by(Country
+                                    ) %>% mutate(GDP_Capita2=GDP_Capita
+                                    ) %>% fill(GDP_Capita2, .direction="down"
+                                    ) %>% fill(GDP_Capita2, .direction="up"
+                                    ) %>% mutate(SCENARIO2=if_else(is.na(GDP_Capita), Interpolation_NA, SCENARIO)
+                                    ) %>% filter(Country %in% Sample_Country)
     View(df_Graph_interpolated)
     
     # XY散布図 by 国別
       g <- ggplot(df_Graph_interpolated, aes(x=Year,y=GDP_Capita2, 
           color=Country, shape=SCENARIO2)) +
-          geom_line() +
+        # geom_line() +
           geom_point() +
         # theme(legend.position='none') +
           scale_shape_manual(values=c(19,24))
