@@ -142,40 +142,37 @@ for (i in 1) { # テスト後に戻す (i in 1:ncol(df_vni))
   # 指標の算出
   df_Graph <- eval(parse(text=paste0(
               "df_Graph %>% mutate(",indicator,"=",numerator,"/",denominator,")")))
-    
-  
-  # 指標の基準年値 I(t=BaseYear)
-  # 基準年データがない国の処理　(1)2010 ＞ (2)2015 ＞(3)データがある中で最終年
-  # GDP(2010)がない国
-  
-  Sample_Country <- c('Former Soviet Union','Former Yugoslavia','South Sudan','Bosnia and Herzegovina')
+
+  # 指標の基準年値 I(t=BaseYear)  # 基準年データがない国の処理
+  Sample_Country <- c('Former Soviet Union','Former Yugoslavia','South Sudan','Bosnia and Herzegovina')  # GDP(2010)が無い国
   Interpolate_NA <- 'fill_down&up'
-  for (dummyloop in 1) { # na_interpolation テスト 
+  for (dummyloop in 1) { # 基準年データがない国の処理
     df_Graph_interpolated <- df_Graph %>% group_by(Country
                                     ) %>% mutate(GDP_Capita2=GDP_Capita
                                     ) %>% fill(GDP_Capita2, .direction='down' # 前年値を優先
-                                    ) %>% fill(GDP_Capita2, .direction='up'
+                                    ) %>% fill(GDP_Capita2, .direction='up'   # 前年値がなければ後年値
                                     ) %>% mutate(SCENARIO2=if_else(is.na(GDP_Capita), Interpolate_NA, SCENARIO))
 
     df_Graph_BaseYear <- df_Graph_interpolated %>% filter(Year==BaseYear
                                              ) %>% mutate(Year=0
                                              ) %>% select(-GDP_Capita2, -SCENARIO2)
 
-    # XY散布図 by サンプル国
+    # 補完値の確認用 時系列XY散布図 by サンプル国
     df_Graph_interpolated <- df_Graph_interpolated %>% filter(Country %in% Sample_Country)
     g <- ggplot(df_Graph_interpolated, aes(x=Year,y=GDP_Capita2, 
           color=Country, shape=SCENARIO2)) +
         # geom_line() +
           geom_point() +
         # theme(legend.position='none') +
+          ylab('GDP_Capita2') +
           scale_shape_manual(values=c(19,24))
     plot(g)
     filename <- paste("Test_interpolation_",Interpolate_NA, sep="")
     ggsave(file=paste("./../",filename,".png", sep=""))
 
-  } # na_interpolation テスト
+  } # 基準年データがない国の処理
 
-  for (dummyloop in 1) { # 基準年値を追加する
+  for (dummyloop in 1) { # 基準年値をdf_Graphに追加する（0年値として追加）
 
     df_Graph <- df_Graph %>% rbind(df_Graph_BaseYear
                        ) %>% filter(Year %in% Year5
@@ -184,7 +181,7 @@ for (i in 1) { # テスト後に戻す (i in 1:ncol(df_vni))
     # df_Graph$GDP_Capita[Year=0]
     #df_Graph <- df_Graph %>% mutate()
  
-  } # 基準年値を追加する
+  } # 基準年値をdf_Graphに追加する
   
   
   while (0) { # df_Graph_test 無効  for (dummyloop in 1)
