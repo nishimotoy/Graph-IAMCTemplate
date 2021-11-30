@@ -147,24 +147,24 @@ for (i in 1) { # テスト後に戻す (i in 1:ncol(df_vni))
   Sample_Country <- c('Former Soviet Union','Former Yugoslavia','South Sudan','Bosnia and Herzegovina')  # GDP(2010)が無い国
   Interpolate_NA <- 'fill_down&up'
   for (dummyloop in 1) { # 基準年データがない国の処理
-    df_Graph_interpolated <- df_Graph %>% group_by(Country
-                                    ) %>% mutate(GDP_Capita2=GDP_Capita
-                                    ) %>% fill(GDP_Capita2, .direction='down' # 前年値を優先
-                                    ) %>% fill(GDP_Capita2, .direction='up'   # 前年値がなければ後年値
-                                    ) %>% mutate(SCENARIO2=if_else(is.na(GDP_Capita), Interpolate_NA, SCENARIO))
+    df_Graph_interpolated <- eval(parse(text=paste0(
+      "df_Graph %>% group_by(Country
+              ) %>% mutate(Indicator2=",indicator,"
+              ) %>% fill(Indicator2, .direction='down' # 前年値を優先
+              ) %>% fill(Indicator2, .direction='up'   # 前年値がなければ後年値
+              ) %>% mutate(SCENARIO2=if_else(is.na(",indicator,"), Interpolate_NA, SCENARIO))")))
 
     df_Graph_BaseYear <- df_Graph_interpolated %>% filter(Year==BaseYear
                                              ) %>% mutate(Year=0
-                                             ) %>% select(-GDP_Capita2, -SCENARIO2)
+                                             ) %>% select(-Indicator2, -SCENARIO2)
 
     # 補完値の確認用 時系列XY散布図 by サンプル国
     df_Graph_interpolated <- df_Graph_interpolated %>% filter(Country %in% Sample_Country)
-    g <- ggplot(df_Graph_interpolated, aes(x=Year,y=GDP_Capita2, 
+    g <- ggplot(df_Graph_interpolated, aes(x=Year,y=Indicator2, 
           color=Country, shape=SCENARIO2)) +
-        # geom_line() +
           geom_point() +
         # theme(legend.position='none') +
-          ylab('GDP_Capita2') +
+          ylab(indicator) +
           scale_shape_manual(values=c(19,24))
     plot(g)
     filename <- paste("Test_interpolation_",Interpolate_NA, sep="")
@@ -180,10 +180,10 @@ for (i in 1) { # テスト後に戻す (i in 1:ncol(df_vni))
                        ) %>% arrange(Country, Year)
     # df_Graph$GDP_Capita[Year=0]
     #df_Graph <- df_Graph %>% mutate()
- 
+    df_Graph_test <- df_Graph %>% mutate(GDP_Capita2=GDP_Capita[Year==0])
+    
   } # 基準年値をdf_Graphに追加する
-  
-  
+
   while (0) { # df_Graph_test 無効  for (dummyloop in 1)
     df_Graph_test <- df_Graph %>% group_by(Country
                               ) %>% arrange(Year
