@@ -183,11 +183,11 @@ for (i in 1) { # テスト後に戻す (i in 1:ncol(df_vni))
   # 基準年データがない国の処理　(1)2010 ＞ (2)2015 ＞(3)データがある中で最終年
   # GDP(2010)がない国
   Sample_Country <- c('Former Soviet Union','Former Yugoslavia','South Sudan','Bosnia and Herzegovina')
-  Interpolation_NA <- 'fill_up'
+  Interpolation_NA <- 'fill_down'
   for (dummyloop in 1) { # na_interpolation テスト 
     df_Graph_BaseYear <- df_Graph %>% group_by(Country) %>% filter(Year==2010)
     df_Graph_interpolated <- df_Graph %>% mutate(GDP_Capita2=GDP_Capita 
-                          ) %>% fill(GDP_Capita2,.direction="up"
+                          ) %>% fill(GDP_Capita2,.direction="down"
                           ) %>% filter(Country %in% Sample_Country
                           ) %>% mutate(SCENARIO2=if_else(is.na(GDP_Capita), Interpolation_NA, SCENARIO))
     View(df_Graph_interpolated)
