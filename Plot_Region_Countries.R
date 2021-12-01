@@ -4,7 +4,13 @@ library(tidyverse)
 
 setwd("C:/_Nishimoto/R/WBAL_R02/2_data/REF") 
 BaseYear <- 2010  # %>% as.numeric()  # 基準年値
-Year5 <- c(0, 1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010, 2015) # %>% as.character()
+Year5 <- c(0, 1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010, 2015,
+           2020, 2025, 2030, 2035, 2040, 2045, 2050, 2055, 2060, 2065,
+           2070, 2075, 2080, 2085, 2090, 2095, 2100) # %>% as.character()
+Titlerow1 <- c('MODEL','SCENARIO','REGION','VARIABLE','UNIT')
+Titlerow2 <- c('REGION','Country','VARIABLE') # 'SCENARIO'は別
+Titlerow3 <- c('SCENARIO','Country')
+scenarioname <- 'Baseline'  # 読込対象の将来シナリオ（今は読込の時点でシナリオを絞っている）
 
 while (0) {
   # 単位の連想配列＞ファイル名にマッチさせる予定
@@ -50,24 +56,11 @@ for (file.name in files) {
   df_past <- rbind(df_past, d)
 }
 df_past <- df_past %>% filter(REGION!='region')  # ダミー行のデータを削除
+df_past <- df_past %>% mutate(SCENARIO='Historical')   # 書式を揃える
+# df_past <- df_past %>% select(all_of(Titlerow2), all_of(Year5)) # 後工程でで処理する
 
 # View(df_past)
 write_csv(df_past, "./../df_past_written_everyYear.csv") # VARIABLE REGION Country 
-
-Titlerow1 <- c('MODEL','SCENARIO','REGION','VARIABLE','UNIT')
-Titlerow2 <- c('REGION','Country','VARIABLE') # 'SCENARIO'は別
-Titlerow3 <- c('SCENARIO','Country')
-
-# （課題）df_past の基準年値を補間する＞補間後に5年置きにする
-
-# while (0) {  # df_past を5年置きにする 
-# 列名から5年置きの年を取得＞先送り＞直接入力（仮）
-# df_past <- df_past %>% select(all_of(Titlerow2), all_of(Year5)) # 後工程でで処理する
-df_past <- df_past %>% mutate(SCENARIO='Historical')   # 書式を揃える
-# View(df_past)
-# }  # df_past を5年置きにする 
-
-scenarioname <- 'Baseline'  # 読込対象の将来シナリオ（今は読込の時点でシナリオを絞っている）
 
 # while (0) {  # 将来シナリオの読込
 df_future <- read_csv("C:/_Nishimoto/R/WBAL_R02/2_data/REF2/IAMCTemplate.csv")
@@ -100,8 +93,7 @@ df_long$Year  <- as.numeric(df_long$Year)
 df_long$Value <- as.numeric(df_long$Value)   # NA warning ＞ 確認済 
 write_csv(df_long, "./../df_long_written.csv")  
 
-# 指標の処理
-# Variable_Names_for_Indicators df_vni <- indicator, numerator, denominator
+# 指標の処理  # Variable_Names_for_Indicators df_vni <- indicator, numerator, denominator
 df_vni <- matrix(c(
   'GDP_Capita',    'GDP_IEA', 'POP_IEA', 
   'Energy_Intensity',    'TES_Total', 'GDP_IEA', 
@@ -117,8 +109,10 @@ for (dummyloop in 1) {  # 国名のみのダミー列の作成
   df_Graph <- df_long %>% select(c('Country')) %>% arrange(Country) %>% distinct() 
 }  # ダミー列の作成
 
-# 指標毎の処理
-for (i in 1) { # テスト後に戻す (i in 1:ncol(df_vni))
+setwd("C:/_Nishimoto/R/WBAL_R02/4_output/test/") 
+pdf(file=paste("./","Interpolated_XY.pdf", sep=""))   # 出力準備
+
+for (i in 1:ncol(df_vni)) { # 指標毎の処理1   # テスト後に戻す (i in 1:ncol(df_vni))
   
   indicator   <- df_vni[1,i]
   numerator   <- df_vni[2,i]
@@ -163,9 +157,15 @@ for (i in 1) { # テスト後に戻す (i in 1:ncol(df_vni))
           scale_shape_manual(values=c(24,19))
     plot(g)
     filename <- paste("Interpolated_",indicator,"_",Interpolate_NA, sep="")
-    ggsave(file=paste("C:/_Nishimoto/R/WBAL_R02/4_output/test/",filename,".png", sep=""))
+    ggsave(file=paste("./",filename,".png", sep=""))
 
   } # 基準年データがない国の処理
+
+} # 指標毎の処理1
+# dev.off() 
+write_csv(df_Graph, "./../df_Graph_everyYear_written.csv") 
+
+for (i in 1:4) { # 指標毎の処理2   # テスト後に戻す (i in 1:ncol(df_vni))
 
   for (dummyloop in 1) { # 基準年値をdf_Graphに追加する（0年値として追加）
 
@@ -176,9 +176,8 @@ for (i in 1) { # テスト後に戻す (i in 1:ncol(df_vni))
     df_Graph<- eval(parse(text=paste0(
       "df_Graph %>% mutate(",indicator,"_scaled=",indicator,"/",indicator,"[Year==0]
               ) %>% filter(Year!=0)"
-    )))
-#   df_Graph <- df_Graph %>% filter(Year!=0)
-    
+    )))                     # indicator_scaled = I(t)/I(t=BaseYear) 
+
   } # 基準年値をdf_Graphに追加する
 
   for (dummyloop in 1) { # 指標の変化率
@@ -194,40 +193,25 @@ for (i in 1) { # テスト後に戻す (i in 1:ncol(df_vni))
     
       } # 指標の変化率         
 
-  while (0) { # 指標の変化率bk
-    
-    # 指標の変化率　ChangeRate_Indicator=(I(t)-I(t-1))/I(t=BaseYear)/((t)-(t-1))
-    df_Graph <- eval(parse(text=paste0(
-      "df_Graph %>% group_by(Country
-            ) %>% arrange(Country, Year
-            ) %>% mutate(Year_pre=lag(Year, n=1) 
-            ) %>% mutate(",indicator,"_pre=lag(",indicator,", n=1) 
-#           ) %>% mutate(RatePre_",indicator,"=",indicator,"/",indicator,"_pre
-            ) %>% mutate(ChangeRate_",indicator,
-      "=(",indicator,"-",indicator,"_pre)/(Year","-","Year","_pre)",
-      "/",indicator,"_pre",
-      ")")))
-  } # 指標の変化率bk       
-
-  } # 指標毎の処理
+  } # 指標毎の処理2
 
 # View(df_toMerge)
 View(df_Graph)
 write_csv(df_Graph, "./../df_Graph_written.csv") 
 
 setwd("C:/_Nishimoto/R/WBAL_R02/4_output/test/") 
-while (0) {  # グラフ出力 for (dummyloop in 1)
+for (dummyloop in 1) {  # グラフ出力 while (0)
 
   # scenarionames <- c('Baseline','2C')    # c('Baseline','2C','1.5C','2.5C','WB2C')
   scenarionames <- c('Baseline')
   # indicators <- c('GDP_Capita') # テスト中
   
   indicators <- c('GDP_Capita',
-                  'Energy_Intensity_scaled','ChangeRate_Energy_Intensity',
-                  'Carbon_Intensity_scaled','ChangeRate_Carbon_Intensity',
-                  'Electricity_Rate_Total_scaled','ChangeRate_Electricity_Rate_Total',
-                  'Electricity_Rate_Ind_scaled','ChangeRate_Electricity_Rate_Ind')
-  
+                  'Energy_Intensity','Energy_Intensity_scaled','ChangeRate_Energy_Intensity',
+                  'Carbon_Intensity','Carbon_Intensity_scaled','ChangeRate_Carbon_Intensity',
+                  'Electricity_Rate_Total','Electricity_Rate_Total_scaled','ChangeRate_Electricity_Rate_Total')
+  #'Electricity_Rate_Ind','Electricity_Rate_Ind_scaled','ChangeRate_Electricity_Rate_Ind')
+
   # 出力対象のXY軸を指定する　x_names(n) vs y_names(n)のグラフが出力される
   
   x_names <- c(rep('Year',length(indicators)),
@@ -237,7 +221,7 @@ while (0) {  # グラフ出力 for (dummyloop in 1)
   y_names <- c(indicators,
                indicators[-1],
                indicators[-1])
-  y2_names <- indicators[c(3,5,7,9)]
+  y2_names <- indicators[c(4,7,10)]
   
   for (scenarioname in scenarionames) {
     
