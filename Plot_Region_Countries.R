@@ -44,11 +44,9 @@ for (file.name in files) {
           ) %>% rename('Country'='REGION'
           ) %>% rename('REGION'='AIM17'
           ) %>% drop_na('REGION')  # 国コードのない行は無視
-#         ) %>% na.omit()         # 空行は無視
   d <- d %>% mutate(Country = str_replace_all(Country, 
-                              pattern = c("Memo.: "="", "Memo: "="", " .if no detail."="")))
-#  d <- d[1,c(ncol(d),1:(ncol(d)-1))] # 列の入替
-# View(d)
+                    pattern = c("Memo.: "="", "Memo: "="", " .if no detail."="")))
+  #  d <- d[1,c(ncol(d),1:(ncol(d)-1))] # 列の入替
   df_past <- rbind(df_past, d)
 }
 df_past <- df_past %>% filter(REGION!='region')  # ダミー行のデータを削除
@@ -72,53 +70,50 @@ df_past <- df_past %>% mutate(SCENARIO='Historical')   # 書式を揃える
 scenarioname <- 'Baseline'  # 読込対象の将来シナリオ（今は読込の時点でシナリオを絞っている）
 
 # while (0) {  # 将来シナリオの読込
-  df_future <- read_csv("C:/_Nishimoto/R/WBAL_R02/2_data/REF2/IAMCTemplate.csv")
-  # View(df_future)
-  
-  df_future <- df_future %>% select(-c('MODEL','UNIT')
-                       ) %>% filter(SCENARIO == scenarioname # rbind前にシナリオを絞る場合
-                       ) %>% filter(!REGION %in% c('ASIA2', 'World')
-                       ) %>% mutate(Country = REGION) # 書式を揃える #シナリオ名
+df_future <- read_csv("C:/_Nishimoto/R/WBAL_R02/2_data/REF2/IAMCTemplate.csv")
+# View(df_future)
 
-  # IAMCTemplete の名前を IEA に揃える＠ '|'対策  
-  df_future <- df_future %>% mutate(VARIABLE = str_replace_all(VARIABLE, pattern = c(
-    'GDP.MER' = 'GDP_IEA',
-    'Population' = 'POP_IEA',
-    'Primary Energy' = 'TES_Total',
-    'Emissions.CO2.Energy' = 'CO2_fuel_Total',
-    'Final Energy.Electricity' = 'TFC_Elec_Total',
-    'Final Energy.Industry.Electricity' = 'TFC_Elec_Ind',
-    'Final Energy.Transportation.Electricity' = 'TFC_Total_Tra',
-    'Final Energy.Residential.Electricity' = 'TFC_Elec_Res',
-    'Final Energy.Commercial.Electricity' = 'TFC_Elec_Com',
-    'Final Energy' = 'TFC_Total_Total' )))
-  # View(df_future)
-  write_csv(df_future, "./../df_future_written.csv") 
+df_future <- df_future %>% select(-c('MODEL','UNIT')
+) %>% filter(SCENARIO == scenarioname # rbind前にシナリオを絞る場合
+) %>% filter(!REGION %in% c('ASIA2', 'World')
+) %>% mutate(Country = REGION) # 書式を揃える #シナリオ名
+
+# IAMCTemplete の名前を IEA に揃える＠ '|'対策  
+df_future <- df_future %>% mutate(VARIABLE = str_replace_all(VARIABLE, pattern = c(
+  'GDP.MER' = 'GDP_IEA',
+  'Population' = 'POP_IEA',
+  'Primary Energy' = 'TES_Total',
+  'Emissions.CO2.Energy' = 'CO2_fuel_Total',
+  'Final Energy.Electricity' = 'TFC_Elec_Total',
+  'Final Energy.Industry.Electricity' = 'TFC_Elec_Ind',
+  'Final Energy.Transportation.Electricity' = 'TFC_Total_Tra',
+  'Final Energy.Residential.Electricity' = 'TFC_Elec_Res',
+  'Final Energy.Commercial.Electricity' = 'TFC_Elec_Com',
+  'Final Energy' = 'TFC_Total_Total' )))
+# View(df_future)
+write_csv(df_future, "./../df_future_written.csv") 
 # }  # 将来シナリオの読込
 
-df_long <- rbind(gather(df_past, key="Year", value="Value", -all_of(Titlerow2), -SCENARIO),
-                gather(df_future, key="Year", value="Value", -all_of(Titlerow2), -SCENARIO))
+df_long <- rbind(gather(df_past,   key="Year", value="Value", -all_of(Titlerow2), -SCENARIO),
+                 gather(df_future, key="Year", value="Value", -all_of(Titlerow2), -SCENARIO))
 df_long$Year  <- as.numeric(df_long$Year) 
 df_long$Value <- as.numeric(df_long$Value)   # NA warning ＞ 確認済 
-# df_long <- df_long %>% na.omit()
-# View(df_long)
 write_csv(df_long, "./../df_long_written.csv")  
 
 # 指標の処理
 # Variable_Names_for_Indicators df_vni <- indicator, numerator, denominator
 df_vni <- matrix(c(
-  'GDP_Capita',	'GDP_IEA', 'POP_IEA', 
-  'Energy_Intensity',	'TES_Total', 'GDP_IEA', 
-  'Carbon_Intensity',	'CO2_fuel_Total', 'TES_Total', 
-  'Electricity_Rate_Total',	'TFC_Elec_Total', 'TFC_Total_Total', 
-  'Electricity_Rate_Ind',	'TFC_Elec_Ind',	'TFC_Total_Ind', 
-  'Electricity_Rate_Tra',	'TFC_Elec_Tra',	'TFC_Total_Tra', 
-  'Electricity_Rate_Res',	'TFC_Elec_Res',	'TFC_Total_Res', 
-  'Electricity_Rate_Com',	'TFC_Elec_Com',	'TFC_Total_Com'), 
+  'GDP_Capita',    'GDP_IEA', 'POP_IEA', 
+  'Energy_Intensity',    'TES_Total', 'GDP_IEA', 
+  'Carbon_Intensity',    'CO2_fuel_Total', 'TES_Total', 
+  'Electricity_Rate_Total',    'TFC_Elec_Total', 'TFC_Total_Total', 
+  'Electricity_Rate_Ind',    'TFC_Elec_Ind',    'TFC_Total_Ind', 
+  'Electricity_Rate_Tra',    'TFC_Elec_Tra',    'TFC_Total_Tra', 
+  'Electricity_Rate_Res',    'TFC_Elec_Res',    'TFC_Total_Res', 
+  'Electricity_Rate_Com',    'TFC_Elec_Com',    'TFC_Total_Com'), 
   ncol=8, nrow=3)
 
-# while (0) { # 国名のみのダミー列の作成
-for (dummyloop in 1) {  
+for (dummyloop in 1) {  # 国名のみのダミー列の作成
   df_Graph <- df_long %>% select(c('Country')) %>% arrange(Country) %>% distinct() 
 }  # ダミー列の作成
 
@@ -145,7 +140,7 @@ for (i in 1) { # テスト後に戻す (i in 1:ncol(df_vni))
 
   # 指標の基準年値 I(t=BaseYear)  # 基準年データがない国の処理
   Sample_Country <- c('Former Soviet Union','Former Yugoslavia','South Sudan','Bosnia and Herzegovina')  # GDP(2010)が無い国
-  Interpolate_NA <- 'fill_down&up'
+  Interpolate_NA <- 'fill_latest_or_first_existing_value'
   for (dummyloop in 1) { # 基準年データがない国の処理
     df_Graph_interpolated <- eval(parse(text=paste0(
       "df_Graph %>% group_by(Country
@@ -165,10 +160,10 @@ for (i in 1) { # テスト後に戻す (i in 1:ncol(df_vni))
           geom_point() +
         # theme(legend.position='none') +
           ylab(indicator) +
-          scale_shape_manual(values=c(19,24))
+          scale_shape_manual(values=c(24,19))
     plot(g)
-    filename <- paste("Test_interpolation_",Interpolate_NA, sep="")
-    ggsave(file=paste("./../",filename,".png", sep=""))
+    filename <- paste("Interpolated_",indicator,"_",Interpolate_NA, sep="")
+    ggsave(file=paste("C:/_Nishimoto/R/WBAL_R02/4_output/test/",filename,".png", sep=""))
 
   } # 基準年データがない国の処理
 
@@ -178,90 +173,60 @@ for (i in 1) { # テスト後に戻す (i in 1:ncol(df_vni))
                        ) %>% filter(Year %in% Year5
                        ) %>% group_by(Country
                        ) %>% arrange(Country, Year)
-    # df_Graph$GDP_Capita[Year=0]
-    #df_Graph <- df_Graph %>% mutate()
-    df_Graph_test <- df_Graph %>% mutate(GDP_Capita2=GDP_Capita[Year==0])
+    df_Graph<- eval(parse(text=paste0(
+      "df_Graph %>% mutate(",indicator,"_scaled=",indicator,"/",indicator,"[Year==0]
+              ) %>% filter(Year!=0)"
+    )))
+#   df_Graph <- df_Graph %>% filter(Year!=0)
     
   } # 基準年値をdf_Graphに追加する
 
-  while (0) { # df_Graph_test 無効  for (dummyloop in 1)
-    df_Graph_test <- df_Graph %>% group_by(Country
-                              ) %>% arrange(Year
-                              ) %>% filter(Year==2010
-                              ) %>% drop_na(GDP_Capita)  # 基準年値のない国は削除(仮)＞後の課題
-      df_Graph_test <- df_Graph_test %>% mutate(GDP_Capita2=GDP_Capita[Year==2010])
-      df_Graph_test <- df_Graph_test %>% select(Country, GDP_Capita2) 
-      df_Graph <- merge(df_Graph, df_Graph_test)
+  for (dummyloop in 1) { # 指標の変化率
+    
+    # 指標の変化率　ChangeRate_Indicator=(I(t)-I(t-1))/I(t=BaseYear)/((t)-(t-1))
+    df_Graph <- eval(parse(text=paste0(
+      "df_Graph %>% group_by(Country
+              ) %>% arrange(Country, Year
+              ) %>% mutate(ChangeRate_",indicator,
+                "=(",indicator,"_scaled-lag(",indicator,"_scaled, n=1))/(Year-lag(Year, n=1))
+              ) %>% ungroup(
+              )")))
+    
+      } # 指標の変化率         
 
-      # df_Graph_test <- df_Graph_test %>% mutate(test1=is.na(Year==2010))  
-  
-      View(df_Graph_test)
-      write_csv(df_Graph_test, "./../df_Graph_test_written.csv") 
+  while (0) { # 指標の変化率bk
     
-  } # df_Graph_test             
-    
-  while (0) { # df_Graph_test
-    df_Graph_test <- df_Graph %>% group_by(Country
-    ) %>% arrange(Year
-    ) %>% mutate(Year_pre=lag(Year, n=1) 
-    ) %>% mutate(Year_RateBY=Year/BaseYear
-    ) %>% mutate(GDP_Capita_pre=lag(GDP_Capita, n=1) 
-    ) %>% mutate(GDP_Capita_BY=if_else(is.na(GDP_Capita[Year==BaseYear]), GDP_Capita[Year==BaseYear], na)
- #  ) %>% mutate(GDP_Capita_RateBY=GDP_Capita/GDP_Capita_BY
-    )
-  } # df_Graph_test             
-#  次回＞if_else(is.na)から
-  
-  while (0) { # df_Graph_test 基準年値
-    df_Graph_test <- df_Graph %>% group_by(Country
-    ) %>% arrange(Year
-    ) %>% mutate(Year_pre=lag(Year, n=1) 
-    ) %>% mutate(Year_RateBY=Year/BaseYear
-    ) %>% mutate(GDP_Capita_pre=lag(GDP_Capita, n=1) 
-    ) %>% mutate(GDP_Capita_BY=GDP_Capita[Year==BaseYear]
- #  ) %>% mutate(GDP_Capita_RateBY=GDP_Capita/GDP_Capita_BY
-    )
-  } # df_Graph_test  基準年値           
-
-    
-  while (0) { # df_Graph_test 指標の変化率
-      
-  # 指標の変化率　RatePre_Indicator=I(t)/I(t-1)  ChangeRate_Indicator=(I(t)-I(t-1))/((t)-(t-1))/I(t-1)
-  df_Graph <- eval(parse(text=paste0(
-    "df_Graph %>% group_by(Country
-            ) %>% arrange(Year
+    # 指標の変化率　ChangeRate_Indicator=(I(t)-I(t-1))/I(t=BaseYear)/((t)-(t-1))
+    df_Graph <- eval(parse(text=paste0(
+      "df_Graph %>% group_by(Country
+            ) %>% arrange(Country, Year
             ) %>% mutate(Year_pre=lag(Year, n=1) 
-            ) %>% mutate(Year_RateBY=Year/BaseYear
-            ) %>% mutate(",indicator,"_RateBY=",indicator,"/",indicator,"[Year==BaseYear] 
             ) %>% mutate(",indicator,"_pre=lag(",indicator,", n=1) 
 #           ) %>% mutate(RatePre_",indicator,"=",indicator,"/",indicator,"_pre
             ) %>% mutate(ChangeRate_",indicator,
-                          "=(",indicator,"-",indicator,"_pre)/(Year","-","Year","_pre)",
-                                         "/",indicator,"_pre",
-           ")")))
-  } # df_Graph_test 指標の変化率         
-}
+      "=(",indicator,"-",indicator,"_pre)/(Year","-","Year","_pre)",
+      "/",indicator,"_pre",
+      ")")))
+  } # 指標の変化率bk       
+
+  } # 指標毎の処理
 
 # View(df_toMerge)
 View(df_Graph)
 write_csv(df_Graph, "./../df_Graph_written.csv") 
-
 
 setwd("C:/_Nishimoto/R/WBAL_R02/4_output/test/") 
 while (0) {  # グラフ出力 for (dummyloop in 1)
 
   # scenarionames <- c('Baseline','2C')    # c('Baseline','2C','1.5C','2.5C','WB2C')
   scenarionames <- c('Baseline')
-
-  # imputeTS チェック用変数
-  df_Graph <- df_Graph_interpolated
-  indicators <- c('GDP_Capita','GDP_Capita2')
-
-  # indicators <- c('GDP_Capita',
-  #                 'Energy_Intensity','ChangeRate_Energy_Intensity',
-  #                 'Carbon_Intensity','ChangeRate_Carbon_Intensity',
-  #                 'Electricity_Rate_Total','ChangeRate_Electricity_Rate_Total',
-  #                 'Electricity_Rate_Ind','ChangeRate_Electricity_Rate_Ind')
+  # indicators <- c('GDP_Capita') # テスト中
+  
+  indicators <- c('GDP_Capita',
+                  'Energy_Intensity_scaled','ChangeRate_Energy_Intensity',
+                  'Carbon_Intensity_scaled','ChangeRate_Carbon_Intensity',
+                  'Electricity_Rate_Total_scaled','ChangeRate_Electricity_Rate_Total',
+                  'Electricity_Rate_Ind_scaled','ChangeRate_Electricity_Rate_Ind')
   
   # 出力対象のXY軸を指定する　x_names(n) vs y_names(n)のグラフが出力される
   
