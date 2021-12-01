@@ -161,12 +161,13 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理1   # テスト後に戻す (i i
 
   } # 基準年データがない国の処理
 
-} # 指標毎の処理1
-# dev.off() 
-write_csv(df_Graph, "./../df_Graph_everyYear_written.csv") 
+# } # 指標毎の処理1
 
-for (i in 1:4) { # 指標毎の処理2   # テスト後に戻す (i in 1:ncol(df_vni))
+# write_csv(df_Graph, "./../df_Graph_everyYear_written.csv") 
 
+# for (i in 1:4) { # 指標毎の処理2   # テスト後に戻す (i in 1:ncol(df_vni))
+
+  
   for (dummyloop in 1) { # 基準年値をdf_Graphに追加する（0年値として追加）
 
     df_Graph <- df_Graph %>% rbind(df_Graph_BaseYear
@@ -195,7 +196,8 @@ for (i in 1:4) { # 指標毎の処理2   # テスト後に戻す (i in 1:ncol(df
 
   } # 指標毎の処理2
 
-# View(df_toMerge)
+dev.off() 
+
 View(df_Graph)
 write_csv(df_Graph, "./../df_Graph_written.csv") 
 
