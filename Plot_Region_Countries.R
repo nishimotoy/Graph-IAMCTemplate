@@ -183,18 +183,20 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理1   # テスト後に戻す (i i
 
   for (dummyloop in 1) { # 指標の変化率
     
-    # 指標の変化率　ChangeRate_Indicator=(I(t)-I(t-1))/I(t=BaseYear)/((t)-(t-1))
-    df_Graph <- eval(parse(text=paste0(
-      "df_Graph %>% group_by(Country
-              ) %>% arrange(Country, Year
-              ) %>% mutate(ChangeRate_",indicator,
-                "=(",indicator,"_scaled-lag(",indicator,"_scaled, n=1))/(Year-lag(Year, n=1))
-              ) %>% ungroup(
-              )")))
-    
-      } # 指標の変化率         
+      # 指標の変化率（t年比）　ChangeRate_Indicator=(I(t)-I(t-1))/({I(t)+I(t-1)}/2)/((t)-(t-1))
+      df_Graph <- eval(parse(text=paste0(
+        "df_Graph %>% group_by(Country
+                  ) %>% arrange(Country, Year
+                  ) %>% mutate(ChangeRateBY_",indicator,
+        "=(",indicator,"_scaled-lag(",indicator,"_scaled, n=1))/(Year-lag(Year, n=1))
+                  ) %>% mutate(ChangeRate_",indicator,
+        "=(",indicator,"-lag(",indicator,",n=1))/(Year-lag(Year, n=1))/(",indicator,"+lag(",indicator,",n=1))*2
+                  ) %>% ungroup(
+                  )")))
 
-  } # 指標毎の処理2
+  } # 指標の変化率         
+
+} # 指標毎の処理2
 
 dev.off() 
 
