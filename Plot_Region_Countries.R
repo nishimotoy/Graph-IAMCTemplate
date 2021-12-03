@@ -3,14 +3,16 @@ library(ggplot2)
 library(tidyverse)
 
 setwd("C:/_Nishimoto/R/WBAL_R02/2_data/REF") 
-BaseYear <- 2010  # %>% as.numeric()  # 基準年値
-Year5 <- c(0, 1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010, 2015,
-           2020, 2025, 2030, 2035, 2040, 2045, 2050, 2055, 2060, 2065,
-           2070, 2075, 2080, 2085, 2090, 2095, 2100) # %>% as.character()
 Titlerow1 <- c('MODEL','SCENARIO','REGION','VARIABLE','UNIT')
-Titlerow2 <- c('REGION','Country','VARIABLE') # 'SCENARIO'は別
+Titlerow2 <- c('REGION','Country','VARIABLE','SCENARIO')
 Titlerow3 <- c('SCENARIO','Country')
 scenarioname <- 'Baseline'  # 読込対象の将来シナリオ（今は読込の時点でシナリオを絞っている）
+BaseYear <- 2010  # %>% as.numeric()  # 基準年値
+Sample_Country <- c('Former Soviet Union','Former Yugoslavia','South Sudan','Bosnia and Herzegovina')  # GDP(2010)が無い国
+Interpolate_NA <- 'fill_latest_or_first_existing_value'
+Year5 <- c(0, 1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010, 2015,
+           2020, 2025, 2030, 2035, 2040, 2045, 2050, 2055, 2060, 2065,
+           2070, 2075, 2080, 2085, 2090, 2095, 2100) # %>% as.character() # 0 as Base-Year
 
 while (0) {
   # 単位の連想配列＞ファイル名にマッチさせる予定
@@ -50,14 +52,72 @@ for (file.name in files) {
           ) %>% rename('Country'='REGION'
           ) %>% rename('REGION'='AIM17'
           ) %>% drop_na('REGION')  # 国コードのない行は無視
-  d <- d %>% mutate(Country = str_replace_all(Country, 
-                    pattern = c("Memo.: "="", "Memo: "="", " .if no detail."="")))
   #  d <- d[1,c(ncol(d),1:(ncol(d)-1))] # 列の入替
   df_past <- rbind(df_past, d)
 }
 df_past <- df_past %>% filter(REGION!='region')  # ダミー行のデータを削除
 df_past <- df_past %>% mutate(SCENARIO='Historical')   # 書式を揃える
-# df_past <- df_past %>% select(all_of(Titlerow2), all_of(Year5)) # 後工程でで処理する
+df_past <- df_past %>% mutate(Country = str_replace_all(Country, 
+                       pattern = c("Memo.: "="", "Memo: "="", " .if no detail."="")))
+write_csv(df_past, "./../df_past_written_everyYear.csv") # VARIABLE REGION Country 
+
+df_past_long <- df_past %>% gather(key='Year', value='Value', -all_of(Titlerow2))
+df_past_long$Year  <- as.numeric(df_past_long$Year) 
+df_past_long$Value <- as.numeric(df_past_long$Value)   # NA warning ＞ 確認済 
+
+df_past_long <- df_past_long %>% group_by(VARIABLE,Country
+      ) %>% arrange(VARIABLE, Country, Year                 
+      ) %>% mutate(Value2=Value
+      ) %>% fill(Value2, .direction='down' # 前年値を優先
+      ) %>% fill(Value2, .direction='up'   # 前年値がなければ後年値
+      ) %>% mutate(SCENARIO2=if_else(is.na(Value), Interpolate_NA, SCENARIO))
+
+View(df_past_long)
+
+df_Graph_BaseYear <- df_past_long %>% filter(Year==BaseYear
+) %>% mutate(Year=0
+) %>% select(-Value2, -SCENARIO2)
+
+
+while (0) { # 基準年データがない国の処理 for (dummyloop in 1)
+  df_past_interpolated <- eval(parse(text=paste0(
+    "df_past_long %>% group_by(Country
+              ) %>% mutate(Indicator2=",indicator,"
+              ) %>% fill(Indicator2, .direction='down' # 前年値を優先
+              ) %>% fill(Indicator2, .direction='up'   # 前年値がなければ後年値
+              ) %>% mutate(SCENARIO2=if_else(is.na(",indicator,"), Interpolate_NA, SCENARIO))")))
+  
+  df_Graph_BaseYear <- df_Graph_interpolated %>% filter(Year==BaseYear
+  ) %>% mutate(Year=0
+  ) %>% select(-Indicator2, -SCENARIO2)
+  
+  # 補完値の確認用 時系列XY散布図 by サンプル国
+  df_Graph_interpolated <- df_Graph_interpolated %>% filter(Country %in% Sample_Country)
+  g <- ggplot(df_Graph_interpolated, aes(x=Year,y=Indicator2, 
+                                         color=Country, shape=SCENARIO2)) +
+    geom_point() +
+    # theme(legend.position='none') +
+    ylab(indicator) +
+    scale_shape_manual(values=c(24,19))
+  plot(g)
+  filename <- paste("Interpolated_",indicator,"_",Interpolate_NA, sep="")
+  ggsave(file=paste("./",filename,".png", sep=""))
+  
+} # 基準年データがない国の処理
+
+for (dummyloop in 1) { # 基準年値をdf_Graphに追加する（0年値として追加）
+  
+  df_Graph <- df_Graph %>% filter(Year %in% Year5
+  ) %>% group_by(Country
+  ) %>% arrange(Country, Year)
+  df_Graph<- eval(parse(text=paste0(
+    "df_Graph %>% mutate(",indicator,"_scaled=",indicator,"/",indicator,"[Year==0]
+              ) %>% filter(Year!=0)"
+  )))                     # indicator_scaled = I(t)/I(t=BaseYear) 
+  
+} # 基準年値をdf_Graphに追加する
+
+
 
 # View(df_past)
 write_csv(df_past, "./../df_past_written_everyYear.csv") # VARIABLE REGION Country 
@@ -71,7 +131,7 @@ df_future <- df_future %>% select(-c('MODEL','UNIT')
 ) %>% filter(!REGION %in% c('ASIA2', 'World')
 ) %>% mutate(Country = REGION) # 書式を揃える #シナリオ名
 
-# IAMCTemplete の名前を IEA に揃える＠ '|'対策  
+# IAMCTemplete(future) の名前を IEA(past) に揃える＠ '|'対策  
 df_future <- df_future %>% mutate(VARIABLE = str_replace_all(VARIABLE, pattern = c(
   'GDP.MER' = 'GDP_IEA',
   'Population' = 'POP_IEA',
@@ -87,8 +147,8 @@ df_future <- df_future %>% mutate(VARIABLE = str_replace_all(VARIABLE, pattern =
 write_csv(df_future, "./../df_future_written.csv") 
 # }  # 将来シナリオの読込
 
-df_long <- rbind(gather(df_past,   key="Year", value="Value", -all_of(Titlerow2), -SCENARIO),
-                 gather(df_future, key="Year", value="Value", -all_of(Titlerow2), -SCENARIO))
+df_long <- rbind(gather(df_past,   key="Year", value="Value", -all_of(Titlerow2)),
+                 gather(df_future, key="Year", value="Value", -all_of(Titlerow2)))
 df_long$Year  <- as.numeric(df_long$Year) 
 df_long$Value <- as.numeric(df_long$Value)   # NA warning ＞ 確認済 
 write_csv(df_long, "./../df_long_written.csv")  
@@ -124,7 +184,7 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理1   # テスト後に戻す (i i
                      ) %>% arrange(Year)
     df_toMerge <- eval(parse(text=paste0("rename(df_toMerge,", variable_name,"=Value)")))
     # View(df_toMerge)
-    df_Graph <- merge(df_Graph, df_toMerge)
+    df_Graph <- df_Graph %>% full_join(df_toMerge)
   }
   df_Graph <- df_Graph %>% drop_na('REGION','Year')  # ダミー列のデータを削除
 
@@ -132,42 +192,12 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理1   # テスト後に戻す (i i
   df_Graph <- eval(parse(text=paste0(
               "df_Graph %>% mutate(",indicator,"=",numerator,"/",denominator,")")))
 
-  # 指標の基準年値 I(t=BaseYear)  # 基準年データがない国の処理
-  Sample_Country <- c('Former Soviet Union','Former Yugoslavia','South Sudan','Bosnia and Herzegovina')  # GDP(2010)が無い国
-  Interpolate_NA <- 'fill_latest_or_first_existing_value'
-  for (dummyloop in 1) { # 基準年データがない国の処理
-    df_Graph_interpolated <- eval(parse(text=paste0(
-      "df_Graph %>% group_by(Country
-              ) %>% mutate(Indicator2=",indicator,"
-              ) %>% fill(Indicator2, .direction='down' # 前年値を優先
-              ) %>% fill(Indicator2, .direction='up'   # 前年値がなければ後年値
-              ) %>% mutate(SCENARIO2=if_else(is.na(",indicator,"), Interpolate_NA, SCENARIO))")))
-
-    df_Graph_BaseYear <- df_Graph_interpolated %>% filter(Year==BaseYear
-                                             ) %>% mutate(Year=0
-                                             ) %>% select(-Indicator2, -SCENARIO2)
-
-    # 補完値の確認用 時系列XY散布図 by サンプル国
-    df_Graph_interpolated <- df_Graph_interpolated %>% filter(Country %in% Sample_Country)
-    g <- ggplot(df_Graph_interpolated, aes(x=Year,y=Indicator2, 
-          color=Country, shape=SCENARIO2)) +
-          geom_point() +
-        # theme(legend.position='none') +
-          ylab(indicator) +
-          scale_shape_manual(values=c(24,19))
-    plot(g)
-    filename <- paste("Interpolated_",indicator,"_",Interpolate_NA, sep="")
-    ggsave(file=paste("./",filename,".png", sep=""))
-
-  } # 基準年データがない国の処理
-
-# } # 指標毎の処理1
+} # 指標毎の処理1
 
 # write_csv(df_Graph, "./../df_Graph_everyYear_written.csv") 
 
-# for (i in 1:4) { # 指標毎の処理2   # テスト後に戻す (i in 1:ncol(df_vni))
+for (i in 1:4) { # 指標毎の処理2   # テスト後に戻す (i in 1:ncol(df_vni))
 
-  
   for (dummyloop in 1) { # 基準年値をdf_Graphに追加する（0年値として追加）
 
     df_Graph <- df_Graph %>% rbind(df_Graph_BaseYear
