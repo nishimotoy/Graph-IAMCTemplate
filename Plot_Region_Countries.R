@@ -2,17 +2,20 @@
 library(ggplot2)
 library(tidyverse)
 
-setwd("C:/_Nishimoto/R/WBAL_R02/2_data/REF") 
+root <- 'C:/_Nishimoto/R/WBAL_R02/'
 Titlerow1 <- c('MODEL','SCENARIO','REGION','VARIABLE','UNIT')
 Titlerow2 <- c('REGION','Country','VARIABLE','SCENARIO')
 Titlerow3 <- c('SCENARIO','Country')
 scenarioname <- 'Baseline'  # 読込対象の将来シナリオ（今は読込の時点でシナリオを絞っている）
 BaseYear <- 2010  # %>% as.numeric()  # 基準年値
 Sample_Country <- c('Former Soviet Union','Former Yugoslavia','South Sudan','Bosnia and Herzegovina')  # GDP(2010)が無い国
-Interpolate_NA <- 'fill_latest_or_first_existing_value'
-Year5 <- c(0, 1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010, 2015,
+Interpolate_NA <- 'fill'   # 'fill_latest_or_first_existing_value'
+Year5 <- c(1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010, 2015,
            2020, 2025, 2030, 2035, 2040, 2045, 2050, 2055, 2060, 2065,
-           2070, 2075, 2080, 2085, 2090, 2095, 2100) # %>% as.character() # 0 as Base-Year
+           2070, 2075, 2080, 2085, 2090, 2095, 2100) # %>% as.character() 
+# Year==0 as Base-Year
+
+setwd(paste(root,"2_data/REF", sep="")) 
 
 while (0) {
   # 単位の連想配列＞ファイル名にマッチさせる予定
@@ -40,12 +43,12 @@ df_past <- df_past[1,c(ncol(df_past),ncol(df_past)-1,1:(ncol(df_past)-2))] # 列
 
 # 1ファイル毎に追加
 files  <- list.files()    # 指定ディレクトリのファイル一覧を代入
-for (file.name in files) {
-  if ( regexpr('\\.csv$', file.name) < 0 ) { next } 
-  d  <- read_csv(file.name)  # ファイルを仮変数に読み込む
-  file.name <- gsub(".csv", "", file.name)
+for (file_name in files) {
+  if ( regexpr('\\.csv$', file_name) < 0 ) { next } 
+  d  <- read_csv(file_name)  # ファイルを仮変数に読み込む
+  file_name <- gsub(".csv", "", file_name)
   d  <- d %>% rename(REGION=TIME
-        ) %>% mutate(VARIABLE=file.name)
+        ) %>% mutate(VARIABLE=file_name)
   
   # 国コード付与
   d  <- d   %>% mutate(AIM17=Region_Code[d$REGION]
@@ -55,83 +58,64 @@ for (file.name in files) {
   #  d <- d[1,c(ncol(d),1:(ncol(d)-1))] # 列の入替
   df_past <- rbind(df_past, d)
 }
+setwd(paste(root,"5_test/", sep="")) 
+
 df_past <- df_past %>% filter(REGION!='region')  # ダミー行のデータを削除
 df_past <- df_past %>% mutate(SCENARIO='Historical')   # 書式を揃える
 df_past <- df_past %>% mutate(Country = str_replace_all(Country, 
                        pattern = c("Memo.: "="", "Memo: "="", " .if no detail."="")))
-write_csv(df_past, "./../df_past_written_everyYear.csv") # VARIABLE REGION Country 
+write_csv(df_past, "./df_past_written_everyYear.csv") # VARIABLE REGION Country 
 
 df_past_long <- df_past %>% gather(key='Year', value='Value', -all_of(Titlerow2))
 df_past_long$Year  <- as.numeric(df_past_long$Year) 
 df_past_long$Value <- as.numeric(df_past_long$Value)   # NA warning ＞ 確認済 
+
+# 基準年データがない国の処理 for (dummyloop in 1) { 
 
 df_past_long <- df_past_long %>% group_by(VARIABLE,Country
       ) %>% arrange(VARIABLE, Country, Year                 
       ) %>% mutate(Value2=Value
       ) %>% fill(Value2, .direction='down' # 前年値を優先
       ) %>% fill(Value2, .direction='up'   # 前年値がなければ後年値
-      ) %>% mutate(SCENARIO2=if_else(is.na(Value), Interpolate_NA, SCENARIO))
-
-View(df_past_long)
-
-df_Graph_BaseYear <- df_past_long %>% filter(Year==BaseYear
-) %>% mutate(Year=0
-) %>% select(-Value2, -SCENARIO2)
-
-
-while (0) { # 基準年データがない国の処理 for (dummyloop in 1)
-  df_past_interpolated <- eval(parse(text=paste0(
-    "df_past_long %>% group_by(Country
-              ) %>% mutate(Indicator2=",indicator,"
-              ) %>% fill(Indicator2, .direction='down' # 前年値を優先
-              ) %>% fill(Indicator2, .direction='up'   # 前年値がなければ後年値
-              ) %>% mutate(SCENARIO2=if_else(is.na(",indicator,"), Interpolate_NA, SCENARIO))")))
+      ) %>% mutate(SCENARIO2=if_else(is.na(Value), Interpolate_NA, SCENARIO)
+      ) %>% ungroup()
   
-  df_Graph_BaseYear <- df_Graph_interpolated %>% filter(Year==BaseYear
-  ) %>% mutate(Year=0
-  ) %>% select(-Indicator2, -SCENARIO2)
-  
-  # 補完値の確認用 時系列XY散布図 by サンプル国
-  df_Graph_interpolated <- df_Graph_interpolated %>% filter(Country %in% Sample_Country)
-  g <- ggplot(df_Graph_interpolated, aes(x=Year,y=Indicator2, 
+df_past_BaseYear <- df_past_long %>% filter(Year==BaseYear
+      ) %>% mutate(Year=0)
+
+pdf(file=paste("./","past_filled.pdf", sep=""))   # PDF出力開始
+for (y_name in unique(df_past_long$VARIABLE)) { # 補完値の確認出力 by サンプル国
+  df_Graph_past <- df_past_long %>% filter(Country %in% Sample_Country
+                              ) %>% filter(VARIABLE==y_name)
+  g <- ggplot(df_Graph_past, aes(x=Year,y=Value2, 
                                          color=Country, shape=SCENARIO2)) +
     geom_point() +
     # theme(legend.position='none') +
-    ylab(indicator) +
+    ylab(y_name) +
     scale_shape_manual(values=c(24,19))
-  plot(g)
-  filename <- paste("Interpolated_",indicator,"_",Interpolate_NA, sep="")
-  ggsave(file=paste("./",filename,".png", sep=""))
-  
-} # 基準年データがない国の処理
+#  plot(g)
+  filename <- paste("Interpolated_",y_name,"_",Interpolate_NA, sep="")
+  ggsave(file=paste("./png/",filename,".png", sep=""))
+}  
+dev.off() # PDF出力終了
 
-for (dummyloop in 1) { # 基準年値をdf_Graphに追加する（0年値として追加）
-  
-  df_Graph <- df_Graph %>% filter(Year %in% Year5
-  ) %>% group_by(Country
-  ) %>% arrange(Country, Year)
-  df_Graph<- eval(parse(text=paste0(
-    "df_Graph %>% mutate(",indicator,"_scaled=",indicator,"/",indicator,"[Year==0]
-              ) %>% filter(Year!=0)"
-  )))                     # indicator_scaled = I(t)/I(t=BaseYear) 
-  
-} # 基準年値をdf_Graphに追加する
+# 基準年データがない国の処理 } 
 
-
-
-# View(df_past)
-write_csv(df_past, "./../df_past_written_everyYear.csv") # VARIABLE REGION Country 
+write_csv(df_past_long, "./df_past_long_written_everyYear.csv") # VARIABLE REGION Country 
+write_csv(df_past, "./df_past_written_everyYear.csv") # VARIABLE REGION Country 
 
 # while (0) {  # 将来シナリオの読込
-df_future <- read_csv("C:/_Nishimoto/R/WBAL_R02/2_data/REF2/IAMCTemplate.csv")
+df_future <- read_csv(paste(root,"2_data/REF2/","IAMCTemplate.csv", sep=""))
 # View(df_future)
 
 df_future <- df_future %>% select(-c('MODEL','UNIT')
 ) %>% filter(SCENARIO == scenarioname # rbind前にシナリオを絞る場合
 ) %>% filter(!REGION %in% c('ASIA2', 'World')
-) %>% mutate(Country = REGION) # 書式を揃える #シナリオ名
+) %>% mutate(Country = REGION)   # 書式を揃える # 国名=地域名
 
-# IAMCTemplete(future) の名前を IEA(past) に揃える＠ '|'対策  
+df_future <- df_future %>% mutate('0'=as.numeric(df_future$'2010')) # 基準年値をコピーしておく
+
+# IAMCTemplete(future) の名前を IEA(past) に揃える＠ '|'対策  # recode でも出来るらしい
 df_future <- df_future %>% mutate(VARIABLE = str_replace_all(VARIABLE, pattern = c(
   'GDP.MER' = 'GDP_IEA',
   'Population' = 'POP_IEA',
@@ -144,14 +128,18 @@ df_future <- df_future %>% mutate(VARIABLE = str_replace_all(VARIABLE, pattern =
   'Final Energy.Commercial.Electricity' = 'TFC_Elec_Com',
   'Final Energy' = 'TFC_Total_Total' )))
 # View(df_future)
-write_csv(df_future, "./../df_future_written.csv") 
+write_csv(df_future, "./df_future_written.csv") 
 # }  # 将来シナリオの読込
 
-df_long <- rbind(gather(df_past,   key="Year", value="Value", -all_of(Titlerow2)),
-                 gather(df_future, key="Year", value="Value", -all_of(Titlerow2)))
+df_long_past <- df_past_long %>% rbind(df_past_BaseYear) 
+df_long_past <- df_long_past %>% select(-Value2, -SCENARIO2
+                      ) %>% filter(Year %in% c(Year5, 0))
+df_long_future <- gather(df_future, key=Year, value=Value, -all_of(Titlerow2))
+df_long_future$Year  <- as.numeric(df_long_future$Year) 
+df_long <- rbind(df_long_past, df_long_future)
 df_long$Year  <- as.numeric(df_long$Year) 
 df_long$Value <- as.numeric(df_long$Value)   # NA warning ＞ 確認済 
-write_csv(df_long, "./../df_long_written.csv")  
+write_csv(df_long, "./df_long_written.csv")  
 
 # 指標の処理  # Variable_Names_for_Indicators df_vni <- indicator, numerator, denominator
 df_vni <- matrix(c(
@@ -169,11 +157,8 @@ for (dummyloop in 1) {  # 国名のみのダミー列の作成
   df_Graph <- df_long %>% select(c('Country')) %>% arrange(Country) %>% distinct() 
 }  # ダミー列の作成
 
-setwd("C:/_Nishimoto/R/WBAL_R02/4_output/test/") 
-pdf(file=paste("./","Interpolated_XY.pdf", sep=""))   # 出力準備
-
 for (i in 1:ncol(df_vni)) { # 指標毎の処理1   # テスト後に戻す (i in 1:ncol(df_vni))
-  
+  # i  <- 2
   indicator   <- df_vni[1,i]
   numerator   <- df_vni[2,i]
   denominator <- df_vni[3,i]
@@ -182,58 +167,46 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理1   # テスト後に戻す (i i
     df_toMerge <- df_long %>% filter(VARIABLE==variable_name
                      ) %>% select(-c('VARIABLE')
                      ) %>% arrange(Year)
-    df_toMerge <- eval(parse(text=paste0("rename(df_toMerge,", variable_name,"=Value)")))
-    # View(df_toMerge)
-    df_Graph <- df_Graph %>% full_join(df_toMerge)
+    df_toMerge <- eval(parse(text=paste0("df_toMerge %>% rename(",variable_name,"=Value)")))
+    View(df_toMerge)
+    df_Graph <- df_Graph %>% merge(df_toMerge)
   }
   df_Graph <- df_Graph %>% drop_na('REGION','Year')  # ダミー列のデータを削除
-
-  # 指標の算出
   df_Graph <- eval(parse(text=paste0(
-              "df_Graph %>% mutate(",indicator,"=",numerator,"/",denominator,")")))
-
-} # 指標毎の処理1
-
-# write_csv(df_Graph, "./../df_Graph_everyYear_written.csv") 
-
-for (i in 1:4) { # 指標毎の処理2   # テスト後に戻す (i in 1:ncol(df_vni))
+              "df_Graph %>% mutate(",indicator,"=",numerator,"/",denominator,")"))) # 指標の算出
 
   for (dummyloop in 1) { # 基準年値をdf_Graphに追加する（0年値として追加）
-
-    df_Graph <- df_Graph %>% rbind(df_Graph_BaseYear
-                       ) %>% filter(Year %in% Year5
-                       ) %>% group_by(Country
-                       ) %>% arrange(Country, Year)
-    df_Graph<- eval(parse(text=paste0(
-      "df_Graph %>% mutate(",indicator,"_scaled=",indicator,"/",indicator,"[Year==0]
-              ) %>% filter(Year!=0)"
-    )))                     # indicator_scaled = I(t)/I(t=BaseYear) 
-
-  } # 基準年値をdf_Graphに追加する
-
-  for (dummyloop in 1) { # 指標の変化率
     
-      # 指標の変化率（t年比）　ChangeRate_Indicator=(I(t)-I(t-1))/({I(t)+I(t-1)}/2)/((t)-(t-1))
-      df_Graph <- eval(parse(text=paste0(
-        "df_Graph %>% group_by(Country
-                  ) %>% arrange(Country, Year
-                  ) %>% mutate(ChangeRateBY_",indicator,
+    df_Graph <- df_Graph %>% group_by(Country) %>% arrange(Country, Year)
+    df_Graph<- eval(parse(text=paste0(
+      "df_Graph %>% mutate(",indicator,"_scaled=",indicator,"/",indicator,"[Year==0])"
+    )))                     # indicator_scaled = I(t)/I(t=BaseYear) 
+    
+  } # 基準年値をdf_Graphに追加する
+  
+} # 指標毎の処理1
+
+write_csv(df_Graph, "./df_Graph_aftermerge_written.csv") 
+df_Graph <- df_Graph %>% filter(Year!=0) %>% group_by(Country) %>% arrange(Country, Year)
+
+for (i in 1:ncol(df_vni)) { # 指標毎の処理2   # テスト後に戻す (i in 1:ncol(df_vni))
+
+  indicator   <- df_vni[1,i]
+  
+  # 指標の変化率（t年比）　ChangeRate_Indicator=(I(t)-I(t-1))/({I(t)+I(t-1)}/2)/((t)-(t-1))
+  df_Graph <- eval(parse(text=paste0(
+        "df_Graph %>%  mutate(ChangeRateBY_",indicator,
         "=(",indicator,"_scaled-lag(",indicator,"_scaled, n=1))/(Year-lag(Year, n=1))
                   ) %>% mutate(ChangeRate_",indicator,
         "=(",indicator,"-lag(",indicator,",n=1))/(Year-lag(Year, n=1))/(",indicator,"+lag(",indicator,",n=1))*2
-                  ) %>% ungroup(
                   )")))
-
-  } # 指標の変化率         
 
 } # 指標毎の処理2
 
-dev.off() 
-
+df_Graph <- df_Graph %>% ungroup() %>% group_by(REGION)
 View(df_Graph)
-write_csv(df_Graph, "./../df_Graph_written.csv") 
+write_csv(df_Graph, "./df_Graph_written.csv") 
 
-setwd("C:/_Nishimoto/R/WBAL_R02/4_output/test/") 
 for (dummyloop in 1) {  # グラフ出力 while (0)
 
   # scenarionames <- c('Baseline','2C')    # c('Baseline','2C','1.5C','2.5C','WB2C')
@@ -339,3 +312,4 @@ for (dummyloop in 1) {  # グラフ出力 while (0)
     
   }
 } # グラフ出力
+
