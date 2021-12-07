@@ -164,12 +164,12 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理1   # テスト後に戻す (i i
   denominator <- df_vni[3,i]
 
   for (variable_name in c(numerator, denominator)) {
-    df_toMerge <- df_long %>% filter(VARIABLE==variable_name
+    df_toJoin <- df_long %>% filter(VARIABLE==variable_name
                      ) %>% select(-c('VARIABLE')
                      ) %>% arrange(Year)
-    df_toMerge <- eval(parse(text=paste0("df_toMerge %>% rename(",variable_name,"=Value)")))
-    View(df_toMerge)
-    df_Graph <- df_Graph %>% merge(df_toMerge)
+    df_toJoin <- eval(parse(text=paste0("df_toJoin %>% rename(",variable_name,"=Value)")))
+    View(df_toJoin)
+    df_Graph <- df_Graph %>% full_join(df_toJoin)
   }
   df_Graph <- df_Graph %>% drop_na('REGION','Year')  # ダミー列のデータを削除
   df_Graph <- eval(parse(text=paste0(
@@ -186,7 +186,7 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理1   # テスト後に戻す (i i
   
 } # 指標毎の処理1
 
-write_csv(df_Graph, "./df_Graph_aftermerge_written.csv") 
+write_csv(df_Graph, "./df_Graph_afterfulljoin_written.csv") 
 df_Graph <- df_Graph %>% filter(Year!=0) %>% group_by(Country) %>% arrange(Country, Year)
 
 for (i in 1:ncol(df_vni)) { # 指標毎の処理2   # テスト後に戻す (i in 1:ncol(df_vni))
