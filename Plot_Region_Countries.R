@@ -93,7 +93,7 @@ for (y_name in unique(df_past_long$VARIABLE)) { # 補完値の確認出力 by �
     # theme(legend.position='none') +
     ylab(y_name) +
     scale_shape_manual(values=c(24,19))
-#  plot(g)
+  plot(g)
   filename <- paste("Interpolated_",y_name,"_",Interpolate_NA, sep="")
   ggsave(file=paste("./png/",filename,".png", sep=""))
 }  
@@ -216,8 +216,8 @@ for (dummyloop in 1) {  # グラフ出力 while (0)
   indicators <- c('GDP_Capita',
                   'Energy_Intensity','Energy_Intensity_scaled','ChangeRate_Energy_Intensity',
                   'Carbon_Intensity','Carbon_Intensity_scaled','ChangeRate_Carbon_Intensity',
-                  'Electricity_Rate_Total','Electricity_Rate_Total_scaled','ChangeRate_Electricity_Rate_Total')
-  #'Electricity_Rate_Ind','Electricity_Rate_Ind_scaled','ChangeRate_Electricity_Rate_Ind')
+                  'Electricity_Rate_Total','Electricity_Rate_Total_scaled','ChangeRate_Electricity_Rate_Total') 
+#                 'Electricity_Rate_Ind','Electricity_Rate_Ind_scaled','ChangeRate_Electricity_Rate_Ind')
 
   # 出力対象のXY軸を指定する　x_names(n) vs y_names(n)のグラフが出力される
   
@@ -244,7 +244,7 @@ for (dummyloop in 1) {  # グラフ出力 while (0)
           scale_shape_manual(values=c(19,21))")))
       plot(g)
       filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
-      ggsave(file=paste("./png/",filename,".png"))
+      ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
     }
     dev.off() 
     
@@ -261,7 +261,7 @@ for (dummyloop in 1) {  # グラフ出力 while (0)
           scale_shape_manual(values=c(19,21))")))
       plot(g)
       filename <- paste(scenarioname,"_",num,"_",x_names[num],"-",y_names[num],"_CN", sep="")
-      ggsave(file=paste("./png/",filename,".png"))
+      ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
     }
     dev.off() 
     
@@ -276,7 +276,7 @@ for (dummyloop in 1) {  # グラフ出力 while (0)
           geom_jitter(shape=20, position=position_dodge(0.8))")))
       plot(g)
       filename <- paste(scenarioname,"_","boxplot_",indicator, sep="")
-      ggsave(file=paste("./png/",filename,".png", sep=""), width=6, height=4, dpi=100)
+      ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
     }
     dev.off() 
     
@@ -291,7 +291,7 @@ for (dummyloop in 1) {  # グラフ出力 while (0)
           ylab('Count of Region-Year')")))
       plot(g)
       filename <- paste(scenarioname,"_","histogram_",indicator, sep="")
-      ggsave(file=paste("./png/",filename,".png", sep=""), width=6, height=4, dpi=100)
+      ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
     }
     dev.off() 
     
@@ -303,10 +303,10 @@ for (dummyloop in 1) {  # グラフ出力 while (0)
         "ggplot(df_Graph, aes(x=",indicator, 
         ",color=SCENARIO)) +
           geom_density() +
-          ylab('Density (Count scaled to 1) of Region-Year')")))
+          ylab('Density (Counts scaled to 1) of Region-Year')")))
       plot(g)
       filename <- paste(scenarioname,"_","density_",indicator, sep="")
-      ggsave(file=paste("./png/",filename,".png", sep=""), width=6, height=4, dpi=100)
+      ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
     }
     dev.off() 
     
