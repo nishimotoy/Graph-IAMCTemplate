@@ -1,4 +1,4 @@
-#Packages------------------------------------------------------
+# Packages ------------------------------------------------------
 library(ggplot2)
 library(tidyverse)
 
@@ -6,7 +6,7 @@ root <- 'C:/_Nishimoto/R/WBAL_R02/'
 Titlerow1 <- c('MODEL','SCENARIO','REGION','VARIABLE','UNIT')
 Titlerow2 <- c('REGION','Country','VARIABLE','SCENARIO')
 Titlerow3 <- c('SCENARIO','Country')
-scenarioname <- 'Baseline'  # 読込対象の将来シナリオ（今は読込の時点でシナリオを絞っている）
+scenarioname <- '2C'  # 読込対象の将来シナリオ（今は読込の時点でシナリオを絞っている）
 BaseYear <- 2010  # %>% as.numeric()  # 基準年値
 Sample_Country <- c('Former Soviet Union','Former Yugoslavia','South Sudan','Bosnia and Herzegovina')  # GDP(2010)が無い国
 Interpolate_NA <- 'fill'   # 'fill_latest_or_first_existing_value'
@@ -15,6 +15,7 @@ Year5 <- c(1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010, 2015,
            2070, 2075, 2080, 2085, 2090, 2095, 2100) # %>% as.character() 
 # Year==0 as Base-Year
 
+# Past ------------------------------------------------------
 setwd(paste(root,"2_data/REF", sep="")) 
 
 while (0) {
@@ -70,6 +71,7 @@ df_past_long <- df_past %>% gather(key='Year', value='Value', -all_of(Titlerow2)
 df_past_long$Year  <- as.numeric(df_past_long$Year) 
 df_past_long$Value <- as.numeric(df_past_long$Value)   # NA warning ＞ 確認済 
 
+# Fill past ------------------------------------------------------
 # 基準年データがない国の処理 for (dummyloop in 1) { 
 
 df_past_long <- df_past_long %>% group_by(VARIABLE,Country
@@ -104,6 +106,7 @@ dev.off() # PDF出力終了
 write_csv(df_past_long, "./df_past_long_written_everyYear.csv") # VARIABLE REGION Country 
 write_csv(df_past, "./df_past_written_everyYear.csv") # VARIABLE REGION Country 
 
+# Future ------------------------------------------------------
 # while (0) {  # 将来シナリオの読込
 df_future <- read_csv(paste(root,"2_data/REF2/","IAMCTemplate.csv", sep=""))
 # View(df_future)
@@ -131,6 +134,7 @@ df_future <- df_future %>% mutate(VARIABLE = str_replace_all(VARIABLE, pattern =
 write_csv(df_future, "./df_future_written.csv") 
 # }  # 将来シナリオの読込
 
+# Connect Past & Future ------------------------------------------------------
 df_long_past <- df_past_long %>% rbind(df_past_BaseYear) 
 df_long_past <- df_long_past %>% select(-Value2, -SCENARIO2
                       ) %>% filter(Year %in% c(Year5, 0))
@@ -141,6 +145,7 @@ df_long$Year  <- as.numeric(df_long$Year)
 df_long$Value <- as.numeric(df_long$Value)   # NA warning ＞ 確認済 
 write_csv(df_long, "./df_long_written.csv")  
 
+# Table format and Indicator  ------------------------------------------------------
 # 指標の処理  # Variable_Names_for_Indicators df_vni <- indicator, numerator, denominator
 df_vni <- matrix(c(
   'GDP_Capita',    'GDP_IEA', 'POP_IEA', 
@@ -189,6 +194,7 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理1   # テスト後に戻す (i i
 write_csv(df_Graph, "./df_Graph_afterfulljoin_written.csv") 
 df_Graph <- df_Graph %>% filter(Year!=0) %>% group_by(Country) %>% arrange(Country, Year)
 
+# Change rate ------------------------------------------------------
 for (i in 1:ncol(df_vni)) { # 指標毎の処理2   # テスト後に戻す (i in 1:ncol(df_vni))
 
   indicator   <- df_vni[1,i]
@@ -210,7 +216,7 @@ write_csv(df_Graph, "./df_Graph_written.csv")
 for (dummyloop in 1) {  # グラフ出力 while (0)
 
   # scenarionames <- c('Baseline','2C')    # c('Baseline','2C','1.5C','2.5C','WB2C')
-  scenarionames <- c('Baseline')
+  # scenarionames <- unique(df_Graph$SCENARIO)
   # indicators <- c('GDP_Capita') # テスト中
   
   indicators <- c('GDP_Capita',
@@ -230,7 +236,7 @@ for (dummyloop in 1) {  # グラフ出力 while (0)
                indicators[-1])
   y2_names <- indicators[c(4,7,10)]
   
-  for (scenarioname in scenarionames) {
+# for (scenarioname in scenarionames) {
     
     # XY散布図 by 17地域
     pdf(file=paste("./",scenarioname,"_XY.pdf", sep=""))    
@@ -310,6 +316,6 @@ for (dummyloop in 1) {  # グラフ出力 while (0)
     }
     dev.off() 
     
-  }
+# } # scenarioname loop
 } # グラフ出力
 
