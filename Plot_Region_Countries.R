@@ -62,7 +62,7 @@ for (file_name in files) {
 setwd(paste(root,"5_test/", sep="")) 
 
 df_past <- df_past %>% filter(REGION!='region')  # ダミー行のデータを削除
-df_past <- df_past %>% mutate(SCENARIO='_Historical')   # 書式を揃える
+df_past <- df_past %>% mutate(SCENARIO='Historical')   # 書式を揃える
 df_past <- df_past %>% mutate(Country = str_replace_all(Country, 
                        pattern = c("Memo.: "="", "Memo: "="", " .if no detail."="")))
 write_csv(df_past, "./df_past_written_everyYear.csv") # VARIABLE REGION Country 
@@ -211,10 +211,11 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理2   # テスト後に戻す (i i
 } # 指標毎の処理2
 
 df_Graph <- df_Graph %>% ungroup() %>% group_by(REGION,SCENARIO)
+df_Graph$SCENARIO <- factor(df_Graph$SCENARIO, levels=c('WB2C','1.5C','2C','2.5C','Baseline','Historical'))
 View(df_Graph)
 write_csv(df_Graph, "./df_Graph_written.csv") 
 
-# Graph output ------------------------------------------------------
+#Graph output ------------------------------------------------------
 for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
 
   # indicators <- c('GDP_Capita') # テスト中
@@ -222,37 +223,36 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
   indicators <- c('GDP_Capita', 
                   'Energy_Intensity_scaled','ChangeRate_Energy_Intensity',
                   'Carbon_Intensity_scaled','ChangeRate_Carbon_Intensity',
-                  'Electricity_Rate_Total_scaled','ChangeRate_Electricity_Rate_Total') 
+                  'Electricity_Rate_Total_scaled','ChangeRate_Electricity_Rate_Total','Electricity_Rate_Total') 
 #                 'Electricity_Rate_Ind','Electricity_Rate_Ind_scaled','ChangeRate_Electricity_Rate_Ind')
 #                 'Energy_Intensity','Carbon_Intensity','Electricity_Rate_Total',
   
   # 出力対象のXY軸を指定する　x_names(n) vs y_names(n)のグラフが出力される
   
   x_names <- c(rep('Year',length(indicators)),
-               rep('GDP_Capita',length(indicators)-1),
-               rep('REGION',length(indicators)-1)
+               rep('REGION',length(indicators)),
+               rep('GDP_Capita',length(indicators)-1)
   )
   y_names <- c(indicators,
-               indicators[-1],
+               indicators,
                indicators[-1])
   y2_names <- indicators[c(4,7,10)]
 
-  # scenarionames <- unique(df_Graph$SCENARIO)    # c('Baseline','2C','1.5C','2.5C','WB2C') # '_Historical'
+  # scenarionames <- unique(df_Graph$SCENARIO)    # c('Baseline','2C','1.5C','2.5C','WB2C') # 'Historical'
   scenarionames <- c('Multi') 
   for (scenarioname in scenarionames) { 
     if (scenarioname=='Multi') { 
         df_Graph_plot <- df_Graph
-    } else if (scenarioname=='_Historical') { 
-        df_Graph_plot <- df_Graph %>% filter(SCENARIO=='_Historical')
+    } else if (scenarioname=='Historical') { 
+        df_Graph_plot <- df_Graph %>% filter(SCENARIO=='Historical')
     } else {
       df_Graph_plot <- rbind(filter(df_Graph, SCENARIO==scenarioname),
-                             filter(df_Graph, SCENARIO=='_Historical'))
+                             filter(df_Graph, SCENARIO=='Historical'))
     }
     
     for (dummyloop in 1) { # XY散布図 by 17地域
       pdf(file=paste("./",scenarioname,"_XY.pdf", sep=""))    
       for (num in 1:length(x_names)) {
-        
         g <- eval(parse(text=paste0(
           "ggplot(df_Graph_plot, aes(x=",x_names[num],",y=",y_names[num], 
           ",color=REGION, shape=SCENARIO)) +
@@ -266,28 +266,10 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
       dev.off() 
     } # XY散布図 by 17地域
     
-    for (dummyloop in 1) { # XY散布図 by 国別
-      pdf(file=paste("./",scenarioname,"_XY_Country.pdf", sep=""))    
-      for (num in 1:length(x_names)) {
-        
-        g <- eval(parse(text=paste0(
-          "ggplot(df_Graph_plot, aes(x=",x_names[num],",y=",y_names[num], 
-          ",color=Country, shape=SCENARIO)) +
-            geom_line() +
-            geom_point() +
-            theme(legend.position='none') +
-            scale_shape_manual(values=c(19,21,21,21,21,21))")))
-        plot(g)
-        filename <- paste(scenarioname,"_",num,"_",x_names[num],"-",y_names[num],"_CN", sep="")
-        ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
-      }
-      dev.off() 
-    } # XY散布図 by 国別
     
     # 箱ヒゲ図
     pdf(file=paste("./",scenarioname,"_boxplot.pdf", sep=""))    
     for (indicator in indicators) {
-      
       g <- eval(parse(text=paste0(
         "ggplot(df_Graph_plot, aes(x=","REGION",",y=",indicator, 
         ",color=SCENARIO)) +
@@ -302,7 +284,6 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
     # 頻度分布
     pdf(file=paste("./",scenarioname,"_histogram.pdf", sep=""))    
     for (indicator in indicators) {
-      
       g <- eval(parse(text=paste0(
         "ggplot(df_Graph_plot, aes(x=",indicator, 
         ",color=SCENARIO)) +
@@ -317,18 +298,35 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
     # 確率密度分布
     pdf(file=paste("./",scenarioname,"_density.pdf", sep=""))    
     for (indicator in indicators) {
-      
       g <- eval(parse(text=paste0(
         "ggplot(df_Graph_plot, aes(x=",indicator, 
         ",color=SCENARIO)) +
           geom_density() +
-        # xlim(-0.2,0.2) +
+          xlim(-0.2,0.2) +
           ylab('Density (Counts scaled to 1) of Region-Year')")))
       plot(g)
       filename <- paste(scenarioname,"_","density_",indicator, sep="")
       ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
     }
     dev.off() 
+
+    for (dummyloop in 1) { # XY散布図 by 国別
+      df_Graph_plot <- df_Graph_plot %>% ungroup() %>% group_by(Country,SCENARIO)
+      pdf(file=paste("./",scenarioname,"_XY_Country.pdf", sep=""))    
+      for (num in 1:length(x_names)) {
+        g <- eval(parse(text=paste0(
+          "ggplot(df_Graph_plot, aes(x=",x_names[num],",y=",y_names[num], 
+          ",color=REGION, shape=SCENARIO)) +
+            geom_line() +
+            geom_point() +
+          # theme(legend.position='none') +
+            scale_shape_manual(values=c(19,21,21,21,21,21))")))
+        plot(g)
+        filename <- paste(scenarioname,"_",num,"_",x_names[num],"-",y_names[num],"_CN", sep="")
+        ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
+      }
+      dev.off() 
+    } # XY散布図 by 国別
     
   } # scenarioname loop
 } # グラフ出力
