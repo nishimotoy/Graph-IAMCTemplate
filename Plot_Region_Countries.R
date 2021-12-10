@@ -6,7 +6,7 @@ root <- 'C:/_Nishimoto/R/WBAL_R02/'
 Titlerow1 <- c('MODEL','SCENARIO','REGION','VARIABLE','UNIT')
 Titlerow2 <- c('REGION','Country','VARIABLE','SCENARIO')
 Titlerow3 <- c('SCENARIO','Country')
-scenarioname <- '2C'  # 読込対象の将来シナリオ（今は読込の時点でシナリオを絞っている）
+scenarioname <- 'Baseline'  # 読込対象の将来シナリオ（今は読込の時点でシナリオを絞っている）
 BaseYear <- 2010  # %>% as.numeric()  # 基準年値
 Sample_Country <- c('Former Soviet Union','Former Yugoslavia','South Sudan','Bosnia and Herzegovina')  # GDP(2010)が無い国
 Interpolate_NA <- 'fill'   # 'fill_latest_or_first_existing_value'
@@ -62,7 +62,7 @@ for (file_name in files) {
 setwd(paste(root,"5_test/", sep="")) 
 
 df_past <- df_past %>% filter(REGION!='region')  # ダミー行のデータを削除
-df_past <- df_past %>% mutate(SCENARIO='Historical')   # 書式を揃える
+df_past <- df_past %>% mutate(SCENARIO='_Historical')   # 書式を揃える
 df_past <- df_past %>% mutate(Country = str_replace_all(Country, 
                        pattern = c("Memo.: "="", "Memo: "="", " .if no detail."="")))
 write_csv(df_past, "./df_past_written_everyYear.csv") # VARIABLE REGION Country 
@@ -112,7 +112,7 @@ df_future <- read_csv(paste(root,"2_data/REF2/","IAMCTemplate.csv", sep=""))
 # View(df_future)
 
 df_future <- df_future %>% select(-c('MODEL','UNIT')
-) %>% filter(SCENARIO == scenarioname # rbind前にシナリオを絞る場合
+# ) %>% filter(SCENARIO == scenarioname # rbind前にシナリオを絞る場合
 ) %>% filter(!REGION %in% c('ASIA2', 'World')
 ) %>% mutate(Country = REGION)   # 書式を揃える # 国名=地域名
 
@@ -182,7 +182,7 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理1   # テスト後に戻す (i i
 
   for (dummyloop in 1) { # 基準年値をdf_Graphに追加する（0年値として追加）
     
-    df_Graph <- df_Graph %>% group_by(Country) %>% arrange(Country, Year)
+    df_Graph <- df_Graph %>% group_by(SCENARIO,Country) %>% arrange(SCENARIO,Country, Year)
     df_Graph<- eval(parse(text=paste0(
       "df_Graph %>% mutate(",indicator,"_scaled=",indicator,"/",indicator,"[Year==0])"
     )))                     # indicator_scaled = I(t)/I(t=BaseYear) 
@@ -192,7 +192,7 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理1   # テスト後に戻す (i i
 } # 指標毎の処理1
 
 write_csv(df_Graph, "./df_Graph_afterfulljoin_written.csv") 
-df_Graph <- df_Graph %>% filter(Year!=0) %>% group_by(Country) %>% arrange(Country, Year)
+df_Graph <- df_Graph %>% filter(Year!=0) %>% group_by(SCENARIO,Country) %>% arrange(Country, Year)
 
 # Change rate ------------------------------------------------------
 for (i in 1:ncol(df_vni)) { # 指標毎の処理2   # テスト後に戻す (i in 1:ncol(df_vni))
@@ -204,27 +204,28 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理2   # テスト後に戻す (i i
         "df_Graph %>%  mutate(ChangeRateBY_",indicator,
         "=(",indicator,"_scaled-lag(",indicator,"_scaled, n=1))/(Year-lag(Year, n=1))
                   ) %>% mutate(ChangeRate_",indicator,
+        
         "=(",indicator,"-lag(",indicator,",n=1))/(Year-lag(Year, n=1))/(",indicator,"+lag(",indicator,",n=1))*2
                   )")))
 
 } # 指標毎の処理2
 
-df_Graph <- df_Graph %>% ungroup() %>% group_by(REGION)
+df_Graph <- df_Graph %>% ungroup() %>% group_by(REGION,SCENARIO)
 View(df_Graph)
 write_csv(df_Graph, "./df_Graph_written.csv") 
 
-for (dummyloop in 1) {  # グラフ出力 while (0)
+# Graph output ------------------------------------------------------
+for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
 
-  # scenarionames <- c('Baseline','2C')    # c('Baseline','2C','1.5C','2.5C','WB2C')
-  # scenarionames <- unique(df_Graph$SCENARIO)
   # indicators <- c('GDP_Capita') # テスト中
   
-  indicators <- c('GDP_Capita',
-                  'Energy_Intensity','Energy_Intensity_scaled','ChangeRate_Energy_Intensity',
-                  'Carbon_Intensity','Carbon_Intensity_scaled','ChangeRate_Carbon_Intensity',
-                  'Electricity_Rate_Total','Electricity_Rate_Total_scaled','ChangeRate_Electricity_Rate_Total') 
+  indicators <- c('GDP_Capita', 
+                  'Energy_Intensity_scaled','ChangeRate_Energy_Intensity',
+                  'Carbon_Intensity_scaled','ChangeRate_Carbon_Intensity',
+                  'Electricity_Rate_Total_scaled','ChangeRate_Electricity_Rate_Total') 
 #                 'Electricity_Rate_Ind','Electricity_Rate_Ind_scaled','ChangeRate_Electricity_Rate_Ind')
-
+#                 'Energy_Intensity','Carbon_Intensity','Electricity_Rate_Total',
+  
   # 出力対象のXY軸を指定する　x_names(n) vs y_names(n)のグラフが出力される
   
   x_names <- c(rep('Year',length(indicators)),
@@ -235,48 +236,60 @@ for (dummyloop in 1) {  # グラフ出力 while (0)
                indicators[-1],
                indicators[-1])
   y2_names <- indicators[c(4,7,10)]
-  
-# for (scenarioname in scenarionames) {
-    
-    # XY散布図 by 17地域
-    pdf(file=paste("./",scenarioname,"_XY.pdf", sep=""))    
-    for (num in 1:length(x_names)) {
-      
-      g <- eval(parse(text=paste0(
-        "ggplot(df_Graph, aes(x=",x_names[num],",y=",y_names[num], 
-        ",color=REGION, shape=SCENARIO)) +
-  #       geom_line() +
-          geom_point() + 
-          scale_shape_manual(values=c(19,21))")))
-      plot(g)
-      filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
-      ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
+
+  # scenarionames <- unique(df_Graph$SCENARIO)    # c('Baseline','2C','1.5C','2.5C','WB2C') # '_Historical'
+  scenarionames <- c('Multi') 
+  for (scenarioname in scenarionames) { 
+    if (scenarioname=='Multi') { 
+        df_Graph_plot <- df_Graph
+    } else if (scenarioname=='_Historical') { 
+        df_Graph_plot <- df_Graph %>% filter(SCENARIO=='_Historical')
+    } else {
+      df_Graph_plot <- rbind(filter(df_Graph, SCENARIO==scenarioname),
+                             filter(df_Graph, SCENARIO=='_Historical'))
     }
-    dev.off() 
     
-    # XY散布図 by 国別
-    pdf(file=paste("./",scenarioname,"_XY_Country.pdf", sep=""))    
-    for (num in 1:length(x_names)) {
-      
-      g <- eval(parse(text=paste0(
-        "ggplot(df_Graph, aes(x=",x_names[num],",y=",y_names[num], 
-        ",color=Country, shape=SCENARIO)) +
-          geom_line() +
-          geom_point() +
-          theme(legend.position='none') +
-          scale_shape_manual(values=c(19,21))")))
-      plot(g)
-      filename <- paste(scenarioname,"_",num,"_",x_names[num],"-",y_names[num],"_CN", sep="")
-      ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
-    }
-    dev.off() 
+    for (dummyloop in 1) { # XY散布図 by 17地域
+      pdf(file=paste("./",scenarioname,"_XY.pdf", sep=""))    
+      for (num in 1:length(x_names)) {
+        
+        g <- eval(parse(text=paste0(
+          "ggplot(df_Graph_plot, aes(x=",x_names[num],",y=",y_names[num], 
+          ",color=REGION, shape=SCENARIO)) +
+    #       geom_line() +
+            geom_point() + 
+            scale_shape_manual(values=c(19,21,21,21,21,21))")))
+        plot(g)
+        filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
+        ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
+      }
+      dev.off() 
+    } # XY散布図 by 17地域
+    
+    for (dummyloop in 1) { # XY散布図 by 国別
+      pdf(file=paste("./",scenarioname,"_XY_Country.pdf", sep=""))    
+      for (num in 1:length(x_names)) {
+        
+        g <- eval(parse(text=paste0(
+          "ggplot(df_Graph_plot, aes(x=",x_names[num],",y=",y_names[num], 
+          ",color=Country, shape=SCENARIO)) +
+            geom_line() +
+            geom_point() +
+            theme(legend.position='none') +
+            scale_shape_manual(values=c(19,21,21,21,21,21))")))
+        plot(g)
+        filename <- paste(scenarioname,"_",num,"_",x_names[num],"-",y_names[num],"_CN", sep="")
+        ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
+      }
+      dev.off() 
+    } # XY散布図 by 国別
     
     # 箱ヒゲ図
     pdf(file=paste("./",scenarioname,"_boxplot.pdf", sep=""))    
     for (indicator in indicators) {
       
       g <- eval(parse(text=paste0(
-        "ggplot(df_Graph, aes(x=","REGION",",y=",indicator, 
+        "ggplot(df_Graph_plot, aes(x=","REGION",",y=",indicator, 
         ",color=SCENARIO)) +
           geom_boxplot() +
           geom_jitter(shape=20, position=position_dodge(0.8))")))
@@ -291,7 +304,7 @@ for (dummyloop in 1) {  # グラフ出力 while (0)
     for (indicator in indicators) {
       
       g <- eval(parse(text=paste0(
-        "ggplot(df_Graph, aes(x=",indicator, 
+        "ggplot(df_Graph_plot, aes(x=",indicator, 
         ",color=SCENARIO)) +
           geom_histogram(bins=50) +
           ylab('Count of Region-Year')")))
@@ -306,9 +319,10 @@ for (dummyloop in 1) {  # グラフ出力 while (0)
     for (indicator in indicators) {
       
       g <- eval(parse(text=paste0(
-        "ggplot(df_Graph, aes(x=",indicator, 
+        "ggplot(df_Graph_plot, aes(x=",indicator, 
         ",color=SCENARIO)) +
           geom_density() +
+        # xlim(-0.2,0.2) +
           ylab('Density (Counts scaled to 1) of Region-Year')")))
       plot(g)
       filename <- paste(scenarioname,"_","density_",indicator, sep="")
@@ -316,6 +330,6 @@ for (dummyloop in 1) {  # グラフ出力 while (0)
     }
     dev.off() 
     
-# } # scenarioname loop
+  } # scenarioname loop
 } # グラフ出力
 
