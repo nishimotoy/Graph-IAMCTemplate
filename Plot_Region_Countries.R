@@ -221,9 +221,10 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
   # indicators <- c('GDP_Capita') # テスト中
   
   indicators <- c('GDP_Capita', 
-                  'Energy_Intensity_scaled','ChangeRate_Energy_Intensity',
-                  'Carbon_Intensity_scaled','ChangeRate_Carbon_Intensity',
-                  'Electricity_Rate_Total_scaled','ChangeRate_Electricity_Rate_Total','Electricity_Rate_Total') 
+                  'Energy_Intensity_scaled','ChangeRate_Energy_Intensity','ChangeRateBY_Energy_Intensity',
+                  'Carbon_Intensity_scaled','ChangeRate_Carbon_Intensity','ChangeRateBY_Carbon_Intensity',
+                  'Electricity_Rate_Total_scaled','ChangeRate_Electricity_Rate_Total',
+                  'ChangeRateBY_Electricity_Rate_Total','Electricity_Rate_Total') 
 #                 'Electricity_Rate_Ind','Electricity_Rate_Ind_scaled','ChangeRate_Electricity_Rate_Ind')
 #                 'Energy_Intensity','Carbon_Intensity','Electricity_Rate_Total',
   
@@ -301,8 +302,8 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
       g <- eval(parse(text=paste0(
         "ggplot(df_Graph_plot, aes(x=",indicator, 
         ",color=SCENARIO)) +
-          geom_density() +
-          xlim(-0.2,0.2) +
+          geom_density(size=0.7) +
+        # xlim(-0.2,0.2) +
           ylab('Density (Counts scaled to 1) of Region-Year')")))
       plot(g)
       filename <- paste(scenarioname,"_","density_",indicator, sep="")
@@ -310,7 +311,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
     }
     dev.off() 
 
-    for (dummyloop in 1) { # XY散布図 by 国別
+    while (0) { # XY散布図 by 国別 for (dummyloop in 1)
       df_Graph_plot <- df_Graph_plot %>% ungroup() %>% group_by(Country)
       pdf(file=paste("./",scenarioname,"_XY_Country.pdf", sep=""))    
       for (num in 1:length(x_names)) {
@@ -334,31 +335,34 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
 
 for (dummyloop in 1) { # 確認用グラフ    
 
-  df_Graph_tmp <- df_Graph %>% filter(SCENARIO=='1.5C', Country=='XER'
-                ) %>% select(Year, ChangeRate_Carbon_Intensity, Carbon_Intensity, 
-                             Carbon_Intensity_scaled, TES_Total, CO2_fuel_Total) 
+  df_Graph_tmp <- df_Graph %>% filter(SCENARIO=='WB2C', Country=='CIS'
+                ) %>% select(Year, ChangeRate_Carbon_Intensity, ChangeRateBY_Carbon_Intensity, 
+                             Carbon_Intensity, Carbon_Intensity_scaled, TES_Total, CO2_fuel_Total) 
   
   df_Graph_tmp <- df_Graph_tmp %>% mutate(TES_Total_scaled=TES_Total/TES_Total[Year==2010]  
-    ) %>% mutate(ChangeRate_Carbon_Intensity_scaled=ChangeRate_Carbon_Intensity/100
+    ) %>% mutate(ChangeRate_Carbon_Intensity_scaled=ChangeRate_Carbon_Intensity/100  
+    ) %>% mutate(ChangeRateBY_Carbon_Intensity_scaled=ChangeRateBY_Carbon_Intensity/100
     ) %>% mutate(CO2_fuel_Total_scaled=CO2_fuel_Total/CO2_fuel_Total[Year==2010])
   
   g1 <- ggplot(df_Graph_tmp, aes(Year)) +
-    geom_line(aes(y = ChangeRate_Carbon_Intensity, colour = '_ChangeRate_Carbon_Intensity'))+
-    geom_line(aes(y = Carbon_Intensity, colour = 'Carbon_Intensity')) +
-    geom_line(aes(y = TES_Total, colour = 'TES_Total'))+
-    geom_line(aes(y = CO2_fuel_Total, colour = 'CO2_fuel_Total')) +
+    geom_line(aes(y = ChangeRate_Carbon_Intensity, colour = '_ChangeRate_Carbon_Intensity'),size=1)+
+    geom_line(aes(y = ChangeRate_Carbon_Intensity, colour = '_ChangeRateBY_Carbon_Intensity'),size=1)+
+    geom_line(aes(y = Carbon_Intensity, colour = 'Carbon_Intensity'),size=1) +
+    geom_line(aes(y = TES_Total, colour = 'TES_Total'),size=1)+
+    geom_line(aes(y = CO2_fuel_Total, colour = 'CO2_fuel_Total'),size=1) +
     ylab('Variables')
   plot(g1)
   
   g2 <- ggplot(df_Graph_tmp, aes(Year)) +
     geom_line(aes(y = ChangeRate_Carbon_Intensity_scaled, colour = '_ChangeRate_Carbon_Intensity/100'),size=1) +
+    geom_line(aes(y = ChangeRateBY_Carbon_Intensity, colour = '_ChangeRateBY_Carbon_Intensity'),size=1)+
     geom_line(aes(y = Carbon_Intensity_scaled, colour = 'Carbon_Intensity_scaled'),size=1) +
     geom_line(aes(y = TES_Total_scaled, colour = 'TES_Total_scaled'),size=1) +
     geom_line(aes(y = CO2_fuel_Total_scaled, colour = 'CO2_fuel_Total_scaled'),size=1) +
       ylab('Variables_scaled (Bese-Year = 1.0)')
   plot(g2)
   
-    ggsave(file=paste("./tmp.png", sep=""), width=5, height=4, dpi=100)
+    ggsave(file=paste(SCENARIO,"_",Country,"./tmp.png", sep=""), width=5, height=4, dpi=100)
   # dev.off() 
 } # 確認用グラフ
 
