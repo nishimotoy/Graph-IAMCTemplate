@@ -163,7 +163,6 @@ for (dummyloop in 1) {  # 国名のみのダミー列の作成
 }  # ダミー列の作成
 
 for (i in 1:ncol(df_vni)) { # 指標毎の処理1   # テスト後に戻す (i in 1:ncol(df_vni))
-  # i  <- 2
   indicator   <- df_vni[1,i]
   numerator   <- df_vni[2,i]
   denominator <- df_vni[3,i]
@@ -182,17 +181,18 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理1   # テスト後に戻す (i i
 
   for (dummyloop in 1) { # 基準年値をdf_Graphに追加する（0年値として追加）
     
-    df_Graph <- df_Graph %>% group_by(SCENARIO,Country) %>% arrange(SCENARIO,Country, Year)
+    df_Graph <- df_Graph %>% group_by(SCENARIO,Country) %>% arrange(SCENARIO,Country,Year)
     df_Graph<- eval(parse(text=paste0(
       "df_Graph %>% mutate(",indicator,"_scaled=",indicator,"/",indicator,"[Year==0])"
     )))                     # indicator_scaled = I(t)/I(t=BaseYear) 
+    df_Graph <- df_Graph %>% ungroup()
     
   } # 基準年値をdf_Graphに追加する
   
 } # 指標毎の処理1
-
+df_Graph$SCENARIO <- factor(df_Graph$SCENARIO, levels=c('Historical','Baseline','2.5C','2C','1.5C','WB2C'))
+df_Graph <- df_Graph %>% filter(Year!=0) %>% group_by(SCENARIO,Country) %>% arrange(SCENARIO,Country,Year)
 write_csv(df_Graph, "./df_Graph_afterfulljoin_written.csv") 
-df_Graph <- df_Graph %>% filter(Year!=0) %>% group_by(SCENARIO,Country) %>% arrange(Country, Year)
 
 # Change rate ------------------------------------------------------
 for (i in 1:ncol(df_vni)) { # 指標毎の処理2   # テスト後に戻す (i in 1:ncol(df_vni))
@@ -210,9 +210,9 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理2   # テスト後に戻す (i i
 
 } # 指標毎の処理2
 
-df_Graph <- df_Graph %>% ungroup() %>% group_by(REGION,SCENARIO)
-df_Graph$SCENARIO <- factor(df_Graph$SCENARIO, levels=c('WB2C','1.5C','2C','2.5C','Baseline','Historical'))
-View(df_Graph)
+df_Graph <- df_Graph %>% ungroup() %>% arrange(SCENARIO,Country,Year)
+# df_Graph <- df_Graph %>% ungroup() %>% group_by(SCENARIO,REGION) %>% arrange(SCENARIO,Country,Year)
+# View(df_Graph)
 write_csv(df_Graph, "./df_Graph_written.csv") 
 
 #Graph output ------------------------------------------------------
@@ -287,7 +287,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
       g <- eval(parse(text=paste0(
         "ggplot(df_Graph_plot, aes(x=",indicator, 
         ",color=SCENARIO)) +
-          geom_histogram(bins=50) +
+          geom_histogram(bins=50, position='identity', alpha=0.2) +
           ylab('Count of Region-Year')")))
       plot(g)
       filename <- paste(scenarioname,"_","histogram_",indicator, sep="")
@@ -311,7 +311,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
     dev.off() 
 
     for (dummyloop in 1) { # XY散布図 by 国別
-      df_Graph_plot <- df_Graph_plot %>% ungroup() %>% group_by(Country,SCENARIO)
+      df_Graph_plot <- df_Graph_plot %>% ungroup() %>% group_by(Country)
       pdf(file=paste("./",scenarioname,"_XY_Country.pdf", sep=""))    
       for (num in 1:length(x_names)) {
         g <- eval(parse(text=paste0(
@@ -329,5 +329,37 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
     } # XY散布図 by 国別
     
   } # scenarioname loop
+
 } # グラフ出力
+
+for (dummyloop in 1) { # 確認用グラフ    
+
+  df_Graph_tmp <- df_Graph %>% filter(SCENARIO=='1.5C', Country=='XER'
+                ) %>% select(Year, ChangeRate_Carbon_Intensity, Carbon_Intensity, 
+                             Carbon_Intensity_scaled, TES_Total, CO2_fuel_Total) 
+  
+  df_Graph_tmp <- df_Graph_tmp %>% mutate(TES_Total_scaled=TES_Total/TES_Total[Year==2010]  
+    ) %>% mutate(ChangeRate_Carbon_Intensity_scaled=ChangeRate_Carbon_Intensity/100
+    ) %>% mutate(CO2_fuel_Total_scaled=CO2_fuel_Total/CO2_fuel_Total[Year==2010])
+  
+  g1 <- ggplot(df_Graph_tmp, aes(Year)) +
+    geom_line(aes(y = ChangeRate_Carbon_Intensity, colour = '_ChangeRate_Carbon_Intensity'))+
+    geom_line(aes(y = Carbon_Intensity, colour = 'Carbon_Intensity')) +
+    geom_line(aes(y = TES_Total, colour = 'TES_Total'))+
+    geom_line(aes(y = CO2_fuel_Total, colour = 'CO2_fuel_Total')) +
+    ylab('Variables')
+  plot(g1)
+  
+  g2 <- ggplot(df_Graph_tmp, aes(Year)) +
+    geom_line(aes(y = ChangeRate_Carbon_Intensity_scaled, colour = '_ChangeRate_Carbon_Intensity/100'),size=1) +
+    geom_line(aes(y = Carbon_Intensity_scaled, colour = 'Carbon_Intensity_scaled'),size=1) +
+    geom_line(aes(y = TES_Total_scaled, colour = 'TES_Total_scaled'),size=1) +
+    geom_line(aes(y = CO2_fuel_Total_scaled, colour = 'CO2_fuel_Total_scaled'),size=1) +
+      ylab('Variables_scaled (Bese-Year = 1.0)')
+  plot(g2)
+  
+    ggsave(file=paste("./tmp.png", sep=""), width=5, height=4, dpi=100)
+  # dev.off() 
+} # 確認用グラフ
+
 
