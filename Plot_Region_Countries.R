@@ -5,7 +5,7 @@ library(tidyverse)
 root <- 'C:/_Nishimoto/R/WBAL_R02/'
 Titlerow1 <- c('MODEL','SCENARIO','REGION','VARIABLE','UNIT')
 Titlerow2 <- c('REGION','Country','VARIABLE','SCENARIO')
-Titlerow3 <- c('SCENARIO','Country')
+Titlerow3 <- c('SCENARIO','Country','REGION','Year')
 scenarioname <- 'Baseline'  # 読込対象の将来シナリオ（今は読込の時点でシナリオを絞っている）
 BaseYear <- 2010  # %>% as.numeric()  # 基準年値
 Sample_Country <- c('Former Soviet Union','Former Yugoslavia','South Sudan','Bosnia and Herzegovina')  # GDP(2010)が無い国
@@ -215,31 +215,43 @@ df_Graph <- df_Graph %>% ungroup() %>% arrange(SCENARIO,Country,Year)
 # View(df_Graph)
 write_csv(df_Graph, "./df_Graph_written.csv") 
 
+#Summary ------------------------------------------------------
+
+indicators <- c('GDP_Capita', 
+                'Energy_Intensity_scaled','ChangeRate_Energy_Intensity','ChangeRateBY_Energy_Intensity',
+                'Carbon_Intensity_scaled','ChangeRate_Carbon_Intensity','ChangeRateBY_Carbon_Intensity',
+                'Electricity_Rate_Total_scaled','ChangeRate_Electricity_Rate_Total',
+                'ChangeRateBY_Electricity_Rate_Total','Electricity_Rate_Total') 
+
+df_indicator <- df_Graph %>% select(one_of(Titlerow3),one_of(indicators)
+                       ) %>% group_by(SCENARIO)
+write_csv(df_indicator, "./df_indicator_written.csv")  # Year, Country, REGION入りのデータで保存
+
+df_indicator <- df_indicator %>% select(-c(Year, Country, REGION))
+
+df_summary <- df_indicator %>% group_by(SCENARIO
+) %>% summarise_each(funs(length, n_distinct, min(., na.rm = TRUE), max(., na.rm = TRUE), median(., na.rm = TRUE), sd(., na.rm = TRUE)))
+# , na.rm = TRUE  to solve Repeating 
+df_summary_ChangeRate <- df_summary %>% select(SCENARIO, starts_with("ChangeRate")) 
+df_summary_ChangeRate <- as.data.frame(t(df_summary_ChangeRate))
+df_summary <- as.data.frame(t(df_summary))
+write.csv(df_summary, "./df_summary_written.csv", row.names = TRUE) 
+write.csv(df_summary_ChangeRate, "./df_summary_ChangeRate_written.csv", row.names = TRUE) 
+
+
 #Graph output ------------------------------------------------------
 for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
 
-  # indicators <- c('GDP_Capita') # テスト中
-  
-  indicators <- c('GDP_Capita', 
-                  'Energy_Intensity_scaled','ChangeRate_Energy_Intensity','ChangeRateBY_Energy_Intensity',
-                  'Carbon_Intensity_scaled','ChangeRate_Carbon_Intensity','ChangeRateBY_Carbon_Intensity',
-                  'Electricity_Rate_Total_scaled','ChangeRate_Electricity_Rate_Total',
-                  'ChangeRateBY_Electricity_Rate_Total','Electricity_Rate_Total') 
-#                 'Electricity_Rate_Ind','Electricity_Rate_Ind_scaled','ChangeRate_Electricity_Rate_Ind')
-#                 'Energy_Intensity','Carbon_Intensity','Electricity_Rate_Total',
-  
   # 出力対象のXY軸を指定する　x_names(n) vs y_names(n)のグラフが出力される
-  
   x_names <- c(rep('Year',length(indicators)),
                rep('REGION',length(indicators)),
-               rep('GDP_Capita',length(indicators)-1)
-  )
+               rep('GDP_Capita',length(indicators)-1) )
   y_names <- c(indicators,
                indicators,
                indicators[-1])
   y2_names <- indicators[c(4,7,10)]
 
-  # scenarionames <- unique(df_Graph$SCENARIO)    # c('Baseline','2C','1.5C','2.5C','WB2C') # 'Historical'
+  # scenarionames <- levels(df_Graph$SCENARIO)    # c('Baseline','2C','1.5C','2.5C','WB2C') # 'Historical'
   scenarionames <- c('Multi') 
   for (scenarioname in scenarionames) { 
     if (scenarioname=='Multi') { 
@@ -335,7 +347,10 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
 
 for (dummyloop in 1) { # 確認用グラフ    
 
-  df_Graph_tmp <- df_Graph %>% filter(SCENARIO=='WB2C', Country=='CIS'
+  scenarioname_for_test <- 'WB2C' # '1.5C'
+  countryname_for_test <- 'CIS'   # 'XER'
+  
+  df_Graph_tmp <- df_Graph %>% filter(SCENARIO==scenarioname_for_test, Country==countryname_for_test
                 ) %>% select(Year, ChangeRate_Carbon_Intensity, ChangeRateBY_Carbon_Intensity, 
                              Carbon_Intensity, Carbon_Intensity_scaled, TES_Total, CO2_fuel_Total) 
   
@@ -359,11 +374,12 @@ for (dummyloop in 1) { # 確認用グラフ
     geom_line(aes(y = Carbon_Intensity_scaled, colour = 'Carbon_Intensity_scaled'),size=1) +
     geom_line(aes(y = TES_Total_scaled, colour = 'TES_Total_scaled'),size=1) +
     geom_line(aes(y = CO2_fuel_Total_scaled, colour = 'CO2_fuel_Total_scaled'),size=1) +
-      ylab('Variables_scaled (Bese-Year = 1.0)')
+      ylab('Variables_scaled (Bese-Year value = 1.0)')
   plot(g2)
   
-    ggsave(file=paste(SCENARIO,"_",Country,"./tmp.png", sep=""), width=5, height=4, dpi=100)
-  # dev.off() 
+    ggsave(file=paste(scenarioname_for_test,"_",countryname_for_test,"_test.png", sep=""), width=6, height=4, dpi=100)
+
+      # dev.off() 
 } # 確認用グラフ
 
 
