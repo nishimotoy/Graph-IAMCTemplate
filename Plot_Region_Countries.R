@@ -251,8 +251,8 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
                indicators[-1])
   y2_names <- indicators[c(4,7,10)]
 
-  # scenarionames <- levels(df_Graph$SCENARIO)    # c('Baseline','2C','1.5C','2.5C','WB2C') # 'Historical'
-  scenarionames <- c('Multi') 
+  scenarionames <- levels(df_Graph$SCENARIO)    # c('Baseline','2C','1.5C','2.5C','WB2C') # 'Historical'
+  # scenarionames <- c('Multi') 
   for (scenarioname in scenarionames) { 
     if (scenarioname=='Multi') { 
         df_Graph_plot <- df_Graph
@@ -347,8 +347,8 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
 
 for (dummyloop in 1) { # 確認用グラフ    
 
-  scenarioname_for_test <- 'WB2C' # '1.5C'
-  countryname_for_test <- 'CIS'   # 'XER'
+  scenarioname_for_test <- '1.5C' # 'WB2C' # 
+  countryname_for_test <-  'XER' # 'CIS'   # 
   
   df_Graph_tmp <- df_Graph %>% filter(SCENARIO==scenarioname_for_test, Country==countryname_for_test
                 ) %>% select(Year, ChangeRate_Carbon_Intensity, ChangeRateBY_Carbon_Intensity, 
