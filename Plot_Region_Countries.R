@@ -204,10 +204,10 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理2   # テスト後に戻す (i i
         "df_Graph %>%  mutate(ChangeRateBY_",indicator,
         "=(",indicator,"_scaled-lag(",indicator,"_scaled, n=1))/(Year-lag(Year, n=1))
                   ) %>% mutate(ChangeRate_",indicator,
-        
-        "=(",indicator,"-lag(",indicator,",n=1))/(Year-lag(Year, n=1))/(",indicator,"+lag(",indicator,",n=1))*2
+        "=(",indicator,"/lag(",indicator,",n=1)-1)/(Year-lag(Year, n=1))
                   )")))
-
+  #  "=(",indicator,"-lag(",indicator,",n=1))/(Year-lag(Year, n=1))/(",indicator,"+lag(",indicator,",n=1))*2
+  
 } # 指標毎の処理2
 
 df_Graph <- df_Graph %>% ungroup() %>% arrange(SCENARIO,Country,Year)
