@@ -59,7 +59,7 @@ for (file_name in files) {
   #  d <- d[1,c(ncol(d),1:(ncol(d)-1))] # 列の入替
   df_past <- rbind(df_past, d)
 }
-setwd(paste(root,"5_test/", sep="")) 
+setwd(paste(root,"4_output/", sep="")) 
 
 df_past <- df_past %>% filter(REGION!='region')  # ダミー行のデータを削除
 df_past <- df_past %>% mutate(SCENARIO='Historical')   # 書式を揃える
@@ -251,8 +251,8 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
                indicators[-1])
   y2_names <- indicators[c(4,7,10)]
 
-  scenarionames <- levels(df_Graph$SCENARIO)    # c('Baseline','2C','1.5C','2.5C','WB2C') # 'Historical'
-  # scenarionames <- c('Multi') 
+  # scenarionames <- levels(df_Graph$SCENARIO)    # c('Baseline','2C','1.5C','2.5C','WB2C') # 'Historical'
+  scenarionames <- c('Multi') 
   for (scenarioname in scenarionames) { 
     if (scenarioname=='Multi') { 
         df_Graph_plot <- df_Graph
@@ -315,7 +315,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
         "ggplot(df_Graph_plot, aes(x=",indicator, 
         ",color=SCENARIO)) +
           geom_density(size=0.7) +
-        # xlim(-0.2,0.2) +
+          xlim(-0.2,0.2) +
           ylab('Density (Counts scaled to 1) of Region-Year')")))
       plot(g)
       filename <- paste(scenarioname,"_","density_",indicator, sep="")
@@ -365,7 +365,8 @@ for (dummyloop in 1) { # 確認用グラフ
     geom_line(aes(y = Carbon_Intensity, colour = 'Carbon_Intensity'),size=1) +
     geom_line(aes(y = TES_Total, colour = 'TES_Total'),size=1)+
     geom_line(aes(y = CO2_fuel_Total, colour = 'CO2_fuel_Total'),size=1) +
-    ylab('Variables')
+    ylab('Variables')+
+    annotate("text",x=-Inf,y=-Inf,label=paste(scenarioname_for_test,"_",countryname_for_test),hjust=-.2,vjust=-2)
   plot(g1)
   
   g2 <- ggplot(df_Graph_tmp, aes(Year)) +
@@ -374,9 +375,9 @@ for (dummyloop in 1) { # 確認用グラフ
     geom_line(aes(y = Carbon_Intensity_scaled, colour = 'Carbon_Intensity_scaled'),size=1) +
     geom_line(aes(y = TES_Total_scaled, colour = 'TES_Total_scaled'),size=1) +
     geom_line(aes(y = CO2_fuel_Total_scaled, colour = 'CO2_fuel_Total_scaled'),size=1) +
-      ylab('Variables_scaled (Bese-Year value = 1.0)')
-  plot(g2)
-  
+    ylab('Variables_scaled (Bese-Year value = 1.0)') +
+    annotate("text",x=-Inf,y=-Inf,label=paste(scenarioname_for_test,"_",countryname_for_test),hjust=-.2,vjust=-2)
+  plot(g2) 
     ggsave(file=paste(scenarioname_for_test,"_",countryname_for_test,"_test.png", sep=""), width=6, height=4, dpi=100)
 
       # dev.off() 
