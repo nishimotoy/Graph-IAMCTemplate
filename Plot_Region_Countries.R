@@ -347,8 +347,8 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
 
 for (dummyloop in 1) { # 確認用グラフ    
 
-  scenarioname_for_test <- '1.5C' # 'WB2C' #   
-  countryname_for_test <-  'XER' #'CIS' # 
+  scenarioname_for_test <- 'WB2C' # '1.5C' #   
+  countryname_for_test <-  'CIS' # 'XER' #
   scaling_for_ChangeRate <-  1
   
   df_Graph_tmp <- df_Graph %>% filter(SCENARIO==scenarioname_for_test, Country==countryname_for_test
@@ -377,7 +377,7 @@ for (dummyloop in 1) { # 確認用グラフ
     geom_line(aes(y = TES_Total_scaled, colour = 'TES_Total_scaled'),size=1) +
     geom_line(aes(y = CO2_fuel_Total_scaled, colour = 'CO2_fuel_Total_scaled'),size=1) +
     ylab('Variables_scaled (Bese-Year value = 1.0)') +
-    annotate("text",x=Inf,y=Inf,label=paste(scenarioname_for_test,countryname_for_test),hjust=1.2,vjust=5)
+    annotate("text",x=Inf,y=Inf,label=paste(scenarioname_for_test,countryname_for_test),hjust=1.2,vjust=3)
   plot(g2) 
     ggsave(file=paste(scenarioname_for_test,"_",countryname_for_test,"_test.png", sep=""), width=6, height=4, dpi=100)
 
