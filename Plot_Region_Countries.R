@@ -172,7 +172,7 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理1   # テスト後に戻す (i i
                      ) %>% select(-c('VARIABLE')
                      ) %>% arrange(Year)
     df_toJoin <- eval(parse(text=paste0("df_toJoin %>% rename(",variable_name,"=Value)")))
-    View(df_toJoin)
+    # View(df_toJoin)
     df_Graph <- df_Graph %>% full_join(df_toJoin)
   }
   df_Graph <- df_Graph %>% drop_na('REGION','Year')  # ダミー列のデータを削除
@@ -217,11 +217,10 @@ write_csv(df_Graph, "./df_Graph_written.csv")
 
 #Summary ------------------------------------------------------
 
-indicators <- c('GDP_Capita', 
-                'Energy_Intensity_scaled','ChangeRate_Energy_Intensity','ChangeRateBY_Energy_Intensity',
+indicators <- c('Energy_Intensity_scaled','ChangeRate_Energy_Intensity','ChangeRateBY_Energy_Intensity',
                 'Carbon_Intensity_scaled','ChangeRate_Carbon_Intensity','ChangeRateBY_Carbon_Intensity',
-                'Electricity_Rate_Total_scaled','ChangeRate_Electricity_Rate_Total',
-                'ChangeRateBY_Electricity_Rate_Total','Electricity_Rate_Total') 
+                'Electricity_Rate_Total_scaled','ChangeRate_Electricity_Rate_Total','ChangeRateBY_Electricity_Rate_Total',
+                'Electricity_Rate_Total','POP_IEA','GDP_Capita') 
 
 df_indicator <- df_Graph %>% select(one_of(Titlerow3),one_of(indicators)
                        ) %>% group_by(SCENARIO)
@@ -245,11 +244,8 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
   # 出力対象のXY軸を指定する　x_names(n) vs y_names(n)のグラフが出力される
   x_names <- c(rep('Year',length(indicators)),
                rep('REGION',length(indicators)),
-               rep('GDP_Capita',length(indicators)-1) )
-  y_names <- c(indicators,
-               indicators,
-               indicators[-1])
-  y2_names <- indicators[c(4,7,10)]
+               rep('GDP_Capita',length(indicators)) )
+  y_names <- c(rep(indicators,3))
 
   # scenarionames <- levels(df_Graph$SCENARIO)    # c('Baseline','2C','1.5C','2.5C','WB2C') # 'Historical'
   scenarionames <- c('Multi') 
@@ -300,7 +296,8 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
       g <- eval(parse(text=paste0(
         "ggplot(df_Graph_plot, aes(x=",indicator, 
         ",color=SCENARIO)) +
-          geom_histogram(bins=50, position='identity', alpha=0.2) +
+        # geom_histogram(bins=50, position='identity', alpha=0.2) + # 
+          geom_histogram(bins=50, position='dodge', alpha=0) + 
           ylab('Count of Region-Year')")))
       plot(g)
       filename <- paste(scenarioname,"_","histogram_",indicator, sep="")
