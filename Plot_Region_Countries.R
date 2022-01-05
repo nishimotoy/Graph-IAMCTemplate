@@ -321,7 +321,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
     dev.off() 
 
     while (0) { # XY散布図 by 国別 for (dummyloop in 1)
-      df_Graph_plot <- df_Graph_plot %>% ungroup() %>% group_by(Country)
+      df_Graph_plot <- df_Graph_plot %>% ungroup() %>% group_by(Country,SCENARIO)
       pdf(file=paste("./",scenarioname,"_XY_Country.pdf", sep=""))    
       for (num in 1:length(x_names)) {
         g <- eval(parse(text=paste0(
@@ -337,7 +337,26 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
       }
       dev.off() 
     } # XY散布図 by 国別
+
+    while (0) { # 特定パターンのみの確率密度分布
+      df_Graph_plot <- df_Graph %>% filter(REGION %in% c('CAN','CIS','JPN','USA','XE25','XER')) # 先進国
+      
+      pdf(file=paste("./",scenarioname,"_density_filtered.pdf", sep=""))    
+      for (indicator in indicators) {
+        g <- eval(parse(text=paste0(
+          "ggplot(df_Graph_plot, aes(x=",indicator, 
+          ",color=SCENARIO)) +
+            geom_density(size=0.7) +
+          # xlim(-0.2,0.2) +
+            ylab('Density (Counts scaled to 1) of Region-Year')")))
+        plot(g)
+        filename <- paste(scenarioname,"_","density_",indicator, sep="")
+        ggsave(file=paste("./test/",filename,".png", sep=""), width=5, height=4, dpi=100)
+      }
+      dev.off() 
+    } # 特定パターンのみの確率密度分布
     
+        
   } # scenarioname loop
 
 } # グラフ出力
@@ -376,7 +395,7 @@ for (dummyloop in 1) { # 確認用グラフ
     ylab('Variables_scaled (Bese-Year value = 1.0)') +
     annotate("text",x=Inf,y=Inf,label=paste(scenarioname_for_test,countryname_for_test),hjust=1.2,vjust=3)
   plot(g2) 
-    ggsave(file=paste(scenarioname_for_test,"_",countryname_for_test,"_test.png", sep=""), width=6, height=4, dpi=100)
+    ggsave(file=paste("./test/",scenarioname_for_test,"_",countryname_for_test,"_test.png", sep=""), width=6, height=4, dpi=100)
 
       # dev.off() 
 } # 確認用グラフ
