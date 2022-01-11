@@ -229,7 +229,9 @@ write_csv(df_indicator, "./df_indicator_written.csv")  # Year, Country, REGION�
 df_indicator <- df_indicator %>% select(-c(Year, Country, REGION))
 
 df_summary <- df_indicator %>% group_by(SCENARIO
-) %>% summarise_each(funs(length, n_distinct, min(., na.rm = TRUE), max(., na.rm = TRUE), median(., na.rm = TRUE), sd(., na.rm = TRUE)))
+                         ) %>% summarise_each(funs(length, n_distinct, 
+                          min(., na.rm = TRUE), max(., na.rm = TRUE), 
+                          median(., na.rm = TRUE), sd(., na.rm = TRUE)))
 # , na.rm = TRUE  to solve Repeating 
 df_summary_ChangeRate <- df_summary %>% select(SCENARIO, starts_with("ChangeRate")) 
 df_summary_ChangeRate <- as.data.frame(t(df_summary_ChangeRate))
@@ -338,7 +340,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
       dev.off() 
     } # XY散布図 by 国別
 
-    while (0) { # 特定パターンのみの確率密度分布
+    for (dummyloop in 1) { # 特定パターンのみの確率密度分布
       df_Graph_plot <- df_Graph %>% filter(REGION %in% c('CAN','CIS','JPN','USA','XE25','XER')) # 先進国
       
       pdf(file=paste("./",scenarioname,"_density_filtered.pdf", sep=""))    
@@ -352,6 +354,17 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
         plot(g)
         filename <- paste(scenarioname,"_","density_",indicator, sep="")
         ggsave(file=paste("./test/",filename,".png", sep=""), width=5, height=4, dpi=100)
+
+        # 範囲指定のグラフ　95%信頼区間
+        g <- eval(parse(text=paste0(
+          "ggplot(df_Graph_plot, aes(x=",indicator, 
+          ",color=SCENARIO)) +
+            geom_density(size=0.7) +
+            xlim(-0.2,0.2) +
+            ylab('Density (Counts scaled to 1) of Region-Year')")))
+        plot(g)
+        ggsave(file=paste("./test/",filename,"_range.png", sep=""), width=5, height=4, dpi=100)
+        
       }
       dev.off() 
     } # 特定パターンのみの確率密度分布
@@ -361,7 +374,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
 
 } # グラフ出力
 
-for (dummyloop in 1) { # 確認用グラフ    
+for (dummyloop in 1) { # 確認用グラフ    while (0)
 
   scenarioname_for_test <- 'WB2C' # '1.5C' #   
   countryname_for_test <-  'CIS' # 'XER' #
