@@ -1,5 +1,6 @@
 # Packages ------------------------------------------------------
 library(ggplot2)
+library(ggthemes)
 library(tidyverse)
 
 root <- 'C:/_Nishimoto/R/WBAL_R02/'
@@ -229,15 +230,24 @@ write_csv(df_indicator, "./df_indicator_written.csv")  # Year, Country, REGION�
 df_indicator <- df_indicator %>% select(-c(Year, Country, REGION))
 
 df_summary <- df_indicator %>% group_by(SCENARIO
-                         ) %>% summarise_each(funs(length, n_distinct, 
-                          min(., na.rm = TRUE), max(., na.rm = TRUE), 
-                          median(., na.rm = TRUE), sd(., na.rm = TRUE)))
-# , na.rm = TRUE  to solve Repeating 
+                         ) %>% summarise_each(funs(length, n_distinct,
+                          min(., na.rm=T), max(., na.rm=T),
+                          median(., na.rm=T), sd(., na.rm=T))) # na.rm = TRUE  重複を解決したい
+
+# df_summary <- df_indicator %>% group_by(SCENARIO
+#                          ) %>% list(length, n_distinct,
+#                                     min, max, median, sd
+#                                   # , quantile(.,0.05, na.rm = TRUE), quantile(.,0.95, na.rm = TRUE)
+#                                     )
+# 後で対応＞各列をベクトルにしてNA削除して個別に統計量を出し、整形して出力
+# vec_indicator <- vec_indicator %>% na.omit()
+# quantile_indicator <- quantile(vec_indicator, c(0, 0.05, 0.25, 0.5, 0.75, 0.95, 1))
+
 df_summary_ChangeRate <- df_summary %>% select(SCENARIO, starts_with("ChangeRate")) 
 df_summary_ChangeRate <- as.data.frame(t(df_summary_ChangeRate))
 df_summary <- as.data.frame(t(df_summary))
-write.csv(df_summary, "./df_summary_written.csv", row.names = TRUE) 
-write.csv(df_summary_ChangeRate, "./df_summary_ChangeRate_written.csv", row.names = TRUE) 
+write.csv(df_summary, "./df_summary_written.csv", row.names=TRUE) 
+write.csv(df_summary_ChangeRate, "./df_summary_ChangeRate_written.csv", row.names=TRUE) 
 
 
 #Graph output ------------------------------------------------------
@@ -248,6 +258,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
                rep('REGION',length(indicators)),
                rep('GDP_Capita',length(indicators)) )
   y_names <- c(rep(indicators,3))
+  scenariocolor <- c('#3366CC', '#66AA00', '#0099C6', '#DD4477', '#BB2E2E', '#990099')
 
   # scenarionames <- levels(df_Graph$SCENARIO)    # c('Baseline','2C','1.5C','2.5C','WB2C') # 'Historical'
   scenarionames <- c('Multi') 
@@ -278,7 +289,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
     } # XY散布図 by 17地域
     
     
-    # 箱ヒゲ図
+    # 箱ヒゲ図  地域別
     pdf(file=paste("./",scenarioname,"_boxplot.pdf", sep=""))    
     for (indicator in indicators) {
       g <- eval(parse(text=paste0(
@@ -292,6 +303,41 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
     }
     dev.off() 
     
+    
+    # 箱ヒゲ図  全世界
+    pdf(file=paste("./",scenarioname,"_boxplot_World.pdf", sep=""))    
+    for (indicator in indicators) {
+      g <- eval(parse(text=paste0(
+        "ggplot(df_Graph_plot, aes(x=","SCENARIO",",y=",indicator, 
+        ",color=SCENARIO)) +
+          geom_boxplot() +
+          scale_colour_gdocs() +
+          geom_jitter(shape=20, position=position_dodge(0.8))")))
+      plot(g)
+      filename <- paste(scenarioname,"_","boxplot_World_",indicator, sep="")
+      ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
+
+      vec_indicator <- eval(parse(text=paste0("df_Graph_plot$",indicator)))
+      # vec_indicator <- vec_indicator %>% na.omit()
+      # quantile_indicator <- quantile(vec_indicator, c(0, 0.05, 0.25, 0.5, 0.75, 0.95, 1))
+      range_min <- quantile(na.omit(vec_indicator), 0.05)
+      range_max <- quantile(na.omit(vec_indicator), 0.95)
+
+      g <- eval(parse(text=paste0(
+        "ggplot(df_Graph_plot, aes(x=","SCENARIO",",y=",indicator, 
+        ",color=SCENARIO)) +
+          geom_boxplot() +
+#         scale_colour_gdocs() +
+          scale_color_manual(values=c('#3366CC', '#66AA00', '#0099C6', '#DD4477', '#BB2E2E', '#990099')) +
+          ylim(range_min,range_max) +
+          geom_jitter(shape=20, position=position_dodge(0.8))")))
+      plot(g)
+      filename <- paste(scenarioname,"_","boxplot_World_ylim_",indicator, sep="")
+      ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
+      
+    }
+    dev.off() 
+    
     # 頻度分布
     pdf(file=paste("./",scenarioname,"_histogram.pdf", sep=""))    
     for (indicator in indicators) {
@@ -300,6 +346,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
         ",color=SCENARIO)) +
         # geom_histogram(bins=50, position='identity', alpha=0.2) + # 
           geom_histogram(bins=50, position='dodge', alpha=0) + 
+          scale_colour_gdocs() +
           ylab('Count of Region-Year')")))
       plot(g)
       filename <- paste(scenarioname,"_","histogram_",indicator, sep="")
@@ -314,6 +361,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
         "ggplot(df_Graph_plot, aes(x=",indicator, 
         ",color=SCENARIO)) +
           geom_density(size=0.7) +
+          scale_fill_brewer(palette='Set1') +
         # xlim(-0.2,0.2) +
           ylab('Density (Counts scaled to 1) of Region-Year')")))
       plot(g)
@@ -343,8 +391,22 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
     for (dummyloop in 1) { # 特定パターンのみの確率密度分布
       df_Graph_plot <- df_Graph %>% filter(REGION %in% c('CAN','CIS','JPN','USA','XE25','XER')) # 先進国
       
+      library(outliers)
+      indicator <- c('ChangeRate_Carbon_Intensity')
+      x_range_all <- df_Graph_plot %>% select(all_of(indicator)) %>% drop_na()
+      x_range_outliered <- df_Graph_plot %>% select(all_of(indicator)  
+                                    ) %>% rm.outlier(fill = FALSE, median = FALSE, opposite = FALSE
+                                    ) %>% drop_na()  # 外れ値を除外
+      anti_join(x_range_all, x_range_outliered)
+      semi_join(x_range_all, x_range_outliered)
+      
       pdf(file=paste("./",scenarioname,"_density_filtered.pdf", sep=""))    
       for (indicator in indicators) {
+        
+        x_range_sample <- df_Graph_plot %>% select(all_of(indicator)
+                                      ) %>% rm.outlier(fill = FALSE, median = FALSE, opposite = FALSE)
+        
+        
         g <- eval(parse(text=paste0(
           "ggplot(df_Graph_plot, aes(x=",indicator, 
           ",color=SCENARIO)) +
@@ -353,17 +415,17 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
             ylab('Density (Counts scaled to 1) of Region-Year')")))
         plot(g)
         filename <- paste(scenarioname,"_","density_",indicator, sep="")
-        ggsave(file=paste("./test/",filename,".png", sep=""), width=5, height=4, dpi=100)
+        ggsave(file=paste("./filtered/",filename,".png", sep=""), width=5, height=4, dpi=100)
 
-        # 範囲指定のグラフ　95%信頼区間
+        # 範囲指定のグラフ
         g <- eval(parse(text=paste0(
           "ggplot(df_Graph_plot, aes(x=",indicator, 
           ",color=SCENARIO)) +
             geom_density(size=0.7) +
-            xlim(-0.2,0.2) +
+            xlim(-0.2,0.2) +  # ここを動的に変更出来るようにする予定
             ylab('Density (Counts scaled to 1) of Region-Year')")))
         plot(g)
-        ggsave(file=paste("./test/",filename,"_range.png", sep=""), width=5, height=4, dpi=100)
+        ggsave(file=paste("./filtered/",filename,"_range.png", sep=""), width=5, height=4, dpi=100)
         
       }
       dev.off() 

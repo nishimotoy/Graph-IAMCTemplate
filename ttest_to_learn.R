@@ -1,4 +1,4 @@
-# 参考資料コピー
+while (0) { # 参考資料コピー
 # 各群の95%信頼区間を比較するグラフをつくる
 
 xtreat <-c(5.23, 6.12, 5.79)
@@ -12,7 +12,10 @@ arrows(cixtreat[1],1,cixtreat[2],1,length=0.05,angle=90,code=3)
 arrows(ciplacebo[1],2,ciplacebo[2],2,length=0.05,angle=90,code=3)
 mtext(c("Xtreat","placebo"),side=2,at=1:2,line=0.5,las=1,)
 
-# df_Graph にて書き下し（見本に忠実ver）
+} # 参考資料コピー
+
+
+while (0) { # df_Graph にて書き下し（見本に忠実ver）
 
 CI1 <- df_Graph %>% filter(SCENARIO=='Historical')
 CI2 <- df_Graph %>% filter(SCENARIO=='Baseline')
@@ -39,9 +42,9 @@ mtext(c("Historical","Baseline","2C"),side=2,at=1:3,line=0.5,las=1)
 # EI <- df_Graph_tmp$ChangeRate_Energy_Intensity
 # ER <- df_Graph_tmp$ChangeRate_Electricity_Rate_Total
 
+} # df_Graph にて書き下し（見本に忠実ver）
 
-# df_Graph にて書き下し（整理ver）
-while (0) {  # 旧
+while (0) {  # df_Graph にて書き下し（整理ver）
   df_CI <- df_Graph %>% select('SCENARIO','ChangeRate_Carbon_Intensity'
   ) %>% na.omit(
   ) %>% mutate(id = rownames(df_CI)
@@ -78,7 +81,7 @@ while (0) {  # 旧
   arrows(ciCI05[1],5,ciCI03[2],5,length=0.05,angle=90,code=3)
   arrows(ciCI06[1],6,ciCI03[2],6,length=0.05,angle=90,code=3)
   mtext(scenarionames,side=2,at=1:6,line=0.5,las=1)
-} # 旧
+} # df_Graph にて書き下し（整理ver）
 
 
 # 変数にてloop
@@ -93,7 +96,7 @@ mean_list <- c()
 df_CI_all <- data.frame()
 matrix_conf_CI <- matrix(nrow=length(scenarionames), ncol=2)
   
-# for (ci_indicator in ci_indicators) { # 変数名でloop
+# for (ci_indicator in ci_indicators) { # 変数名でloop # t.test
   ci_indicator <- ci_indicators[2]
 
   # scenarioname <- scenarionames[1]
@@ -107,13 +110,38 @@ matrix_conf_CI <- matrix(nrow=length(scenarionames), ncol=2)
     vec_CI <- df_CI %>% unlist() %>% as.vector(mode='numeric') 
     conf_CI <- t.test(vec_CI)$conf.int
     matrix_conf_CI[num,] <- conf_CI
-    range
-    
+
     mean_CI <- mean(vec_CI)
     mean_list <- append(mean_list, mean_CI)
-  #  df_CI_all <- rbind(df_CI_all,df_CI)
+    df_CI_all <- rbind(df_CI_all,df_CI)
   }  # シナリオでloop
+  write_csv(df_CI_all, "./df_CI_written.csv")
 
+  g <- dotchart(mean_list, pch=16, xlim=range(matrix_conf_CI),xlab=ci_indicator)
+  for (num in 1:length(scenarionames)) { # シナリオNo.でloop
+      g <-  arrows(matrix_conf_CI[num,1],num,matrix_conf_CI[num,2],num,length=0.05,angle=90,code=3)
+  }  # シナリオでloop
+  g <- mtext(scenarionames,side=2,at=1:length(scenarionames),line=0.5,las=1)
+  # plot(g)
+  filename <- paste("Conf_",ci_indicator,"_", sep="")
+  ggsave(file=paste("./png/",filename,".png", sep=""))
+    
+# }  # 変数名でloop # t.test
+
+
+    # for (ci_indicator in ci_indicators) { # 変数名でloop # quantile
+    ci_indicator <- ci_indicators[2]
+    
+    # scenarioname <- scenarionames[1]
+    # for (scenarioname in scenarionames) { # シナリオ名でloop
+
+    scenarionames <- levels(df_Graph$SCENARIO) %>% as.vector()    # c('Baseline','2C','1.5C','2.5C','WB2C') # 'Historical'
+    ci_indicators <- c('ChangeRate_Energy_Intensity','ChangeRate_Carbon_Intensity','ChangeRate_Electricity_Rate_Total') 
+    df_CI <- df_Graph %>% select('SCENARIO', all_of(ci_indicators))
+    ggpairs(df_CI, colour='SCENARIO', shape='SCENARIO')
+      
+    g <- boxplot( ChangeRate_Energy_Intensity, main="df_CI$ChangeRate_Energy_Intensity" )
+    
     g <- dotchart(mean_list, pch=16, xlim=range(matrix_conf_CI),xlab=ci_indicator)
     for (num in 1:length(scenarionames)) { # シナリオNo.でloop
       g <-  arrows(matrix_conf_CI[num,1],num,matrix_conf_CI[num,2],num,length=0.05,angle=90,code=3)
@@ -121,9 +149,13 @@ matrix_conf_CI <- matrix(nrow=length(scenarionames), ncol=2)
     g <- mtext(scenarionames,side=2,at=1:length(scenarionames),line=0.5,las=1)
     # plot(g)
     filename <- paste("Conf_",ci_indicator,"_", sep="")
-    # ggsave(file=paste("./png/",filename,".png", sep=""))
+    ggsave(file=paste("./png/",filename,".png", sep=""))
     
-# }  # 変数名でloop
-
+    # }  # 変数名でloop # quantile
+    
+    
 # dev.off() # PDF出力終了
+
+
+
     
