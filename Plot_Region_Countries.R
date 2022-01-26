@@ -280,6 +280,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
           ",color=REGION, shape=SCENARIO)) +
     #       geom_line() +
             geom_point() + 
+            scale_colour_gdocs() +
             scale_shape_manual(values=c(19,21,21,21,21,21))")))
         plot(g)
         filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
@@ -290,15 +291,15 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
     
     
     # 箱ヒゲ図  地域別
-    pdf(file=paste("./",scenarioname,"_boxplot.pdf", sep=""))    
+    pdf(file=paste("./",scenarioname,"_boxplot_Region.pdf", sep=""))    
     for (indicator in indicators) {
       g <- eval(parse(text=paste0(
-        "ggplot(df_Graph_plot, aes(x=","REGION",",y=",indicator, 
-        ",color=SCENARIO)) +
+        "ggplot(df_Graph_plot, aes(x=REGION ,y=",indicator, ", color=SCENARIO)) +
           geom_boxplot() +
-          geom_jitter(shape=20, position=position_dodge(0.8))")))
+        # geom_jitter(shape=20, position=position_dodge(0.8)) +
+          scale_colour_gdocs() ")))
       plot(g)
-      filename <- paste(scenarioname,"_","boxplot_",indicator, sep="")
+      filename <- paste(scenarioname,"_","boxplot_Region_",indicator, sep="")
       ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
     }
     dev.off() 
@@ -308,11 +309,11 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
     pdf(file=paste("./",scenarioname,"_boxplot_World.pdf", sep=""))    
     for (indicator in indicators) {
       g <- eval(parse(text=paste0(
-        "ggplot(df_Graph_plot, aes(x=","SCENARIO",",y=",indicator, 
-        ",color=SCENARIO)) +
+        "ggplot(df_Graph_plot, aes(x=SCENARIO, y=",indicator, ", color=SCENARIO)) +
           geom_boxplot() +
-          scale_colour_gdocs() +
-          geom_jitter(shape=20, position=position_dodge(0.8))")))
+        # geom_jitter(shape=20, position=position_dodge(0.8)) +  # 箱ヒゲに点を重ねる
+          stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
+          scale_colour_gdocs() ")))
       plot(g)
       filename <- paste(scenarioname,"_","boxplot_World_",indicator, sep="")
       ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
@@ -320,21 +321,19 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
       vec_indicator <- eval(parse(text=paste0("df_Graph_plot$",indicator)))
       # vec_indicator <- vec_indicator %>% na.omit()
       # quantile_indicator <- quantile(vec_indicator, c(0, 0.05, 0.25, 0.5, 0.75, 0.95, 1))
-      range_min <- quantile(na.omit(vec_indicator), 0.05)
-      range_max <- quantile(na.omit(vec_indicator), 0.95)
+      range_min <- quantile(na.omit(vec_indicator), 0.01)
+      range_max <- quantile(na.omit(vec_indicator), 0.99)
 
       g <- eval(parse(text=paste0(
-        "ggplot(df_Graph_plot, aes(x=","SCENARIO",",y=",indicator, 
-        ",color=SCENARIO)) +
+        "ggplot(df_Graph_plot, aes(x=SCENARIO, y=",indicator, ", color=SCENARIO)) +
           geom_boxplot() +
-#         scale_colour_gdocs() +
-          scale_color_manual(values=c('#3366CC', '#66AA00', '#0099C6', '#DD4477', '#BB2E2E', '#990099')) +
-          ylim(range_min,range_max) +
-          geom_jitter(shape=20, position=position_dodge(0.8))")))
+          ylim(",range_min, ", ",range_max, ") +
+          stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
+        # scale_color_manual(values=c('#3366CC', '#66AA00', '#0099C6', '#DD4477', '#BB2E2E', '#990099')) +
+          scale_colour_gdocs() ")))
       plot(g)
       filename <- paste(scenarioname,"_","boxplot_World_ylim_",indicator, sep="")
       ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
-      
     }
     dev.off() 
     
@@ -342,8 +341,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
     pdf(file=paste("./",scenarioname,"_histogram.pdf", sep=""))    
     for (indicator in indicators) {
       g <- eval(parse(text=paste0(
-        "ggplot(df_Graph_plot, aes(x=",indicator, 
-        ",color=SCENARIO)) +
+        "ggplot(df_Graph_plot, aes(x=",indicator, ",color=SCENARIO)) +
         # geom_histogram(bins=50, position='identity', alpha=0.2) + # 
           geom_histogram(bins=50, position='dodge', alpha=0) + 
           scale_colour_gdocs() +
@@ -358,10 +356,9 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
     pdf(file=paste("./",scenarioname,"_density.pdf", sep=""))    
     for (indicator in indicators) {
       g <- eval(parse(text=paste0(
-        "ggplot(df_Graph_plot, aes(x=",indicator, 
-        ",color=SCENARIO)) +
+        "ggplot(df_Graph_plot, aes(x=",indicator, ",color=SCENARIO)) +
           geom_density(size=0.7) +
-          scale_fill_brewer(palette='Set1') +
+          scale_colour_gdocs() +
         # xlim(-0.2,0.2) +
           ylab('Density (Counts scaled to 1) of Region-Year')")))
       plot(g)
@@ -379,6 +376,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
           ",color=REGION, shape=SCENARIO)) +
             geom_line() +
             geom_point() +
+            scale_colour_gdocs() +
           # theme(legend.position='none') +
             scale_shape_manual(values=c(19,21,21,21,21,21))")))
         plot(g)
@@ -395,7 +393,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
       indicator <- c('ChangeRate_Carbon_Intensity')
       x_range_all <- df_Graph_plot %>% select(all_of(indicator)) %>% drop_na()
       x_range_outliered <- df_Graph_plot %>% select(all_of(indicator)  
-                                    ) %>% rm.outlier(fill = FALSE, median = FALSE, opposite = FALSE
+                                    ) %>% rm.outlier(fill=F, median=F, opposite=F
                                     ) %>% drop_na()  # 外れ値を除外
       anti_join(x_range_all, x_range_outliered)
       semi_join(x_range_all, x_range_outliered)
@@ -404,13 +402,13 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
       for (indicator in indicators) {
         
         x_range_sample <- df_Graph_plot %>% select(all_of(indicator)
-                                      ) %>% rm.outlier(fill = FALSE, median = FALSE, opposite = FALSE)
-        
-        
+                                      ) %>% rm.outlier(fill=F, median=F, opposite=F)
+
         g <- eval(parse(text=paste0(
           "ggplot(df_Graph_plot, aes(x=",indicator, 
           ",color=SCENARIO)) +
             geom_density(size=0.7) +
+            scale_colour_gdocs() +
           # xlim(-0.2,0.2) +
             ylab('Density (Counts scaled to 1) of Region-Year')")))
         plot(g)
