@@ -231,8 +231,9 @@ df_indicator <- df_indicator %>% select(-c(Year, Country, REGION))
 
 df_summary <- df_indicator %>% group_by(SCENARIO
                          ) %>% summarise_each(funs(length, n_distinct,
-                          min(., na.rm=T), max(., na.rm=T),
-                          median(., na.rm=T), sd(., na.rm=T))) # na.rm=T 
+                          min(., na.rm=T), median(., na.rm=T), max(., na.rm=T),
+                          mean(., na.rm=T), sd(., na.rm=T),
+                          quantile(., 0.05, na.rm=T), quantile(., 0.95, na.rm=T),)) # na.rm=T 
 
 # df_summary <- df_indicator %>% group_by(SCENARIO
 #                          ) %>% list(length, n_distinct,
