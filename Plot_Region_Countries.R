@@ -227,25 +227,21 @@ df_indicator <- df_Graph %>% select(one_of(Titlerow3),one_of(indicators)
                        ) %>% group_by(SCENARIO)
 write_csv(df_indicator, "./df_indicator_written.csv")  # Year, Country, REGION入りのデータで保存
 
-df_indicator <- df_indicator %>% select(-c(Year, Country, REGION))
+df_summary <- df_indicator %>% select(-c(Year, Country, REGION)
+  ) %>% group_by(SCENARIO
+  ) %>% summarise_at(vars(everything()),
+                     funs(length, n_distinct, min(., na.rm=T), median(., na.rm=T),
+                          max(., na.rm=T), mean(., na.rm=T), sd(., na.rm=T),
+                          'q05%'=quantile(., probs=0.05, na.rm=T), 
+                          'q95%'=quantile(., probs=0.95, na.rm=T), )
+  ) # %>% arrange()
 
-df_summary <- df_indicator %>% group_by(SCENARIO
-                         ) %>% summarise_each(funs(length, n_distinct,
-                          min(., na.rm=T), median(., na.rm=T), max(., na.rm=T),
-                          mean(., na.rm=T), sd(., na.rm=T),
-                          quantile(., 0.05, na.rm=T), quantile(., 0.95, na.rm=T),)) # na.rm=T 
+# colnames(df_summary) <- c('item', levels(df_indicator$SCENARIO) )
+colnames(df_summary) <- df_summary[1,]
 
-# df_summary <- df_indicator %>% group_by(SCENARIO
-#                          ) %>% list(length, n_distinct,
-#                                     min, max, median, sd
-#                                   # , quantile(.,0.05, na.rm=T), quantile(.,0.95, na.rm=T)
-#                                     )
-# 後で対応＞各列をベクトルにしてNA削除して個別に統計量を出し、整形して出力
-# vec_indicator <- eval(parse(text=paste0("df_Graph_plot$",indicator)))
-# quantile_indicator <- quantile(na.omit(vec_indicator), c(0, 0.05, 0.25, 0.5, 0.75, 0.95, 1))
 
 df_summary_ChangeRate <- df_summary %>% select(SCENARIO, starts_with("ChangeRate_")) 
-# df_summary_ChangeRate <- as.data.frame(t(df_summary_ChangeRate))
+df_summary_ChangeRate <- as.data.frame(t(df_summary_ChangeRate))
 df_summary <- as.data.frame(t(df_summary))
 write.csv(df_summary, "./df_summary_written.csv", row.names=T) 
 write.csv(df_summary_ChangeRate, "./df_summary_ChangeRate_written.csv", row.names=T) 
