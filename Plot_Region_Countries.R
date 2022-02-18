@@ -86,22 +86,23 @@ df_past_long <- df_past_long %>% group_by(VARIABLE,Country
 df_past_BaseYear <- df_past_long %>% filter(Year==BaseYear
       ) %>% mutate(Year=0)
 
-pdf(file=paste("./","past_filled.pdf", sep=""))   # PDF出力開始
-for (y_name in unique(df_past_long$VARIABLE)) { # 補完値の確認出力 by サンプル国
-  df_Graph_past <- df_past_long %>% filter(Country %in% Sample_Country
-                              ) %>% filter(VARIABLE==y_name)
-  g <- ggplot(df_Graph_past, aes(x=Year,y=Value2, 
-                                 color=Country, shape=SCENARIO2)) +
-    geom_point() +
-    # theme(legend.position='none') +
-    ylab(y_name) +
-    scale_shape_manual(values=c(24,19))
-  plot(g)
-  filename <- paste("Interpolated_",y_name,"_",Interpolate_NA, sep="")
-  ggsave(file=paste("./png/",filename,".png", sep=""))
-}  
-dev.off() # PDF出力終了
-
+while (0) { # PDF出力
+  pdf(file=paste("./","past_filled.pdf", sep=""))   # PDF出力開始
+  for (y_name in unique(df_past_long$VARIABLE)) { # 補完値の確認出力 by サンプル国
+    df_Graph_past <- df_past_long %>% filter(Country %in% Sample_Country
+                                ) %>% filter(VARIABLE==y_name)
+    g <- ggplot(df_Graph_past, aes(x=Year,y=Value2, 
+                                   color=Country, shape=SCENARIO2)) +
+      geom_point() +
+      # theme(legend.position='none') +
+      ylab(y_name) +
+      scale_shape_manual(values=c(24,19))
+    plot(g)
+    filename <- paste("Interpolated_",y_name,"_",Interpolate_NA, sep="")
+    ggsave(file=paste("./png/",filename,".png", sep=""))
+  }  
+  dev.off() # PDF出力
+} # PDF出力
 # 基準年データがない国の処理 } 
 
 write_csv(df_past_long, "./df_past_long_written_everyYear.csv") # VARIABLE REGION Country 
@@ -147,12 +148,12 @@ df_long$Value <- as.numeric(df_long$Value)   # NA warning ＞ 確認済
 write_csv(df_long, "./df_long_written.csv")  
 
 # Aggregation to Region ------------------------------------------------------
-for (dummyloop in 1) {  # 地域集約 # while (0)
+for (dummyloop in 1) {  # 地域集約 # while (0)  # このloopをONにすると17地域集約の出力になる
   # df_long_agg <- aggregate(df_long[c('Value')], FUN=sum, 
   #                          by=list(VARIABLE=df_long$VARIABLE,REGION=df_long$REGION,SCENARIO=df_long$SCENARIO,Year=df_long$Year))
   # df_long_agg <- within(df_long, cumsum_Value <- cumsum(Value))
   df_long_agg <- aggregate(Value~VARIABLE+REGION+SCENARIO+Year, df_long, sum)
-  df_long_agg <-   df_long_agg %>% mutate(country=REGION)
+  df_long_agg <- df_long_agg %>% mutate(Country=REGION)  # グラフ出力の都合でCountryにREGIONデータをコピー
   write_csv(df_long_agg, "./df_long_agg_written.csv")  
   df_long <- df_long_agg 
 }  # 地域集約
