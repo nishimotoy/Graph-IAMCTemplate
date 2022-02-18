@@ -91,7 +91,7 @@ for (y_name in unique(df_past_long$VARIABLE)) { # 補完値の確認出力 by �
   df_Graph_past <- df_past_long %>% filter(Country %in% Sample_Country
                               ) %>% filter(VARIABLE==y_name)
   g <- ggplot(df_Graph_past, aes(x=Year,y=Value2, 
-                                         color=Country, shape=SCENARIO2)) +
+                                 color=Country, shape=SCENARIO2)) +
     geom_point() +
     # theme(legend.position='none') +
     ylab(y_name) +
@@ -138,13 +138,25 @@ write_csv(df_future, "./df_future_written.csv")
 # Connect Past & Future ------------------------------------------------------
 df_long_past <- df_past_long %>% rbind(df_past_BaseYear) 
 df_long_past <- df_long_past %>% select(-Value2, -SCENARIO2
-                      ) %>% filter(Year %in% c(Year5, 0))
+                      ) %>% filter(Year %in% c(Year5, 0))   # 各年から5年置きに
 df_long_future <- gather(df_future, key=Year, value=Value, -all_of(Titlerow2))
 df_long_future$Year  <- as.numeric(df_long_future$Year) 
 df_long <- rbind(df_long_past, df_long_future)
 df_long$Year  <- as.numeric(df_long$Year) 
 df_long$Value <- as.numeric(df_long$Value)   # NA warning ＞ 確認済 
 write_csv(df_long, "./df_long_written.csv")  
+
+# Aggregation to Region ------------------------------------------------------
+for (dummyloop in 1) {  # 地域集約 # while (0)
+  # df_long_agg <- aggregate(df_long[c('Value')], FUN=sum, 
+  #                          by=list(VARIABLE=df_long$VARIABLE,REGION=df_long$REGION,SCENARIO=df_long$SCENARIO,Year=df_long$Year))
+  # df_long_agg <- within(df_long, cumsum_Value <- cumsum(Value))
+  df_long_agg <- aggregate(Value~VARIABLE+REGION+SCENARIO+Year, df_long, sum)
+  df_long_agg <-   df_long_agg %>% mutate(country=REGION)
+  write_csv(df_long_agg, "./df_long_agg_written.csv")  
+  df_long <- df_long_agg 
+}  # 地域集約
+
 
 # Table format and Indicator  ------------------------------------------------------
 # 指標の処理  # Variable_Names_for_Indicators df_vni <- indicator, numerator, denominator
@@ -232,12 +244,12 @@ df_summary <- df_indicator %>% select(-c(Year, Country, REGION)
   ) %>% summarise_at(vars(everything()),
                      funs(length, n_distinct, min(., na.rm=T), median(., na.rm=T),
                           max(., na.rm=T), mean(., na.rm=T), sd(., na.rm=T),
-                          'q05%'=quantile(., probs=0.05, na.rm=T), 
+                          'q5%'=quantile(., probs=0.05, na.rm=T), 
                           'q95%'=quantile(., probs=0.95, na.rm=T), )
-  ) # %>% arrange()
+  ) # %>% arrange(colnames(df_summary ))
 
-# colnames(df_summary) <- c('item', levels(df_indicator$SCENARIO) )
-colnames(df_summary) <- df_summary[1,]
+# df_summary <- df_summary  %>% mutate(item=names) 
+# colnames(df_summary) <- df_summary[1,]
 
 
 df_summary_ChangeRate <- df_summary %>% select(SCENARIO, starts_with("ChangeRate_")) 
