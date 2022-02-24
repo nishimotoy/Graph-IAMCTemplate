@@ -99,10 +99,11 @@ while (0) { # PDF出力
       scale_shape_manual(values=c(24,19))
     plot(g)
     filename <- paste("Interpolated_",y_name,"_",Interpolate_NA, sep="")
-    ggsave(file=paste("./png/",filename,".png", sep=""))
+    # ggsave(file=paste("./png/",filename,".png", sep=""))
   }  
-  dev.off() # PDF出力
+  dev.off() # PDF出力終了
 } # PDF出力
+
 # 基準年データがない国の処理 } 
 
 write_csv(df_past_long, "./df_past_long_written_everyYear.csv") # VARIABLE REGION Country 
@@ -133,6 +134,11 @@ df_future <- df_future %>% mutate(VARIABLE = str_replace_all(VARIABLE, pattern =
   'Final Energy.Commercial.Electricity' = 'TFC_Elec_Com',
   'Final Energy' = 'TFC_Total_Total' )))
 # View(df_future)
+# ここで、上記以外のデータは捨てる
+df_future <- df_future %>% filter(VARIABLE %in% 
+                c('GDP_IEA','POP_IEA','TES_Total','CO2_fuel_Total',
+                  'TFC_Elec_Total','TFC_Elec_Ind','TFC_Total_Tra',
+                  'TFC_Elec_Res','TFC_Elec_Com','TFC_Total_Total'))
 write_csv(df_future, "./df_future_written.csv") 
 # }  # 将来シナリオの読込
 
@@ -148,14 +154,16 @@ df_long$Value <- as.numeric(df_long$Value)   # NA warning ＞ 確認済
 write_csv(df_long, "./df_long_written.csv")  
 
 # Aggregation to Region ------------------------------------------------------
-for (dummyloop in 1) {  # 地域集約 # while (0)  # このloopをONにすると17地域集約の出力になる
-  # df_long_agg <- aggregate(df_long[c('Value')], FUN=sum, 
-  #                          by=list(VARIABLE=df_long$VARIABLE,REGION=df_long$REGION,SCENARIO=df_long$SCENARIO,Year=df_long$Year))
-  # df_long_agg <- within(df_long, cumsum_Value <- cumsum(Value))
-  df_long_agg <- aggregate(Value~VARIABLE+REGION+SCENARIO+Year, df_long, sum)
-  df_long_agg <- df_long_agg %>% mutate(Country=REGION)  # グラフ出力の都合でCountryにREGIONデータをコピー
-  write_csv(df_long_agg, "./df_long_agg_written.csv")  
-  df_long <- df_long_agg 
+for (dummyloop in 1) {  # 地域集約 # while (0)
+  df_long_agg <- aggregate(Value~VARIABLE+REGION+SCENARIO+Year, df_long, sum) # 集約対象=Country
+  df_long_agg <- df_long_agg %>% mutate(Country=REGION)
+  # df_long <- df_long_agg  # 過去17地域、将来17地域で出力する場合
+  for (dummyloop in 1) {  # 過去17地域と過去約2百数ヶ国を併記する場合
+    df_long_agg <- df_long_agg %>% filter(SCENARIO=='Historical'
+                             ) %>% mutate(SCENARIO='Historical_R17')
+    df_long <- df_long %>% rbind(df_long_agg)
+  } # 併記する場合 
+  write_csv(df_long_agg, "./df_long_agg_written.csv") 
 }  # 地域集約
 
 
@@ -204,7 +212,7 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理1   # テスト後に戻す (i i
   } # 基準年値をdf_Graphに追加する
   
 } # 指標毎の処理1
-df_Graph$SCENARIO <- factor(df_Graph$SCENARIO, levels=c('Historical','Baseline','2.5C','2C','1.5C','WB2C'))
+df_Graph$SCENARIO <- factor(df_Graph$SCENARIO, levels=c('Historical','Historical_R17','Baseline','2.5C','2C','1.5C','WB2C'))
 df_Graph <- df_Graph %>% filter(Year!=0) %>% group_by(SCENARIO,Country) %>% arrange(SCENARIO,Country,Year)
 write_csv(df_Graph, "./df_Graph_afterfulljoin_written.csv") 
 
@@ -231,10 +239,12 @@ write_csv(df_Graph, "./df_Graph_written.csv")
 
 #Summary ------------------------------------------------------
 
-indicators <- c('Energy_Intensity_scaled','ChangeRate_Energy_Intensity','ChangeRateBY_Energy_Intensity',
-                'Carbon_Intensity_scaled','ChangeRate_Carbon_Intensity','ChangeRateBY_Carbon_Intensity',
-                'Electricity_Rate_Total_scaled','ChangeRate_Electricity_Rate_Total','ChangeRateBY_Electricity_Rate_Total',
-                'Electricity_Rate_Total','POP_IEA','GDP_Capita') 
+indicators <- c('ChangeRate_Energy_Intensity','ChangeRate_Carbon_Intensity','ChangeRate_Electricity_Rate_Total',
+                'Energy_Intensity_scaled','Carbon_Intensity_scaled','Electricity_Rate_Total_scaled','Electricity_Rate_Total') 
+# indicators <- c('Energy_Intensity_scaled','ChangeRate_Energy_Intensity','ChangeRateBY_Energy_Intensity',
+#                'Carbon_Intensity_scaled','ChangeRate_Carbon_Intensity','ChangeRateBY_Carbon_Intensity',
+#                'Electricity_Rate_Total_scaled','ChangeRate_Electricity_Rate_Total','ChangeRateBY_Electricity_Rate_Total',
+#                'Electricity_Rate_Total','POP_IEA','GDP_Capita') 
 
 df_indicator <- df_Graph %>% select(one_of(Titlerow3),one_of(indicators)
                        ) %>% group_by(SCENARIO)
@@ -289,124 +299,147 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
                                filter(df_Graph, SCENARIO=='Historical'))
     }
     
-    for (dummyloop in 1) { # XY散布図 by 17地域
-      pdf(file=paste("./",scenarioname,"_XY.pdf", sep=""))    
-      for (num in 1:length(x_names)) {
+    while (0) { # for (dummyloop in 1) { # XY散布図 by 17地域 bk
+        pdf(file=paste("./",scenarioname,"_XY.pdf", sep=""))    
+        for (num in 1:length(x_names)) {
+          g <- eval(parse(text=paste0(
+            "ggplot(df_Graph_plot, aes(x=",x_names[num],",y=",y_names[num], 
+            ",color=REGION, shape=SCENARIO)) +
+              geom_line() +
+              geom_point() + 
+            # scale_colour_gdocs() +
+              scale_shape_manual(values=c(19,19,21,21,21,21,21))"))) # Historical2本
+          plot(g)
+          filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
+          # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
+        }
+        dev.off() 
+    } # XY散布図 by 17地域 bk
+    
+    while (0) { # 箱ヒゲ図  地域別
+      pdf(file=paste("./",scenarioname,"_boxplot_Region.pdf", sep=""))    
+      for (indicator in indicators) {
         g <- eval(parse(text=paste0(
-          "ggplot(df_Graph_plot, aes(x=",x_names[num],",y=",y_names[num], 
-          ",color=REGION, shape=SCENARIO)) +
-            geom_line() +
-            geom_point() + 
-          # scale_colour_gdocs() +
-            scale_shape_manual(values=c(19,21,21,21,21,21))")))
+          "ggplot(df_Graph_plot, aes(x=REGION ,y=",indicator, ", color=SCENARIO)) +
+            geom_boxplot() +
+          # geom_jitter(shape=20, position=position_dodge(0.8)) +
+            scale_colour_gdocs() ")))
         plot(g)
-        filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
-        ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
+        filename <- paste(scenarioname,"_","boxplot_Region_",indicator, sep="")
+        # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
       }
       dev.off() 
-    } # XY散布図 by 17地域
+    } # 箱ヒゲ図  地域別
     
+    for (dummyloop in 1) { # 箱ヒゲ図  全世界
+      pdf(file=paste("./",scenarioname,"_boxplot_World.pdf", sep=""))    
+      for (indicator in indicators) {
+        g <- eval(parse(text=paste0(
+          "ggplot(df_Graph_plot, aes(x=SCENARIO, y=",indicator, ", color=SCENARIO)) +
+            geom_boxplot() +
+          # geom_jitter(shape=20, position=position_dodge(0.8)) +  # 箱ヒゲに点を重ねる
+            stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
+            scale_colour_gdocs() ")))
+        plot(g)
+        filename <- paste(scenarioname,"_","boxplot_World_",indicator, sep="")
+        # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
+  
+        vec_indicator <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
+        axis_range_value <- axis_range(vec_indicator, axis_cutoff_percentile)
+        g <- eval(parse(text=paste0(
+          "ggplot(df_Graph_plot, aes(x=SCENARIO, y=",indicator, ", color=SCENARIO)) +
+            geom_boxplot() +
+            ylim(",axis_range_value[1], ", ",axis_range_value[2], ") +
+            stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
+          # scale_color_manual(values=c('#3366CC', '#66AA00', '#0099C6', '#DD4477', '#BB2E2E', '#990099')) +
+            scale_colour_gdocs() ")))
+        plot(g)
+        filename <- paste(scenarioname,"_","boxplot_World_ylim_",indicator, sep="")
+        # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
+      }
+      dev.off() 
+    } # 箱ヒゲ図  全世界
+        
+    for (dummyloop in 1) { # 頻度分布
+      pdf(file=paste("./",scenarioname,"_histogram.pdf", sep=""))    
+      for (indicator in indicators) {
+        g <- eval(parse(text=paste0(
+          "ggplot(df_Graph_plot, aes(x=",indicator, ",color=SCENARIO)) +
+          # geom_histogram(bins=50) + # 積み上げ
+          # geom_histogram(bins=50, position='identity', alpha=0.3) + # 透過重ね
+            geom_histogram(bins=50, position='dodge', alpha=0) + # 隣接バー
+            ylab('Count of Region-Year') +
+            scale_colour_gdocs() ")))
+        plot(g)
+        filename <- paste(scenarioname,"_","histogram_",indicator, sep="")
+        # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
+        
+        vec_indicator <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
+        axis_range_value <- axis_range(vec_indicator, axis_cutoff_percentile)
+        g <- eval(parse(text=paste0(
+          "ggplot(df_Graph_plot, aes(x=",indicator, ",color=SCENARIO)) +
+           geom_histogram(bins=50, position='dodge', alpha=0) + # 隣接バー
+            ylab('Count of Region-Year') +
+            xlim(",axis_range_value[1], ", ",axis_range_value[2], ") +
+            scale_colour_gdocs() ")))
+        plot(g)
+        filename <- paste(scenarioname,"_","histogram_xlim_",indicator, sep="")
+        # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
+      }
+      dev.off()
+    } # 頻度分布
     
-    # 箱ヒゲ図  地域別
-    pdf(file=paste("./",scenarioname,"_boxplot_Region.pdf", sep=""))    
-    for (indicator in indicators) {
-      g <- eval(parse(text=paste0(
-        "ggplot(df_Graph_plot, aes(x=REGION ,y=",indicator, ", color=SCENARIO)) +
-          geom_boxplot() +
-        # geom_jitter(shape=20, position=position_dodge(0.8)) +
-          scale_colour_gdocs() ")))
-      plot(g)
-      filename <- paste(scenarioname,"_","boxplot_Region_",indicator, sep="")
-      ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
-    }
-    dev.off() 
-    
-    
-    # 箱ヒゲ図  全世界
-    pdf(file=paste("./",scenarioname,"_boxplot_World.pdf", sep=""))    
-    for (indicator in indicators) {
-      g <- eval(parse(text=paste0(
-        "ggplot(df_Graph_plot, aes(x=SCENARIO, y=",indicator, ", color=SCENARIO)) +
-          geom_boxplot() +
-        # geom_jitter(shape=20, position=position_dodge(0.8)) +  # 箱ヒゲに点を重ねる
-          stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
-          scale_colour_gdocs() ")))
-      plot(g)
-      filename <- paste(scenarioname,"_","boxplot_World_",indicator, sep="")
-      ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
+    for (dummyloop in 1) { # 確率密度分布
+      pdf(file=paste("./",scenarioname,"_density.pdf", sep=""))    
+      for (indicator in indicators) {
+        g <- eval(parse(text=paste0(
+          "ggplot(df_Graph_plot, aes(x=",indicator, ",color=SCENARIO)) +
+            geom_density(size=0.7) +
+            scale_colour_gdocs() +
+          # xlim(-0.2,0.2) +
+            ylab('Density (Counts scaled to 1) of Region-Year')")))
+        plot(g)
+        filename <- paste(scenarioname,"_","density_",indicator, sep="")
+        # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
+        
+        vec_indicator <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
+        axis_range_value <- axis_range(vec_indicator, axis_cutoff_percentile)
+        g <- eval(parse(text=paste0(
+          "ggplot(df_Graph_plot, aes(x=",indicator, ",color=SCENARIO)) +
+            geom_density(size=0.7) +
+            scale_colour_gdocs() +
+            xlim(",axis_range_value[1], ", ",axis_range_value[2], ") +
+          # xlim(-0.2,0.2) +
+            ylab('Density (Counts scaled to 1) of Region-Year')")))
+        plot(g)
+        filename <- paste(scenarioname,"_","density_xlim_",indicator, sep="")
+        # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
+        
+      }
+      dev.off() 
+    } # 確率密度分布
 
-      vec_indicator <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
-      axis_range_value <- axis_range(vec_indicator, axis_cutoff_percentile)
-      g <- eval(parse(text=paste0(
-        "ggplot(df_Graph_plot, aes(x=SCENARIO, y=",indicator, ", color=SCENARIO)) +
-          geom_boxplot() +
-          ylim(",axis_range_value[1], ", ",axis_range_value[2], ") +
-          stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
-        # scale_color_manual(values=c('#3366CC', '#66AA00', '#0099C6', '#DD4477', '#BB2E2E', '#990099')) +
-          scale_colour_gdocs() ")))
-      plot(g)
-      filename <- paste(scenarioname,"_","boxplot_World_ylim_",indicator, sep="")
-      ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
-    }
-    dev.off() 
-    
-    # 頻度分布
-    pdf(file=paste("./",scenarioname,"_histogram.pdf", sep=""))    
-    for (indicator in indicators) {
-      g <- eval(parse(text=paste0(
-        "ggplot(df_Graph_plot, aes(x=",indicator, ",color=SCENARIO)) +
-        # geom_histogram(bins=50, position='identity', alpha=0.2) + # 
-          geom_histogram(bins=50, position='dodge', alpha=0) + 
-          ylab('Count of Region-Year') +
-          scale_colour_gdocs() ")))
-      plot(g)
-      filename <- paste(scenarioname,"_","histogram_",indicator, sep="")
-      ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
+    for (dummyloop in 1) { # XY散布図 by 17地域 vs 17地域 
+      # df_Graph_plotXY <- data_frame()
+      df_Graph_plotXY <- df_Graph_plot %>% filter(SCENARIO!='Historical')
+      # write_csv(df_Graph_plotXY, "./df_Graph_plotXY_written.csv") 
+      # write_csv(df_Graph_plot, "./df_Graph_plot_written.csv") 
       
-      vec_indicator <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
-      axis_range_value <- axis_range(vec_indicator, axis_cutoff_percentile)
-      g <- eval(parse(text=paste0(
-        "ggplot(df_Graph_plot, aes(x=",indicator, ",color=SCENARIO)) +
-        # geom_histogram(bins=50, position='identity', alpha=0.2) + # 
-          geom_histogram(bins=50, position='dodge', alpha=0) + 
-          ylab('Count of Region-Year') +
-          xlim(",axis_range_value[1], ", ",axis_range_value[2], ") +
-          scale_colour_gdocs() ")))
-      plot(g)
-      filename <- paste(scenarioname,"_","histogram_xlim_",indicator, sep="")
-      ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
-      
-   }
-    dev.off() 
-    
-    # 確率密度分布
-    pdf(file=paste("./",scenarioname,"_density.pdf", sep=""))    
-    for (indicator in indicators) {
-      g <- eval(parse(text=paste0(
-        "ggplot(df_Graph_plot, aes(x=",indicator, ",color=SCENARIO)) +
-          geom_density(size=0.7) +
-          scale_colour_gdocs() +
-        # xlim(-0.2,0.2) +
-          ylab('Density (Counts scaled to 1) of Region-Year')")))
-      plot(g)
-      filename <- paste(scenarioname,"_","density_",indicator, sep="")
-      ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
-      
-      vec_indicator <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
-      axis_range_value <- axis_range(vec_indicator, axis_cutoff_percentile)
-      g <- eval(parse(text=paste0(
-        "ggplot(df_Graph_plot, aes(x=",indicator, ",color=SCENARIO)) +
-          geom_density(size=0.7) +
-          scale_colour_gdocs() +
-          xlim(",axis_range_value[1], ", ",axis_range_value[2], ") +
-        # xlim(-0.2,0.2) +
-          ylab('Density (Counts scaled to 1) of Region-Year')")))
-      plot(g)
-      filename <- paste(scenarioname,"_","density_xlim_",indicator, sep="")
-      ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
-      
-    }
-    dev.off() 
+      pdf(file=paste("./",scenarioname,"_XY_R17.pdf", sep=""))    
+      for (num in 1:length(x_names)) {
+        g <- eval(parse(text=paste0(
+          "ggplot(df_Graph_plotXY, aes(x=",x_names[num],",y=",y_names[num], 
+          ",color=REGION, shape=SCENARIO)) +
+              geom_line() +
+              geom_point() + 
+              scale_colour_gdocs() +
+              scale_shape_manual(values=c(19,21,22,23,24,25,26))"))) # SCENARIO数
+        plot(g)
+        filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
+        # ggsave(file=paste("./png/R17",filename,".png", sep=""), width=5, height=4, dpi=100)
+      }
+      dev.off() 
+    } # XY散布図 by 17地域 bk
 
     while (0) { # XY散布図 by 国別 for (dummyloop in 1)
       df_Graph_plot <- df_Graph_plot %>% ungroup() %>% group_by(Country,SCENARIO)
@@ -419,10 +452,10 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
             geom_point() +
             scale_colour_gdocs() +
           # theme(legend.position='none') +
-            scale_shape_manual(values=c(19,21,21,21,21,21))")))
+            scale_shape_manual(values=c(19,19,21,21,21,21,21))")))
         plot(g)
         filename <- paste(scenarioname,"_",num,"_",x_names[num],"-",y_names[num],"_CN", sep="")
-        ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
+        # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
       }
       dev.off() 
     } # XY散布図 by 国別
@@ -450,7 +483,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
             scale_colour_gdocs()")))
         plot(g)
         filename <- paste(scenarioname,"_","density_filtered_",indicator, sep="")
-        ggsave(file=paste("./filtered/",filename,".png", sep=""), width=5, height=4, dpi=100)
+        # ggsave(file=paste("./filtered/",filename,".png", sep=""), width=5, height=4, dpi=100)
 
         # 範囲指定のグラフ
         vec_indicator <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
@@ -462,13 +495,30 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
             ylab('Density (Counts scaled to 1) of Region-Year') +
             scale_colour_gdocs()")))
         plot(g)
-        ggsave(file=paste("./filtered/",filename,"_xlim.png", sep=""), width=5, height=4, dpi=100)
+        # ggsave(file=paste("./filtered/",filename,"_xlim.png", sep=""), width=5, height=4, dpi=100)
         
       }
       dev.off() 
     } # 特定パターンのみの確率密度分布
     
-        
+    while (0) { # for (dummyloop in 1) { # XY散布図 by 17地域 bk
+      pdf(file=paste("./",scenarioname,"_XY.pdf", sep=""))    
+      for (num in 1:length(x_names)) {
+        g <- eval(parse(text=paste0(
+          "ggplot(df_Graph_plot, aes(x=",x_names[num],",y=",y_names[num], 
+          ",color=REGION, shape=SCENARIO)) +
+              geom_line() +
+              geom_point() + 
+            # scale_colour_gdocs() +
+              scale_shape_manual(values=c(19,19,21,21,21,21,21))"))) # Historical2本
+        plot(g)
+        filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
+        # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
+      }
+      dev.off() 
+    } # XY散布図 by 17地域 bk
+    
+    
   } # scenarioname loop
 
 } # グラフ出力
@@ -508,7 +558,7 @@ while (0) { # 確認用グラフ    while (0) for (dummyloop in 1)
     ylab('Variables_scaled (Bese-Year value = 1.0)') +
     annotate("text",x=Inf,y=Inf,label=paste(scenarioname_for_test,countryname_for_test),hjust=1.2,vjust=3)
   plot(g2) 
-    ggsave(file=paste("./test/",scenarioname_for_test,"_",countryname_for_test,"_test.png", sep=""), width=6, height=4, dpi=100)
+    # ggsave(file=paste("./test/",scenarioname_for_test,"_",countryname_for_test,"_test.png", sep=""), width=6, height=4, dpi=100)
 
       # dev.off() 
 } # 確認用グラフ
