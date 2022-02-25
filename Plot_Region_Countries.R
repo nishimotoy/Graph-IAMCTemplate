@@ -212,7 +212,8 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理1   # テスト後に戻す (i i
   } # 基準年値をdf_Graphに追加する
   
 } # 指標毎の処理1
-df_Graph$SCENARIO <- factor(df_Graph$SCENARIO, levels=c('Historical','Historical_R17','Baseline','2.5C','2C','1.5C','WB2C'))
+df_Graph$SCENARIO <- factor(df_Graph$SCENARIO, 
+                            levels=c('Historical','Historical_R17','Baseline','2.5C','2C','1.5C','WB2C'))
 df_Graph <- df_Graph %>% filter(Year!=0) %>% group_by(SCENARIO,Country) %>% arrange(SCENARIO,Country,Year)
 write_csv(df_Graph, "./df_Graph_afterfulljoin_written.csv") 
 
@@ -278,7 +279,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
                rep('REGION',length(indicators)),
                rep('GDP_Capita',length(indicators)) )
   y_names <- c(rep(indicators,3))
-  scenario_color <- c('#3366CC', '#66AA00', '#0099C6', '#DD4477', '#BB2E2E', '#990099')
+  scenario_color <- c('#3366CC', '#66AA00', '#0099C6', '#DD4477', '#BB2E2E', '#990099', '#651067', '#22AA99')
   axis_cutoff_percentile <- 0.005    # 軸の表示において切り捨てる分位範囲 （0.005: 両端5% cutoff）
   axis_range <- function(vec_indicator, cutoff_percentile) {
     axis_range_return <- c(quantile(na.omit(vec_indicator), cutoff_percentile),
@@ -351,7 +352,6 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
             geom_boxplot() +
             ylim(",axis_range_value[1], ", ",axis_range_value[2], ") +
             stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
-          # scale_color_manual(values=c('#3366CC', '#66AA00', '#0099C6', '#DD4477', '#BB2E2E', '#990099')) +
             scale_colour_gdocs() ")))
         plot(g)
         filename <- paste(scenarioname,"_","boxplot_World_ylim_",indicator, sep="")
@@ -420,6 +420,8 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
     } # 確率密度分布
 
     for (dummyloop in 1) { # XY散布図 by 17地域 vs 17地域 
+      library(RColorBrewer)
+      scenario_color <- c(brewer.pal(5,"Dark2"),brewer.pal(8,"Accent"),brewer.pal(4,"Set1"))  
       # df_Graph_plotXY <- data_frame()
       df_Graph_plotXY <- df_Graph_plot %>% filter(SCENARIO!='Historical')
       # write_csv(df_Graph_plotXY, "./df_Graph_plotXY_written.csv") 
@@ -430,16 +432,16 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
         g <- eval(parse(text=paste0(
           "ggplot(df_Graph_plotXY, aes(x=",x_names[num],",y=",y_names[num], 
           ",color=REGION, shape=SCENARIO)) +
-              geom_line() +
               geom_point() + 
-              scale_colour_gdocs() +
-              scale_shape_manual(values=c(19,21,22,23,24,25,26))"))) # SCENARIO数
+              geom_line() +
+              scale_color_manual(values=c(rep(scenario_color,3))) +
+              scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
         plot(g)
         filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
         # ggsave(file=paste("./png/R17",filename,".png", sep=""), width=5, height=4, dpi=100)
       }
       dev.off() 
-    } # XY散布図 by 17地域 bk
+    } # XY散布図 by 17地域 vs 17地域
 
     while (0) { # XY散布図 by 国別 for (dummyloop in 1)
       df_Graph_plot <- df_Graph_plot %>% ungroup() %>% group_by(Country,SCENARIO)
