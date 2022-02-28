@@ -276,9 +276,9 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
 
   # 出力対象のXY軸を指定する　x_names(n) vs y_names(n)のグラフが出力される
   x_names <- c(rep('Year',length(indicators)),
-               rep('REGION',length(indicators)),
-               rep('GDP_Capita',length(indicators)) )
-  y_names <- c(rep(indicators,3))
+               rep('GDP_Capita',length(indicators)) 
+               ) # rep('REGION',length(indicators)),
+  y_names <- c(rep(indicators,2)) #3
   scenario_color <- c('#3366CC', '#66AA00', '#0099C6', '#DD4477', '#BB2E2E', '#990099', '#651067', '#22AA99')
   axis_cutoff_percentile <- 0.005    # 軸の表示において切り捨てる分位範囲 （0.005: 両端5% cutoff）
   axis_range <- function(vec_indicator, cutoff_percentile) {
@@ -424,11 +424,13 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
       scenario_color <- c(brewer.pal(5,"Dark2"),brewer.pal(8,"Accent"),brewer.pal(4,"Set1"))  
       # df_Graph_plotXY <- data_frame()
       df_Graph_plotXY <- df_Graph_plot %>% filter(SCENARIO!='Historical')
+      df_Graph_plotXY_His <- df_Graph_plotXY %>% filter(SCENARIO=='Historical_R17')
+      
       # write_csv(df_Graph_plotXY, "./df_Graph_plotXY_written.csv") 
       # write_csv(df_Graph_plot, "./df_Graph_plot_written.csv") 
       
       pdf(file=paste("./",scenarioname,"_XY_R17.pdf", sep=""))    
-      for (num in 1:length(x_names)) {
+      for (num in 1:length(x_names)) { #num   
         g <- eval(parse(text=paste0(
           "ggplot(df_Graph_plotXY, aes(x=",x_names[num],",y=",y_names[num], 
           ",color=REGION, shape=SCENARIO)) +
@@ -439,8 +441,23 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
         plot(g)
         filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
         # ggsave(file=paste("./png/R17",filename,".png", sep=""), width=5, height=4, dpi=100)
-      }
-      dev.off() 
+
+        x_axis_min <- eval(parse(text=paste0("min(df_Graph_plotXY$",x_names[num],", na.rm=T)")))
+        x_axis_max <- eval(parse(text=paste0("max(df_Graph_plotXY$",x_names[num],", na.rm=T)")))
+        y_axis_min <- eval(parse(text=paste0("min(df_Graph_plotXY$",y_names[num],", na.rm=T)")))
+        y_axis_max <- eval(parse(text=paste0("max(df_Graph_plotXY$",y_names[num],", na.rm=T)")))
+        g <- eval(parse(text=paste0(
+          "ggplot(df_Graph_plotXY_His, aes(x=",x_names[num],",y=",y_names[num], 
+          ",color=REGION, shape=SCENARIO)) +
+              geom_point() + 
+              geom_line() +
+              xlim(",x_axis_min, ", ",x_axis_max, ") +
+              ylim(",y_axis_min, ", ",y_axis_max, ") +
+              scale_color_manual(values=c(rep(scenario_color,3))) +
+              scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
+        plot(g)
+     } #num
+     dev.off() 
     } # XY散布図 by 17地域 vs 17地域
 
     while (0) { # XY散布図 by 国別 for (dummyloop in 1)
