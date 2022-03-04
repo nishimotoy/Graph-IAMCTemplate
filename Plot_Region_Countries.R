@@ -127,18 +127,23 @@ df_future <- df_future %>% mutate(VARIABLE = str_replace_all(VARIABLE, pattern =
   'Population' = 'POP_IEA',
   'Primary Energy' = 'TES_Total',
   'Emissions.CO2.Energy' = 'CO2_fuel_Total',
-  'Final Energy.Electricity' = 'TFC_Elec_Total',
   'Final Energy.Industry.Electricity' = 'TFC_Elec_Ind',
   'Final Energy.Transportation.Electricity' = 'TFC_Elec_Tra',
   'Final Energy.Residential.Electricity' = 'TFC_Elec_Res',
   'Final Energy.Commercial.Electricity' = 'TFC_Elec_Com',
-  'Final Energy' = 'TFC_Total_Total' )))
+  'Final Energy.Electricity' = 'TFC_Elec_Total',
+  'Final Energy.Industry' = 'TFC_Total_Ind',
+  'Final Energy.Transportation' = 'TFC_Total_Tra',
+  'Final Energy.Residential' = 'TFC_Total_Res',
+  'Final Energy.Commercial' = 'TFC_Total_Com',
+  'Final Energy' = 'TFC_Total_Total')))  # 順番注意／.最長マッチ
 # View(df_future)
+write_csv(df_future, "./df_future_pre_written.csv") 
 # ここで、上記以外のデータは捨てる
 df_future <- df_future %>% filter(VARIABLE %in% 
-                c('GDP_IEA','POP_IEA','TES_Total','CO2_fuel_Total',
-                  'TFC_Elec_Total','TFC_Elec_Ind','TFC_Total_Tra',
-                  'TFC_Elec_Res','TFC_Elec_Com','TFC_Total_Total'))
+              c('GDP_IEA','POP_IEA','TES_Total','CO2_fuel_Total',
+                'TFC_Total_Total','TFC_Total_Ind','TFC_Total_Tra','TFC_Total_Res','TFC_Total_Com',
+                'TFC_Elec_Total','TFC_Elec_Ind','TFC_Elec_Tra','TFC_Elec_Res','TFC_Elec_Com'))
 write_csv(df_future, "./df_future_written.csv") 
 # }  # 将来シナリオの読込
 
@@ -241,10 +246,10 @@ write_csv(df_Graph, "./df_Graph_written.csv")
 #Summary ------------------------------------------------------
 
 indicators <- c('ChangeRate_Energy_Intensity','ChangeRate_Carbon_Intensity','ChangeRate_Electricity_Rate_Total',
-                'Energy_Intensity_scaled','Carbon_Intensity_scaled','Electricity_Rate_Total',
-                'Electricity_Rate_Ind','Electricity_Rate_Tra','Electricity_Rate_Res','Electricity_Rate_Com',
                 'ChangeRate_Electricity_Rate_Ind','ChangeRate_Electricity_Rate_Tra',
-                'ChangeRate_Electricity_Rate_Res','ChangeRate_Electricity_Rate_Com') 
+                'ChangeRate_Electricity_Rate_Res','ChangeRate_Electricity_Rate_Com',
+                'Energy_Intensity_scaled','Carbon_Intensity_scaled','Electricity_Rate_Total',
+                'Electricity_Rate_Ind','Electricity_Rate_Tra','Electricity_Rate_Res','Electricity_Rate_Com') 
 # indicators <- c('Energy_Intensity_scaled','ChangeRate_Energy_Intensity','ChangeRateBY_Energy_Intensity',
 #                'Carbon_Intensity_scaled','ChangeRate_Carbon_Intensity','ChangeRateBY_Carbon_Intensity',
 #                'Electricity_Rate_Total_scaled','ChangeRate_Electricity_Rate_Total','ChangeRateBY_Electricity_Rate_Total',
@@ -545,44 +550,4 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
 
 } # グラフ出力
 
-#Graph output for singular case ------------------------------------------------------
-while (0) { # 確認用グラフ    while (0) for (dummyloop in 1)
-
-  scenarioname_for_test <- 'WB2C' # '1.5C' #   
-  countryname_for_test <-  'CIS' # 'XER' #
-  scaling_for_ChangeRate <-  1
-  
-  df_Graph_tmp <- df_Graph_plot %>% filter(SCENARIO==scenarioname_for_test, Country==countryname_for_test
-                ) %>% select(Year, ChangeRate_Carbon_Intensity, ChangeRateBY_Carbon_Intensity, 
-                             Carbon_Intensity, Carbon_Intensity_scaled, TES_Total, CO2_fuel_Total) 
-  
-  df_Graph_tmp <- df_Graph_tmp %>% mutate(TES_Total_scaled=TES_Total/TES_Total[Year==2010]  
-    ) %>% mutate(ChangeRate_Carbon_Intensity_scaled=ChangeRate_Carbon_Intensity/scaling_for_ChangeRate  
-    ) %>% mutate(ChangeRateBY_Carbon_Intensity_scaled=ChangeRateBY_Carbon_Intensity/scaling_for_ChangeRate
-    ) %>% mutate(CO2_fuel_Total_scaled=CO2_fuel_Total/CO2_fuel_Total[Year==2010])
-  
-  g1 <- ggplot(df_Graph_tmp, aes(Year)) +
-    geom_line(aes(y = ChangeRate_Carbon_Intensity, colour = '_ChangeRate_Carbon_Intensity'),size=1)+
-    geom_line(aes(y = ChangeRateBY_Carbon_Intensity, colour = '_ChangeRateBY_Carbon_Intensity'),size=1)+
-    geom_line(aes(y = Carbon_Intensity, colour = 'Carbon_Intensity'),size=1) +
-    geom_line(aes(y = TES_Total, colour = 'TES_Total'),size=1)+
-    geom_line(aes(y = CO2_fuel_Total, colour = 'CO2_fuel_Total'),size=1) +
-    ylab('Variables')+
-    annotate("text",x=Inf,y=Inf,label=paste(scenarioname_for_test,countryname_for_test),hjust=1.2,vjust=2)
-  plot(g1)
-  
-  g2 <- ggplot(df_Graph_tmp, aes(Year)) +
-    geom_line(aes(y = ChangeRate_Carbon_Intensity_scaled, colour = '_ChangeRate_Carbon_Intensity'),size=1) +
-    geom_line(aes(y = ChangeRateBY_Carbon_Intensity_scaled, colour = '_ChangeRateBY_Carbon_Intensity'),size=1)+
-    geom_line(aes(y = Carbon_Intensity_scaled, colour = 'Carbon_Intensity_scaled'),size=1) +
-    geom_line(aes(y = TES_Total_scaled, colour = 'TES_Total_scaled'),size=1) +
-    geom_line(aes(y = CO2_fuel_Total_scaled, colour = 'CO2_fuel_Total_scaled'),size=1) +
-    ylab('Variables_scaled (Bese-Year value = 1.0)') +
-    annotate("text",x=Inf,y=Inf,label=paste(scenarioname_for_test,countryname_for_test),hjust=1.2,vjust=3)
-  plot(g2) 
-    # ggsave(file=paste("./test/",scenarioname_for_test,"_",countryname_for_test,"_test.png", sep=""), width=6, height=4, dpi=100)
-
-      # dev.off() 
-} # 確認用グラフ
-
-
+source('Graph_outlier.R')
