@@ -527,25 +527,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
       }
       dev.off() 
     } # 特定パターンのみの確率密度分布
-    
-    while (0) { # for (dummyloop in 1) { # XY散布図 by 17地域 bk
-      pdf(file=paste("./",scenarioname,"_XY.pdf", sep=""))    
-      for (num in 1:length(x_names)) {
-        g <- eval(parse(text=paste0(
-          "ggplot(df_Graph_plot, aes(x=",x_names[num],",y=",y_names[num], 
-          ",color=REGION, shape=SCENARIO)) +
-              geom_line() +
-              geom_point() + 
-            # scale_colour_gdocs() +
-              scale_shape_manual(values=c(19,19,21,21,21,21,21))"))) # Historical2本
-        plot(g)
-        filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
-        # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
-      }
-      dev.off() 
-    } # XY散布図 by 17地域 bk
-    
-    
+
   } # scenarioname loop
 
 } # グラフ出力
