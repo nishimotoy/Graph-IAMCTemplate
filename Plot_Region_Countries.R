@@ -434,8 +434,8 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
       df_Graph_plotXY <- df_Graph_plot %>% filter(SCENARIO!='Historical')
       df_Graph_plotXY_His <- df_Graph_plotXY %>% filter(SCENARIO=='Historical_R17')
       
-      # write_csv(df_Graph_plotXY, "./df_Graph_plotXY_written.csv") 
-      # write_csv(df_Graph_plot, "./df_Graph_plot_written.csv") 
+      write_csv(df_Graph_plotXY, "./df_Graph_plotXY_written.csv") 
+      write_csv(df_Graph_plotXY_His, "./df_Graph_plotXY_His_written.csv") 
       
       pdf(file=paste("./",scenarioname,"_XY_R17.pdf", sep=""))    
       for (num in 1:length(x_names)) { #num   
@@ -450,10 +450,12 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
         filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
         # ggsave(file=paste("./png/R17",filename,".png", sep=""), width=5, height=4, dpi=100)
 
-        x_axis_min <- eval(parse(text=paste0("min(df_Graph_plotXY$",x_names[num],", na.rm=T)")))
-        x_axis_max <- eval(parse(text=paste0("max(df_Graph_plotXY$",x_names[num],", na.rm=T)")))
-        y_axis_min <- eval(parse(text=paste0("min(df_Graph_plotXY$",y_names[num],", na.rm=T)")))
-        y_axis_max <- eval(parse(text=paste0("max(df_Graph_plotXY$",y_names[num],", na.rm=T)")))
+        small <- 0.001
+        x_axis_min <- min(eval(parse(text=paste0("df_Graph_plotXY$",x_names[num]))), na.rm=T)*(1-small)
+        y_axis_min <- min(eval(parse(text=paste0("df_Graph_plotXY$",y_names[num]))), na.rm=T)*(1-small)
+        x_axis_max <- max(eval(parse(text=paste0("df_Graph_plotXY$",x_names[num]))), na.rm=T)*(1+small)
+        y_axis_max <- max(eval(parse(text=paste0("df_Graph_plotXY$",y_names[num]))), na.rm=T)*(1+small)
+
         g <- eval(parse(text=paste0(
           "ggplot(df_Graph_plotXY_His, aes(x=",x_names[num],",y=",y_names[num], 
           ",color=REGION, shape=SCENARIO)) +
@@ -529,7 +531,5 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
     } # 特定パターンのみの確率密度分布
 
   } # scenarioname loop
-
 } # グラフ出力
-
 
