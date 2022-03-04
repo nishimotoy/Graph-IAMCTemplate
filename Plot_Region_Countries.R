@@ -129,7 +129,7 @@ df_future <- df_future %>% mutate(VARIABLE = str_replace_all(VARIABLE, pattern =
   'Emissions.CO2.Energy' = 'CO2_fuel_Total',
   'Final Energy.Electricity' = 'TFC_Elec_Total',
   'Final Energy.Industry.Electricity' = 'TFC_Elec_Ind',
-  'Final Energy.Transportation.Electricity' = 'TFC_Total_Tra',
+  'Final Energy.Transportation.Electricity' = 'TFC_Elec_Tra',
   'Final Energy.Residential.Electricity' = 'TFC_Elec_Res',
   'Final Energy.Commercial.Electricity' = 'TFC_Elec_Com',
   'Final Energy' = 'TFC_Total_Total' )))
@@ -241,7 +241,10 @@ write_csv(df_Graph, "./df_Graph_written.csv")
 #Summary ------------------------------------------------------
 
 indicators <- c('ChangeRate_Energy_Intensity','ChangeRate_Carbon_Intensity','ChangeRate_Electricity_Rate_Total',
-                'Energy_Intensity_scaled','Carbon_Intensity_scaled','Electricity_Rate_Total_scaled','Electricity_Rate_Total') 
+                'Energy_Intensity_scaled','Carbon_Intensity_scaled','Electricity_Rate_Total',
+                'Electricity_Rate_Ind','Electricity_Rate_Tra','Electricity_Rate_Res','Electricity_Rate_Com',
+                'ChangeRate_Electricity_Rate_Ind','ChangeRate_Electricity_Rate_Tra',
+                'ChangeRate_Electricity_Rate_Res','ChangeRate_Electricity_Rate_Com') 
 # indicators <- c('Energy_Intensity_scaled','ChangeRate_Energy_Intensity','ChangeRateBY_Energy_Intensity',
 #                'Carbon_Intensity_scaled','ChangeRate_Carbon_Intensity','ChangeRateBY_Carbon_Intensity',
 #                'Electricity_Rate_Total_scaled','ChangeRate_Electricity_Rate_Total','ChangeRateBY_Electricity_Rate_Total',
