@@ -245,11 +245,17 @@ write_csv(df_Graph, "./df_Graph_written.csv")
 
 #Summary ------------------------------------------------------
 
+# ここで置換 df_Graph のうち Inf を NA に
+# df_Graph[which(df_Graph == Inf, TRUE)] <- NA
+df_Graph_bk <- df_Graph
+df_Graph[df_Graph==Inf] <- NA
+write_csv(anti_join(df_Graph, df_Graph_bk), "./df_Graph_antijoin_written.csv") 
+
 indicators <- c('ChangeRate_Energy_Intensity','ChangeRate_Carbon_Intensity','ChangeRate_Electricity_Rate_Total',
-                'ChangeRate_Electricity_Rate_Ind','ChangeRate_Electricity_Rate_Tra',
-                'ChangeRate_Electricity_Rate_Res','ChangeRate_Electricity_Rate_Com',
-                'Energy_Intensity_scaled','Carbon_Intensity_scaled','Electricity_Rate_Total',
-                'Electricity_Rate_Ind','Electricity_Rate_Tra','Electricity_Rate_Res','Electricity_Rate_Com') 
+              'ChangeRate_Electricity_Rate_Ind','ChangeRate_Electricity_Rate_Tra',
+              'ChangeRate_Electricity_Rate_Res','ChangeRate_Electricity_Rate_Com',
+              'Energy_Intensity_scaled','Carbon_Intensity_scaled','Electricity_Rate_Total',
+              'Electricity_Rate_Ind','Electricity_Rate_Tra','Electricity_Rate_Res','Electricity_Rate_Com')
 # indicators <- c('Energy_Intensity_scaled','ChangeRate_Energy_Intensity','ChangeRateBY_Energy_Intensity',
 #                'Carbon_Intensity_scaled','ChangeRate_Carbon_Intensity','ChangeRateBY_Carbon_Intensity',
 #                'Electricity_Rate_Total_scaled','ChangeRate_Electricity_Rate_Total','ChangeRateBY_Electricity_Rate_Total',
@@ -288,10 +294,10 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
                ) # rep('REGION',length(indicators)),
   y_names <- c(rep(indicators,2)) #3
   scenario_color <- c('#3366CC', '#66AA00', '#0099C6', '#DD4477', '#BB2E2E', '#990099', '#651067', '#22AA99')
-  axis_cutoff_percentile <- 0.005    # 軸の表示において切り捨てる分位範囲 （0.005: 両端5% cutoff）
+  axis_cutoff_percentile <- 0.01    # 軸の表示において切り捨てる分位範囲 （0.005: 両端5% cutoff）
   axis_range <- function(vec_indicator, cutoff_percentile) {
-    axis_range_return <- c(quantile(na.omit(vec_indicator), cutoff_percentile),
-                           quantile(na.omit(vec_indicator), (1-cutoff_percentile))
+    axis_range_return <- c(quantile(na.omit(vec_indicator), cutoff_percentile, na.rm=T),
+                           quantile(na.omit(vec_indicator), (1-cutoff_percentile), na.rm=T)
     ) %>% as.numeric()
     return(axis_range_return)
   }
