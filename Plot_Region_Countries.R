@@ -7,7 +7,7 @@ root <- 'C:/_Nishimoto/R/WBAL_R02/'
 Titlerow1 <- c('MODEL','SCENARIO','REGION','VARIABLE','UNIT')
 Titlerow2 <- c('REGION','Country','VARIABLE','SCENARIO')
 Titlerow3 <- c('SCENARIO','Country','REGION','Year')
-scenarioname <- 'Baseline'  # 読込対象の将来シナリオ（今は読込の時点でシナリオを絞っている）
+scenarioname <- 'Baseline'  # 読込対象の将来シナリオ（読込の時点でシナリオを絞る場合）
 BaseYear <- 2010  # %>% as.numeric()  # 基準年値
 Sample_Country <- c('Former Soviet Union','Former Yugoslavia','South Sudan','Bosnia and Herzegovina')  # GDP(2010)が無い国
 Interpolate_NA <- 'fill'   # 'fill_latest_or_first_existing_value'
@@ -246,10 +246,9 @@ write_csv(df_Graph, "./df_Graph_written.csv")
 #Summary ------------------------------------------------------
 
 # ここで置換 df_Graph のうち Inf を NA に
-# df_Graph[which(df_Graph == Inf, TRUE)] <- NA
-df_Graph_bk <- df_Graph
+# df_Graph_bk <- df_Graph
 df_Graph[df_Graph==Inf] <- NA
-write_csv(anti_join(df_Graph, df_Graph_bk), "./df_Graph_antijoin_written.csv") 
+# write_csv(anti_join(df_Graph, df_Graph_bk), "./df_Graph_antijoin_written.csv") 
 
 indicators <- c('ChangeRate_Energy_Intensity','ChangeRate_Carbon_Intensity','ChangeRate_Electricity_Rate_Total',
               'ChangeRate_Electricity_Rate_Ind','ChangeRate_Electricity_Rate_Tra',
@@ -268,7 +267,7 @@ write_csv(df_indicator, "./df_indicator_written.csv")  # Year, Country, REGION�
 df_summary <- df_indicator %>% select(-c(Year, Country, REGION)
   ) %>% group_by(SCENARIO
   ) %>% summarise_at(vars(everything()),
-                     funs(length, n_distinct, min(., na.rm=T), median(., na.rm=T),
+                     funs(length, n=length(na.omit(.)), min(., na.rm=T), median(., na.rm=T),
                           max(., na.rm=T), mean(., na.rm=T), sd(., na.rm=T),
                           'q5%'=quantile(., probs=0.05, na.rm=T), 
                           'q95%'=quantile(., probs=0.95, na.rm=T), )
@@ -538,4 +537,59 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
 
   } # scenarioname loop
 } # グラフ出力
+
+
+# 項目指定出力
+scenarioname <- 'Multi'
+x_names <- c(
+  'Electricity_Rate_Total', 'TFC_Elec_Total', 'TFC_Total_Total',
+  'Carbon_Intensity', 'CO2_fuel_Total', 'TES_Total', 
+  'Energy_Intensity', 'TES_Total', 'GDP_IEA') 
+y_names <- c(rep('ChangeRate_Electricity_Rate_Total',3),
+             rep('ChangeRate_Carbon_Intensity',3),
+             rep('ChangeRate_Energy_Intensity',3)) 
+
+for (dummyloop in 1) { # XY散布図 by 17地域 vs 17地域 
+  library(RColorBrewer)
+  scenario_color <- c(brewer.pal(5,"Dark2"),brewer.pal(8,"Accent"),brewer.pal(4,"Set1"))  
+  df_Graph_plotXY <- df_Graph_plot 
+  # df_Graph_plotXY <- df_Graph_plot %>% filter(SCENARIO!='Historical')
+  # df_Graph_plotXY_His <- df_Graph_plotXY %>% filter(SCENARIO=='Historical_R17')
+  # write_csv(df_Graph_plotXY, "./df_Graph_plotXY_written.csv") 
+  # write_csv(df_Graph_plotXY_His, "./df_Graph_plotXY_His_written.csv") 
+  
+  pdf(file=paste("./",scenarioname,"_XY_item.pdf", sep=""))    
+  for (num in 1:length(x_names)) { #num   
+    g <- eval(parse(text=paste0(
+      "ggplot(df_Graph_plotXY, aes(x=",x_names[num],",y=",y_names[num], 
+      ",color=REGION, shape=SCENARIO)) +
+              geom_point() + 
+#             geom_line() +
+              scale_color_manual(values=c(rep(scenario_color,3))) +
+              scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
+    plot(g)
+    filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
+    # ggsave(file=paste("./png/R17",filename,".png", sep=""), width=5, height=4, dpi=100)
+
+    while(0) {   
+      small <- 0.001
+      x_axis_min <- min(eval(parse(text=paste0("df_Graph_plotXY$",x_names[num]))), na.rm=T)*(1-small)
+      y_axis_min <- min(eval(parse(text=paste0("df_Graph_plotXY$",y_names[num]))), na.rm=T)*(1-small)
+      x_axis_max <- max(eval(parse(text=paste0("df_Graph_plotXY$",x_names[num]))), na.rm=T)*(1+small)
+      y_axis_max <- max(eval(parse(text=paste0("df_Graph_plotXY$",y_names[num]))), na.rm=T)*(1+small)
+      
+      g <- eval(parse(text=paste0(
+        "ggplot(df_Graph_plotXY_His, aes(x=",x_names[num],",y=",y_names[num], 
+        ",color=REGION, shape=SCENARIO)) +
+                geom_point() + 
+  #              geom_line() +
+                xlim(",x_axis_min, ", ",x_axis_max, ") +
+                ylim(",y_axis_min, ", ",y_axis_max, ") +
+                scale_color_manual(values=c(rep(scenario_color,3))) +
+                scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
+      plot(g)
+    } 
+  } #num
+  dev.off() 
+} # XY散布図 by 17地域 vs 17地域
 
