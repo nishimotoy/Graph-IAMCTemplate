@@ -220,7 +220,7 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理1   # テスト後に戻す (i i
     
     df_Graph <- df_Graph %>% group_by(SCENARIO,Country) %>% arrange(SCENARIO,Country,Year)
     df_Graph<- eval(parse(text=paste0(
-      "df_Graph %>% mutate(",indicator,"_scaled=",indicator,"/",indicator,"[Year==0])"
+      "df_Graph %>% mutate(",indicator,"_scaled=",indicator,"/",indicator,"[Year==0]*",indicator,"[Year==1])"
     )))                     # indicator_scaled = I(t)/I(t=BaseYear) 
     df_Graph <- df_Graph %>% ungroup()
     
@@ -231,7 +231,7 @@ df_Graph$SCENARIO <- factor(df_Graph$SCENARIO,
          levels=c('Historical','Historical_R17','Baseline','2.5C','2C','1.5C','WB2C'))
 df_Graph <- df_Graph %>% group_by(SCENARIO,Country) %>% arrange(SCENARIO,Country,Year)
 write_csv(df_Graph, "./df_Graph_afterfulljoin_written.csv") 
-df_Graph <- df_Graph %>% filter(Year!=0 | Year!=1) 
+df_Graph <- df_Graph %>% filter(Year!=0 & Year!=1) 
 
 # Change rate ------------------------------------------------------
 for (i in 1:ncol(df_vni)) { # 指標毎の処理2   # テスト後に戻す (i in 1:ncol(df_vni))
