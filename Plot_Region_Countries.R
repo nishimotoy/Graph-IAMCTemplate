@@ -84,7 +84,7 @@ df_past_long <- df_past_long %>% group_by(VARIABLE,Country
       ) %>% ungroup()
   
 df_past_BaseYear <- df_past_long %>% filter(Year==BaseYear
-      ) %>% mutate(Year=0)
+                               ) %>% mutate(Year=0)
 
 while (0) { # PDF出力
   pdf(file=paste("./","past_filled.pdf", sep=""))   # PDF出力開始
@@ -119,7 +119,7 @@ df_future <- df_future %>% select(-c('MODEL','UNIT')
 ) %>% filter(!REGION %in% c('ASIA2', 'World')
 ) %>% mutate(Country = REGION)   # 書式を揃える # 国名=地域名
 
-df_future <- df_future %>% mutate('0'=as.numeric(df_future$'2010')) # 基準年値をコピーしておく
+df_future <- df_future %>% mutate('0'=as.numeric(df_future$'2010')) # 基準年値を列コピーしておく
 
 # IAMCTemplete(future) の名前を IEA(past) に揃える＠ '|'対策  # recode でも出来るらしい
 df_future <- df_future %>% mutate(VARIABLE = str_replace_all(VARIABLE, pattern = c(
@@ -167,9 +167,18 @@ for (dummyloop in 1) {  # 地域集約 # while (0)
     df_long_agg <- df_long_agg %>% filter(SCENARIO=='Historical'
                              ) %>% mutate(SCENARIO='Historical_R17')
     df_long <- df_long %>% rbind(df_long_agg)
-  } # 併記する場合 
-  write_csv(df_long_agg, "./df_long_agg_written.csv") 
+  } # 併記する場合
 }  # 地域集約
+write_csv(df_long, "./df_long_after_R17_written.csv") 
+
+# Historical/Future基準年値 (Year=0) から調整用の値 (Year=1) を作る
+df_long_BaseYear <- df_long %>% filter(Year==0) %>% mutate(Year=1)  # 基準年値をコピーして調整年値を作る
+df_long_BaseYear_1 <- df_long_BaseYear %>% filter(SCENARIO=='Historical') 
+df_long_BaseYear_2 <- df_long_BaseYear %>% filter(SCENARIO=='Historical_R17') # %>%  %>% select(-SCENARIO) 
+df_long_BaseYear_3 <- df_long_BaseYear %>% filter(SCENARIO!='Historical', SCENARIO!='Historical_R17') # %>% select(-Value) 
+df_long_BaseYear_4 <- full_join(select(df_long_BaseYear_3, -Value), select(df_long_BaseYear_2, -SCENARIO)) #, by='Country'
+df_long <- df_long %>% rbind(df_long_BaseYear_1) %>% rbind(df_long_BaseYear_2) %>% rbind(df_long_BaseYear_4)
+write_csv(df_long, "./df_long_after_add1_written.csv") 
 
 
 # Table format and Indicator  ------------------------------------------------------
@@ -205,8 +214,9 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理1   # テスト後に戻す (i i
   df_Graph <- df_Graph %>% drop_na('REGION','Year')  # ダミー列のデータを削除
   df_Graph <- eval(parse(text=paste0(
               "df_Graph %>% mutate(",indicator,"=",numerator,"/",denominator,")"))) # 指標の算出
-
-  for (dummyloop in 1) { # 基準年値をdf_Graphに追加する（0年値として追加）
+  write_csv(df_Graph, "./df_Graph_afterfulljoin_written.csv") 
+  
+  for (dummyloop in 1) { # 基準年値で調整した値をdf_Graphに追加する
     
     df_Graph <- df_Graph %>% group_by(SCENARIO,Country) %>% arrange(SCENARIO,Country,Year)
     df_Graph<- eval(parse(text=paste0(
@@ -214,13 +224,14 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理1   # テスト後に戻す (i i
     )))                     # indicator_scaled = I(t)/I(t=BaseYear) 
     df_Graph <- df_Graph %>% ungroup()
     
-  } # 基準年値をdf_Graphに追加する
+  } # 基準年値で調整した値をdf_Graphに追加する
   
 } # 指標毎の処理1
 df_Graph$SCENARIO <- factor(df_Graph$SCENARIO, 
-                            levels=c('Historical','Historical_R17','Baseline','2.5C','2C','1.5C','WB2C'))
-df_Graph <- df_Graph %>% filter(Year!=0) %>% group_by(SCENARIO,Country) %>% arrange(SCENARIO,Country,Year)
+         levels=c('Historical','Historical_R17','Baseline','2.5C','2C','1.5C','WB2C'))
+df_Graph <- df_Graph %>% group_by(SCENARIO,Country) %>% arrange(SCENARIO,Country,Year)
 write_csv(df_Graph, "./df_Graph_afterfulljoin_written.csv") 
+df_Graph <- df_Graph %>% filter(Year!=0 | Year!=1) 
 
 # Change rate ------------------------------------------------------
 for (i in 1:ncol(df_vni)) { # 指標毎の処理2   # テスト後に戻す (i in 1:ncol(df_vni))
