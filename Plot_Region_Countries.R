@@ -162,7 +162,7 @@ write_csv(df_long, "./df_long_written.csv")
 for (dummyloop in 1) {  # 地域集約 # while (0)
   df_long_agg <- aggregate(Value~VARIABLE+REGION+SCENARIO+Year, df_long, sum) # 集約対象=Country
   df_long_agg <- df_long_agg %>% mutate(Country=REGION)
-  # df_long <- df_long_agg  # 過去17地域、将来17地域で出力する場合
+  # df_long <- df_long_agg  # 過去17地域のみを出力する場合
   for (dummyloop in 1) {  # 過去17地域と過去約2百数ヶ国を併記する場合
     df_long_agg <- df_long_agg %>% filter(SCENARIO=='Historical'
                              ) %>% mutate(SCENARIO='Historical_R17')
@@ -174,9 +174,9 @@ write_csv(df_long, "./df_long_after_R17_written.csv")
 # Historical/Future基準年値 (Year=0) から調整用の値 (Year=1) を作る
 df_long_BaseYear <- df_long %>% filter(Year==0) %>% mutate(Year=1)  # 基準年値をコピーして調整年値を作る
 df_long_BaseYear_1 <- df_long_BaseYear %>% filter(SCENARIO=='Historical') 
-df_long_BaseYear_2 <- df_long_BaseYear %>% filter(SCENARIO=='Historical_R17') # %>%  %>% select(-SCENARIO) 
-df_long_BaseYear_3 <- df_long_BaseYear %>% filter(SCENARIO!='Historical', SCENARIO!='Historical_R17') # %>% select(-Value) 
-df_long_BaseYear_4 <- full_join(select(df_long_BaseYear_3, -Value), select(df_long_BaseYear_2, -SCENARIO)) #, by='Country'
+df_long_BaseYear_2 <- df_long_BaseYear %>% filter(SCENARIO=='Historical_R17') 
+df_long_BaseYear_3 <- df_long_BaseYear %>% filter(SCENARIO!='Historical', SCENARIO!='Historical_R17') 
+df_long_BaseYear_4 <- full_join(select(df_long_BaseYear_3, -Value), select(df_long_BaseYear_2, -SCENARIO)) 
 df_long <- df_long %>% rbind(df_long_BaseYear_1) %>% rbind(df_long_BaseYear_2) %>% rbind(df_long_BaseYear_4)
 write_csv(df_long, "./df_long_after_add1_written.csv") 
 
@@ -220,8 +220,17 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理1   # テスト後に戻す (i i
     
     df_Graph <- df_Graph %>% group_by(SCENARIO,Country) %>% arrange(SCENARIO,Country,Year)
     df_Graph<- eval(parse(text=paste0(
-      "df_Graph %>% mutate(",indicator,"_scaled=",indicator,"/",indicator,"[Year==0]*",indicator,"[Year==1])"
-    )))                     # indicator_scaled = I(t)/I(t=BaseYear) 
+      "df_Graph %>% mutate(",indicator,"_scaled=",indicator,"/",indicator,"[Year==0]*",indicator,"[Year==1]
+              ) %>% mutate(",numerator,"_scaled=",numerator,"/",numerator,"[Year==0]*",numerator,"[Year==1]
+              ) %>% mutate(",denominator,"_scaled=",denominator,"/",denominator,"[Year==0]*",denominator,"[Year==1])"
+    )))                     # indicator_scaled = I(t,F/H)/I(t=BaseYear,F/H)*I(t=BaseYear,H)
+    while (0) {  # 基準年値=1 とする場合（このloopを活かすと直前の上書き）
+      df_Graph<- eval(parse(text=paste0(
+        "df_Graph %>% mutate(",indicator,"_scaled=",indicator,"/",indicator,"[Year==0]
+                ) %>% mutate(",numerator,"_scaled=",numerator,"/",numerator,"[Year==0]
+                ) %>% mutate(",denominator,"_scaled=",denominator,"/",denominator,"[Year==0])"
+      )))                     # indicator_scaled = I(t,F/H)/I(t=BaseYear,F/H)
+    }
     df_Graph <- df_Graph %>% ungroup()
     
   } # 基準年値で調整した値をdf_Graphに追加する
@@ -264,12 +273,9 @@ df_Graph[df_Graph==Inf] <- NA
 indicators <- c('ChangeRate_Energy_Intensity','ChangeRate_Carbon_Intensity','ChangeRate_Electricity_Rate_Total',
               'ChangeRate_Electricity_Rate_Ind','ChangeRate_Electricity_Rate_Tra',
               'ChangeRate_Electricity_Rate_Res','ChangeRate_Electricity_Rate_Com',
-              'Energy_Intensity_scaled','Carbon_Intensity_scaled','Electricity_Rate_Total',
-              'Electricity_Rate_Ind','Electricity_Rate_Tra','Electricity_Rate_Res','Electricity_Rate_Com')
-# indicators <- c('Energy_Intensity_scaled','ChangeRate_Energy_Intensity','ChangeRateBY_Energy_Intensity',
-#                'Carbon_Intensity_scaled','ChangeRate_Carbon_Intensity','ChangeRateBY_Carbon_Intensity',
-#                'Electricity_Rate_Total_scaled','ChangeRate_Electricity_Rate_Total','ChangeRateBY_Electricity_Rate_Total',
-#                'Electricity_Rate_Total','POP_IEA','GDP_Capita') 
+              'Energy_Intensity_scaled','Carbon_Intensity_scaled','Electricity_Rate_Total_scaled',
+              'Electricity_Rate_Ind_scaled','Electricity_Rate_Tra_scaled',
+              'Electricity_Rate_Res_scaled','Electricity_Rate_Com_scaled')
 
 df_indicator <- df_Graph %>% select(one_of(Titlerow3),one_of(indicators)
                        ) %>% group_by(SCENARIO)
@@ -553,9 +559,9 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
 # 項目指定出力
 scenarioname <- 'Multi'
 x_names <- c(
-  'Electricity_Rate_Total', 'TFC_Elec_Total', 'TFC_Total_Total',
-  'Carbon_Intensity', 'CO2_fuel_Total', 'TES_Total', 
-  'Energy_Intensity', 'TES_Total', 'GDP_IEA') 
+  'Electricity_Rate_Total_scaled', 'TFC_Elec_Total_scaled', 'TFC_Total_Total_scaled',
+  'Carbon_Intensity_scaled', 'CO2_fuel_Total_scaled', 'TES_Total_scaled', 
+  'Energy_Intensity_scaled', 'TES_Total_scaled', 'GDP_IEA_scaled') 
 y_names <- c(rep('ChangeRate_Electricity_Rate_Total',3),
              rep('ChangeRate_Carbon_Intensity',3),
              rep('ChangeRate_Energy_Intensity',3)) 
