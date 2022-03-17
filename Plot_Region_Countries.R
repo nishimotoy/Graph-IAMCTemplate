@@ -582,6 +582,7 @@ for (dummyloop in 1) { # XY散布図 by 17地域 vs 17地域
       ",color=REGION, shape=SCENARIO)) +
               geom_point() + 
 #             geom_line() +
+#             ylim(",-0.5, ", ",1, ") +
               scale_color_manual(values=c(rep(scenario_color,3))) +
               scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
     plot(g)
