@@ -378,7 +378,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
             scale_colour_gdocs() ")))
         plot(g)
         filename <- paste(scenarioname,"_","boxplot_World_",indicator, sep="")
-        # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
+        ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
   
         vec_indicator <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
         axis_range_value <- axis_range(vec_indicator, axis_cutoff_percentile)
@@ -407,7 +407,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
             scale_colour_gdocs() ")))
         plot(g)
         filename <- paste(scenarioname,"_","histogram_",indicator, sep="")
-        # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
+        ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
         
         vec_indicator <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
         axis_range_value <- axis_range(vec_indicator, axis_cutoff_percentile)
@@ -435,7 +435,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
             ylab('Density (Counts scaled to 1) of Region-Year')")))
         plot(g)
         filename <- paste(scenarioname,"_","density_",indicator, sep="")
-        # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
+        ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
         
         vec_indicator <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
         axis_range_value <- axis_range(vec_indicator, axis_cutoff_percentile)
@@ -475,7 +475,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
               scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
         plot(g)
         filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
-        # ggsave(file=paste("./png/R17",filename,".png", sep=""), width=5, height=4, dpi=100)
+        ggsave(file=paste("./png/R17",filename,".png", sep=""), width=5, height=4, dpi=100)
 
         small <- 0.001
         x_axis_min <- min(eval(parse(text=paste0("df_Graph_plotXY$",x_names[num]))), na.rm=T)*(1-small)
@@ -511,7 +511,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
             scale_shape_manual(values=c(19,19,21,21,21,21,21))")))
         plot(g)
         filename <- paste(scenarioname,"_",num,"_",x_names[num],"-",y_names[num],"_CN", sep="")
-        # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
+        ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
       }
       dev.off() 
     } # XY散布図 by 国別
@@ -539,7 +539,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
             scale_colour_gdocs()")))
         plot(g)
         filename <- paste(scenarioname,"_","density_filtered_",indicator, sep="")
-        # ggsave(file=paste("./filtered/",filename,".png", sep=""), width=5, height=4, dpi=100)
+        ggsave(file=paste("./filtered/",filename,".png", sep=""), width=5, height=4, dpi=100)
 
         # 範囲指定のグラフ
         vec_indicator <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
@@ -592,7 +592,7 @@ for (dummyloop in 1) { # XY散布図 by 17地域 vs 17地域
               scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
     plot(g)
     filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
-    # ggsave(file=paste("./png/R17",filename,".png", sep=""), width=5, height=4, dpi=100)
+    ggsave(file=paste("./png/R17_",filename,".png", sep=""), width=5, height=4, dpi=100)
 
     for (dummyloop in 1) { while(0)  
       small <- 0.01
