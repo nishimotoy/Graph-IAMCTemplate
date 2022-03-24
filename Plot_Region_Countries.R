@@ -314,7 +314,8 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
                rep('GDP_Capita',length(indicators)) 
                ) # rep('REGION',length(indicators)),
   y_names <- c(rep(indicators,2)) #3
-  scenario_color <- c('#3366CC', '#66AA00', '#0099C6', '#DD4477', '#BB2E2E', '#990099', '#651067', '#22AA99')
+# scenario_color <- c('#3366CC', '#66AA00', '#0099C6', '#DD4477', '#BB2E2E', '#990099', '#651067', '#22AA99')
+  scenario_color <- c('#AAAA11', '#329262', '#FF9900', '#DD4477', '#651067', '#3366CC', '#84919E')
   axis_cutoff_percentile <- 0.005   # 軸の表示において切り捨てる分位範囲 （0.01: 両端1% cutoff）
   axis_range <- function(vec_indicator, cutoff_percentile) {
     axis_range_return <- c(quantile(na.omit(vec_indicator), cutoff_percentile, na.rm=T),
@@ -343,7 +344,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
             ",color=REGION, shape=SCENARIO)) +
               geom_line() +
               geom_point() + 
-            # scale_colour_gdocs() +
+            # scale_color_manual(values=c(rep(scenario_color,3))) +
               scale_shape_manual(values=c(19,19,21,21,21,21,21))"))) # Historical2本
           plot(g)
           filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
@@ -359,7 +360,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
           "ggplot(df_Graph_plot, aes(x=REGION ,y=",indicator, ", color=SCENARIO)) +
             geom_boxplot() +
           # geom_jitter(shape=20, position=position_dodge(0.8)) +
-            scale_colour_gdocs() ")))
+            scale_color_manual(values=c(rep(scenario_color,3))) ")))
         plot(g)
         filename <- paste(scenarioname,"_","boxplot_Region_",indicator, sep="")
         # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
@@ -375,7 +376,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
             geom_boxplot() +
           # geom_jitter(shape=20, position=position_dodge(0.8)) +  # 箱ヒゲに点を重ねる
             stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
-            scale_colour_gdocs() ")))
+            scale_color_manual(values=c(rep(scenario_color,3))) ")))
         plot(g)
         filename <- paste(scenarioname,"_","boxplot_World_",indicator, sep="")
         ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
@@ -387,7 +388,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
             geom_boxplot() +
             ylim(",axis_range_value[1], ", ",axis_range_value[2], ") +
             stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
-            scale_colour_gdocs() ")))
+            scale_color_manual(values=c(rep(scenario_color,3))) ")))
         plot(g)
         filename <- paste(scenarioname,"_","boxplot_World_ylim_",indicator, sep="")
         # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
@@ -404,7 +405,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
           # geom_histogram(bins=50, position='identity', alpha=0.3) + # 透過重ね
             geom_histogram(bins=50, position='dodge', alpha=0) + # 隣接バー
             ylab('Count of Region-Year') +
-            scale_colour_gdocs() ")))
+            scale_color_manual(values=c(rep(scenario_color,3))) ")))
         plot(g)
         filename <- paste(scenarioname,"_","histogram_",indicator, sep="")
         ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
@@ -416,7 +417,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
            geom_histogram(bins=50, position='dodge', alpha=0) + # 隣接バー
             ylab('Count of Region-Year') +
             xlim(",axis_range_value[1], ", ",axis_range_value[2], ") +
-            scale_colour_gdocs() ")))
+            scale_color_manual(values=c(rep(scenario_color,3))) ")))
         plot(g)
         filename <- paste(scenarioname,"_","histogram_xlim_",indicator, sep="")
         # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
@@ -430,7 +431,8 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
         g <- eval(parse(text=paste0(
           "ggplot(df_Graph_plot, aes(x=",indicator, ",color=SCENARIO)) +
             geom_density(size=0.7) +
-            scale_colour_gdocs() +
+            scale_color_manual(values=c(rep(scenario_color,3))) +
+            scale_color_manual(values=c(scenario_color)) +
           # xlim(-0.2,0.2) +
             ylab('Density (Counts scaled to 1) of Region-Year')")))
         plot(g)
@@ -442,7 +444,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
         g <- eval(parse(text=paste0(
           "ggplot(df_Graph_plot, aes(x=",indicator, ",color=SCENARIO)) +
             geom_density(size=0.7) +
-            scale_colour_gdocs() +
+            scale_color_manual(values=c(rep(scenario_color,3))) +
             xlim(",axis_range_value[1], ", ",axis_range_value[2], ") +
           # xlim(-0.2,0.2) +
             ylab('Density (Counts scaled to 1) of Region-Year')")))
@@ -506,7 +508,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
           ",color=REGION, shape=SCENARIO)) +
             geom_line() +
             geom_point() +
-            scale_colour_gdocs() +
+            scale_color_manual(values=c(rep(scenario_color,3))) +
           # theme(legend.position='none') +
             scale_shape_manual(values=c(19,19,21,21,21,21,21))")))
         plot(g)
@@ -536,7 +538,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
           "ggplot(df_Graph_filtered, aes(x=",indicator, ",color=SCENARIO)) +
             geom_density(size=0.7) +
             ylab('Density (Counts scaled to 1) of Region-Year') +
-            scale_colour_gdocs()")))
+            scale_color_manual(values=c(rep(scenario_color,3)))")))
         plot(g)
         filename <- paste(scenarioname,"_","density_filtered_",indicator, sep="")
         ggsave(file=paste("./filtered/",filename,".png", sep=""), width=5, height=4, dpi=100)
@@ -549,7 +551,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
             geom_density(size=0.7) +
             xlim(",axis_range_value[1], ", ",axis_range_value[2], ") +  # 
             ylab('Density (Counts scaled to 1) of Region-Year') +
-            scale_colour_gdocs()")))
+            scale_color_manual(values=c(rep(scenario_color,3)))")))
         plot(g)
         # ggsave(file=paste("./filtered/",filename,"_xlim.png", sep=""), width=5, height=4, dpi=100)
         
