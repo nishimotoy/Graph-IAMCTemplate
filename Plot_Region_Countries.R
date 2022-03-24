@@ -247,14 +247,17 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理2   # テスト後に戻す (i i
 
   indicator   <- df_vni[1,i]
   
-  # 指標の変化率（t年比）　ChangeRate_Indicator=(I(t)-I(t-1))/({I(t)+I(t-1)}/2)/((t)-(t-1))
+  # 指標の変化率（t年比）　ChangeRate_Indicator=(I(t)-I(t-1))/SQRT(0.5*({I(t)^2+I(t-1)^2})/((t)-(t-1))
   df_Graph <- eval(parse(text=paste0(
         "df_Graph %>%  mutate(ChangeRateBY_",indicator,
         "=(",indicator,"_scaled-lag(",indicator,"_scaled, n=1))/(Year-lag(Year, n=1))
                   ) %>% mutate(ChangeRate_",indicator,
-        "=(",indicator,"/lag(",indicator,",n=1)-1)/(Year-lag(Year, n=1))
+        "=(",indicator,"-lag(",indicator,",n=1))
+              /sqrt(((",indicator,"^2)+lag(",indicator,",n=1)^2)/2)
+              /(Year-lag(Year, n=1))
                   )")))
-  #  "=(",indicator,"-lag(",indicator,",n=1))/(Year-lag(Year, n=1))/(",indicator,"+lag(",indicator,",n=1))*2
+    #  "=(",indicator,"/lag(",indicator,",n=1)-1)/(Year-lag(Year, n=1))
+    #  "=(",indicator,"-lag(",indicator,",n=1))/(Year-lag(Year, n=1))/(",indicator,"+lag(",indicator,",n=1))*2
   
 } # 指標毎の処理2
 
@@ -287,7 +290,9 @@ df_summary <- df_indicator %>% select(-c(Year, Country, REGION)
                      funs(length, n=length(na.omit(.)), min(., na.rm=T), median(., na.rm=T),
                           max(., na.rm=T), mean(., na.rm=T), sd(., na.rm=T),
                           'q5%'=quantile(., probs=0.05, na.rm=T), 
-                          'q95%'=quantile(., probs=0.95, na.rm=T), )
+                          'q95%'=quantile(., probs=0.95, na.rm=T), 
+                          'q1%'=quantile(., probs=0.01, na.rm=T), 
+                          'q99%'=quantile(., probs=0.99, na.rm=T),)
   ) # %>% arrange(colnames(df_summary ))
 
 # df_summary <- df_summary  %>% mutate(item=names) 
@@ -310,7 +315,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
                ) # rep('REGION',length(indicators)),
   y_names <- c(rep(indicators,2)) #3
   scenario_color <- c('#3366CC', '#66AA00', '#0099C6', '#DD4477', '#BB2E2E', '#990099', '#651067', '#22AA99')
-  axis_cutoff_percentile <- 0.01    # 軸の表示において切り捨てる分位範囲 （0.005: 両端5% cutoff）
+  axis_cutoff_percentile <- 0.005   # 軸の表示において切り捨てる分位範囲 （0.01: 両端1% cutoff）
   axis_range <- function(vec_indicator, cutoff_percentile) {
     axis_range_return <- c(quantile(na.omit(vec_indicator), cutoff_percentile, na.rm=T),
                            quantile(na.omit(vec_indicator), (1-cutoff_percentile), na.rm=T)
@@ -589,20 +594,21 @@ for (dummyloop in 1) { # XY散布図 by 17地域 vs 17地域
     filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
     # ggsave(file=paste("./png/R17",filename,".png", sep=""), width=5, height=4, dpi=100)
 
-    while(0) {   
-      small <- 0.001
+    for (dummyloop in 1) { while(0)  
+      small <- 0.01
       x_axis_min <- min(eval(parse(text=paste0("df_Graph_plotXY$",x_names[num]))), na.rm=T)*(1-small)
       y_axis_min <- min(eval(parse(text=paste0("df_Graph_plotXY$",y_names[num]))), na.rm=T)*(1-small)
       x_axis_max <- max(eval(parse(text=paste0("df_Graph_plotXY$",x_names[num]))), na.rm=T)*(1+small)
       y_axis_max <- max(eval(parse(text=paste0("df_Graph_plotXY$",y_names[num]))), na.rm=T)*(1+small)
       
       g <- eval(parse(text=paste0(
-        "ggplot(df_Graph_plotXY_His, aes(x=",x_names[num],",y=",y_names[num], 
+        "ggplot(df_Graph_plotXY, aes(x=",x_names[num],",y=",y_names[num], 
         ",color=REGION, shape=SCENARIO)) +
                 geom_point() + 
   #              geom_line() +
-                xlim(",x_axis_min, ", ",x_axis_max, ") +
-                ylim(",y_axis_min, ", ",y_axis_max, ") +
+  #             xlim(",x_axis_min, ", ",x_axis_max, ") +
+  #             ylim(",y_axis_min, ", ",y_axis_max, ") +
+                ylim(",-0.5, ", ",0.5, ") +
                 scale_color_manual(values=c(rep(scenario_color,3))) +
                 scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
       plot(g)
