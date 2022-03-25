@@ -253,11 +253,12 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理2   # テスト後に戻す (i i
         "=(",indicator,"_scaled-lag(",indicator,"_scaled, n=1))/(Year-lag(Year, n=1))
                   ) %>% mutate(ChangeRate_",indicator,
         "=(",indicator,"-lag(",indicator,",n=1))
-              /sqrt(((",indicator,"^2)+lag(",indicator,",n=1)^2)/2)
+              /((abs(",indicator,")+abs(lag(",indicator,",n=1)))/2)
               /(Year-lag(Year, n=1))
                   )")))
     #  "=(",indicator,"/lag(",indicator,",n=1)-1)/(Year-lag(Year, n=1))
     #  "=(",indicator,"-lag(",indicator,",n=1))/(Year-lag(Year, n=1))/(",indicator,"+lag(",indicator,",n=1))*2
+ #  /(sqrt(",indicator,"^2)+sqrt(lag(",indicator,",n=1)^2)) /2
   
 } # 指標毎の処理2
 
