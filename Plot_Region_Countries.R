@@ -99,7 +99,7 @@ while (0) { # PDF出力
       scale_shape_manual(values=c(24,19))
     plot(g)
     filename <- paste("Interpolated_",y_name,"_",Interpolate_NA, sep="")
-    # ggsave(file=paste("./png/",filename,".png", sep=""))
+    ## ggsave(file=paste("./png/",filename,".png", sep=""))
   }  
   dev.off() # PDF出力終了
 } # PDF出力
@@ -251,14 +251,20 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理2   # テスト後に戻す (i i
   df_Graph <- eval(parse(text=paste0(
         "df_Graph %>%  mutate(ChangeRateBY_",indicator,
         "=(",indicator,"_scaled-lag(",indicator,"_scaled, n=1))/(Year-lag(Year, n=1))
-                  ) %>% mutate(ChangeRate_",indicator,
+                ) %>% mutate(ChangeRate_",indicator,
         "=(",indicator,"-lag(",indicator,",n=1))
-              /((abs(",indicator,")+abs(lag(",indicator,",n=1)))/2)
+              /abs(lag(",indicator,",n=1))
               /(Year-lag(Year, n=1))
                   )")))
-    #  "=(",indicator,"/lag(",indicator,",n=1)-1)/(Year-lag(Year, n=1))
-    #  "=(",indicator,"-lag(",indicator,",n=1))/(Year-lag(Year, n=1))/(",indicator,"+lag(",indicator,",n=1))*2
- #  /(sqrt(",indicator,"^2)+sqrt(lag(",indicator,",n=1)^2)) /2
+ #  "=(",indicator,"/lag(",indicator,",n=1)-1)  t-1 期で割る
+  
+
+ #  "=(",indicator,"-lag(",indicator,",n=1))  共通
+ #    /lag(",indicator,",n=1)       t-1 期で割る
+ #    /(",indicator,"+lag(",indicator,",n=1))*2   t期と(t-1)期の平均
+ #    /(sqrt(",indicator,"^2)+sqrt(lag(",indicator,",n=1)^2))*2　ABS1
+ #    /(abs(",indicator,")+abs(lag(",indicator,",n=1)))*2     ABS2
+ #    /(sqrt(",indicator,"^2)+sqrt(lag(",indicator,",n=1)^2))*2 
   
 } # 指標毎の処理2
 
@@ -288,12 +294,13 @@ write_csv(df_indicator, "./df_indicator_written.csv")  # Year, Country, REGION�
 df_summary <- df_indicator %>% select(-c(Year, Country, REGION)
   ) %>% group_by(SCENARIO
   ) %>% summarise_at(vars(everything()),
-                     funs(length, n=length(na.omit(.)), min(., na.rm=T), median(., na.rm=T),
-                          max(., na.rm=T), mean(., na.rm=T), sd(., na.rm=T),
+                     funs(length, n=length(na.omit(.)), min(., na.rm=T), max(., na.rm=T), 
+                          median(., na.rm=T), mean(., na.rm=T), sd(., na.rm=T),
+                          'q1%'=quantile(., probs=0.01, na.rm=T), 
+                          'q99%'=quantile(., probs=0.99, na.rm=T),
                           'q5%'=quantile(., probs=0.05, na.rm=T), 
                           'q95%'=quantile(., probs=0.95, na.rm=T), 
-                          'q1%'=quantile(., probs=0.01, na.rm=T), 
-                          'q99%'=quantile(., probs=0.99, na.rm=T),)
+                     )
   ) # %>% arrange(colnames(df_summary ))
 
 # df_summary <- df_summary  %>% mutate(item=names) 
@@ -317,7 +324,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
   y_names <- c(rep(indicators,2)) #3
 # scenario_color <- c('#3366CC', '#66AA00', '#0099C6', '#DD4477', '#BB2E2E', '#990099', '#651067', '#22AA99')
   scenario_color <- c('#AAAA11', '#329262', '#FF9900', '#DD4477', '#651067', '#3366CC', '#84919E')
-  axis_cutoff_percentile <- 0.005   # 軸の表示において切り捨てる分位範囲 （0.01: 両端1% cutoff）
+  axis_cutoff_percentile <- 0.01   # 軸の表示において切り捨てる分位範囲 （0.01: 両端1% cutoff）
   axis_range <- function(vec_indicator, cutoff_percentile) {
     axis_range_return <- c(quantile(na.omit(vec_indicator), cutoff_percentile, na.rm=T),
                            quantile(na.omit(vec_indicator), (1-cutoff_percentile), na.rm=T)
@@ -349,7 +356,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
               scale_shape_manual(values=c(19,19,21,21,21,21,21))"))) # Historical2本
           plot(g)
           filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
-          # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
+          ## ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
         }
         dev.off() 
     } # XY散布図 by 17地域 bk
@@ -364,7 +371,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
             scale_color_manual(values=c(scenario_color)) ")))
         plot(g)
         filename <- paste(scenarioname,"_","boxplot_Region_",indicator, sep="")
-        # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
+        ## ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
       }
       dev.off() 
     } # 箱ヒゲ図  地域別
@@ -380,7 +387,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
             scale_color_manual(values=c(scenario_color)) ")))
         plot(g)
         filename <- paste(scenarioname,"_","boxplot_World_",indicator, sep="")
-        ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
+       # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
   
         vec_indicator <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
         axis_range_value <- axis_range(vec_indicator, axis_cutoff_percentile)
@@ -392,7 +399,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
             scale_color_manual(values=c(scenario_color)) ")))
         plot(g)
         filename <- paste(scenarioname,"_","boxplot_World_ylim_",indicator, sep="")
-        # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
+        ## ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
       }
       dev.off() 
     } # 箱ヒゲ図  全世界
@@ -409,7 +416,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
             scale_color_manual(values=c(rep(scenario_color,3))) ")))
         plot(g)
         filename <- paste(scenarioname,"_","histogram_",indicator, sep="")
-        ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
+       # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
         
         vec_indicator <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
         axis_range_value <- axis_range(vec_indicator, axis_cutoff_percentile)
@@ -421,7 +428,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
             scale_color_manual(values=c(scenario_color)) ")))
         plot(g)
         filename <- paste(scenarioname,"_","histogram_xlim_",indicator, sep="")
-        # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
+        ## ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
       }
       dev.off()
     } # 頻度分布
@@ -437,7 +444,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
             ylab('Density (Counts scaled to 1) of Region-Year')")))
         plot(g)
         filename <- paste(scenarioname,"_","density_",indicator, sep="")
-        ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
+       # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
         
         vec_indicator <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
         axis_range_value <- axis_range(vec_indicator, axis_cutoff_percentile)
@@ -450,7 +457,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
             ylab('Density (Counts scaled to 1) of Region-Year')")))
         plot(g)
         filename <- paste(scenarioname,"_","density_xlim_",indicator, sep="")
-        # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
+        ## ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
         
       }
       dev.off() 
@@ -477,7 +484,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
               scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
         plot(g)
         filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
-        ggsave(file=paste("./png/R17",filename,".png", sep=""), width=5, height=4, dpi=100)
+       # ggsave(file=paste("./png/R17",filename,".png", sep=""), width=5, height=4, dpi=100)
 
         small <- 0.001
         x_axis_min <- min(eval(parse(text=paste0("df_Graph_plotXY$",x_names[num]))), na.rm=T)*(1-small)
@@ -513,7 +520,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
             scale_shape_manual(values=c(19,19,21,21,21,21,21))")))
         plot(g)
         filename <- paste(scenarioname,"_",num,"_",x_names[num],"-",y_names[num],"_CN", sep="")
-        ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
+       # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
       }
       dev.off() 
     } # XY散布図 by 国別
@@ -541,7 +548,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
             scale_color_manual(values=c(rep(scenario_color,3)))")))
         plot(g)
         filename <- paste(scenarioname,"_","density_filtered_",indicator, sep="")
-        ggsave(file=paste("./filtered/",filename,".png", sep=""), width=5, height=4, dpi=100)
+       # ggsave(file=paste("./filtered/",filename,".png", sep=""), width=5, height=4, dpi=100)
 
         # 範囲指定のグラフ
         vec_indicator <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
@@ -553,7 +560,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
             ylab('Density (Counts scaled to 1) of Region-Year') +
             scale_color_manual(values=c(rep(scenario_color,3)))")))
         plot(g)
-        # ggsave(file=paste("./filtered/",filename,"_xlim.png", sep=""), width=5, height=4, dpi=100)
+        ## ggsave(file=paste("./filtered/",filename,"_xlim.png", sep=""), width=5, height=4, dpi=100)
         
       }
       dev.off() 
@@ -594,7 +601,7 @@ for (dummyloop in 1) { # XY散布図 by 17地域 vs 17地域
               scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
     plot(g)
     filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
-    ggsave(file=paste("./png/R17_",filename,".png", sep=""), width=5, height=4, dpi=100)
+   # ggsave(file=paste("./png/R17_",filename,".png", sep=""), width=5, height=4, dpi=100)
 
     for (dummyloop in 1) { while(0)  
       small <- 0.01
