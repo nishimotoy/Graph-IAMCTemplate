@@ -268,6 +268,25 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理2   # テスト後に戻す (i i
   
 } # 指標毎の処理2
 
+for (dummyloop in 1) { # 正負切替直後のna置換
+  indicator <- 'Carbon_Intensity'
+    df_Graph <- df_Graph %>% mutate(
+      ChangeRate_Carbon_Intensity_inv
+      =if_else(condition=(Carbon_Intensity*lag(Carbon_Intensity,n=1))<0, 
+               true=TRUE, 
+               false=FALSE))
+    df_Graph <- df_Graph %>% ungroup() %>% arrange(SCENARIO,Country,Year)
+    # df_Graph <- df_Graph %>% ungroup() %>% group_by(SCENARIO,REGION) %>% arrange(SCENARIO,Country,Year)
+    # View(df_Graph)
+    write_csv(df_Graph, "./df_Graph_inv_written.csv") 
+    
+  
+#   df_Graph <- eval(parse(text=paste0(
+#   "df_Graph %>% mutate(ChangeRate_",indicator,"_inv",
+#      "=if_else((",indicator,"*lag(",indicator,",n=1))<0, NA, ChangeRate_",indicator,")")))
+} # 正負切替直後のna置換
+
+
 df_Graph <- df_Graph %>% ungroup() %>% arrange(SCENARIO,Country,Year)
 # df_Graph <- df_Graph %>% ungroup() %>% group_by(SCENARIO,REGION) %>% arrange(SCENARIO,Country,Year)
 # View(df_Graph)
@@ -424,7 +443,8 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
           "ggplot(df_Graph_plot, aes(x=",indicator, ",color=SCENARIO)) +
            geom_histogram(bins=50, position='dodge', alpha=0) + # 隣接バー
             ylab('Count of Region-Year') +
-            xlim(",axis_range_value[1], ", ",axis_range_value[2], ") +
+          # xlim(",axis_range_value[1], ", ",axis_range_value[2], ") +
+            xlim(-0.1,0.1) +
             scale_color_manual(values=c(scenario_color)) ")))
         plot(g)
         filename <- paste(scenarioname,"_","histogram_xlim_",indicator, sep="")
@@ -452,8 +472,8 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
           "ggplot(df_Graph_plot, aes(x=",indicator, ",color=SCENARIO)) +
             geom_density(size=0.7) +
             scale_color_manual(values=c(scenario_color)) +
-            xlim(",axis_range_value[1], ", ",axis_range_value[2], ") +
-          # xlim(-0.2,0.2) +
+          # xlim(",axis_range_value[1], ", ",axis_range_value[2], ") +
+            xlim(-0.1,0.1) +
             ylab('Density (Counts scaled to 1) of Region-Year')")))
         plot(g)
         filename <- paste(scenarioname,"_","density_xlim_",indicator, sep="")
@@ -573,9 +593,9 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
 # 項目指定出力
 scenarioname <- 'Multi'
 x_names <- c(
-  'Electricity_Rate_Total_scaled', 'TFC_Elec_Total_scaled', 'TFC_Total_Total_scaled',
+  'Energy_Intensity_scaled', 'TES_Total_scaled', 'GDP_IEA_scaled', 
   'Carbon_Intensity_scaled', 'CO2_fuel_Total_scaled', 'TES_Total_scaled', 
-  'Energy_Intensity_scaled', 'TES_Total_scaled', 'GDP_IEA_scaled') 
+  'Electricity_Rate_Total_scaled', 'TFC_Elec_Total_scaled', 'TFC_Total_Total_scaled',) 
 y_names <- c(rep('ChangeRate_Electricity_Rate_Total',3),
              rep('ChangeRate_Carbon_Intensity',3),
              rep('ChangeRate_Energy_Intensity',3)) 
