@@ -514,7 +514,33 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
               scale_color_manual(values=c(rep(scenario_color,3))) +
               scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
         plot(g)
-     } #num
+
+        if(num==2) { # CIのみ範囲指定       
+          g <- eval(parse(text=paste0(
+          "ggplot(df_Graph_plotXY, aes(x=",x_names[num],",y=",y_names[num], 
+          ",color=REGION, shape=SCENARIO)) +
+              geom_point() + 
+              geom_line() +
+              xlim(",x_axis_min, ", ",x_axis_max, ") +
+              ylim(",-0.5, ", ",0.1, ") +
+              scale_color_manual(values=c(rep(scenario_color,3))) +
+              scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
+          plot(g)
+          
+          g <- eval(parse(text=paste0(
+            "ggplot(df_Graph_plotXY_His, aes(x=",x_names[num],",y=",y_names[num], 
+            ",color=REGION, shape=SCENARIO)) +
+              geom_point() + 
+              geom_line() +
+            # xlim(",x_axis_min, ", ",x_axis_max, ") +
+              ylim(",-0.05, ", ",0.05, ") +
+              scale_color_manual(values=c(rep(scenario_color,3))) +
+              scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
+          plot(g)
+          
+        } # CIのみ範囲指定
+        
+      } #num
      dev.off() 
     } # XY散布図 by 17地域 vs 17地域
 
