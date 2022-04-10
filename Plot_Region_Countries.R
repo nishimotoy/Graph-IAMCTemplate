@@ -587,10 +587,12 @@ scenarioname <- 'Multi'
 x_names <- c(
   'Energy_Intensity_scaled', 'TES_Total_scaled', 'GDP_IEA_scaled', 
   'Carbon_Intensity_scaled', 'CO2_fuel_Total_scaled', 'TES_Total_scaled', 
-  'Electricity_Rate_Total_scaled', 'TFC_Elec_Total_scaled', 'TFC_Total_Total_scaled') 
-y_names <- c(rep('ChangeRate_Electricity_Rate_Total',3),
+  'Electricity_Rate_Total_scaled', 'TFC_Elec_Total_scaled', 'TFC_Total_Total_scaled',
+  'Year') 
+y_names <- c(rep('ChangeRate_Energy_Intensity',3),
              rep('ChangeRate_Carbon_Intensity',3),
-             rep('ChangeRate_Energy_Intensity',3)) 
+             rep('ChangeRate_Electricity_Rate_Total',3),
+             'ChangeRate_Carbon_Intensity') 
 
 for (dummyloop in 1) { # XY散布図 by 17地域 vs 17地域 
   library(RColorBrewer)
@@ -626,7 +628,7 @@ for (dummyloop in 1) { # XY散布図 by 17地域 vs 17地域
         "ggplot(df_Graph_plotXY, aes(x=",x_names[num],",y=",y_names[num], 
         ",color=REGION, shape=SCENARIO)) +
                 geom_point() + 
-  #              geom_line() +
+  #             geom_line() +
   #             xlim(",x_axis_min, ", ",x_axis_max, ") +
   #             ylim(",y_axis_min, ", ",y_axis_max, ") +
                 ylim(",-0.5, ", ",0.5, ") +
