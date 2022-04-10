@@ -539,8 +539,24 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
           plot(g)
           
         } # CIのみ範囲指定
+      } #num
+
+      # Stylized Fact 用出力
+      df_Graph_plotXY_Baseline <- df_Graph_plotXY %>% filter(SCENARIO %in% c('Historical_R17', 'Baseline'))
+      yname <- c( 'Energy_Intensity_scaled','Carbon_Intensity_scaled','Electricity_Rate_Total_scaled')
+      for (num in 1:length(yname)) { #num
+        g <- eval(parse(text=paste0(
+          "ggplot(df_Graph_plotXY_Baseline, aes(x=","GDP_Capita",",y=",yname[num], 
+          ",color=REGION, shape=SCENARIO)) +
+              geom_point() + 
+              geom_line() +
+              scale_color_manual(values=c(rep(scenario_color,3))) +
+              scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
+        plot(g)
         
       } #num
+      
+      
      dev.off() 
     } # XY散布図 by 17地域 vs 17地域
 
