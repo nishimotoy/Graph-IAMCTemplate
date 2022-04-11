@@ -407,10 +407,10 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
             geom_boxplot() +
             stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
             scale_color_manual(values=c(scenario_color)) ")))
-        g <- g + coord_cartesian(ylim = c(-0.1, 0.1)) 
+        g <- g + coord_flip(ylim = c(-0.1, 0.1)) 
         plot(g)
         filename <- paste(scenarioname,"_","boxplot_World_ylim_",indicator, sep="")
-        ggsave(file=paste("./png/",filename,".png", sep=""), width=6.4, height=2.5, dpi=100)
+        ggsave(file=paste("./png/",filename,".png", sep=""), width=6.3, height=2.5, dpi=100)
       }
       dev.off() 
     } # 箱ヒゲ図  全世界
