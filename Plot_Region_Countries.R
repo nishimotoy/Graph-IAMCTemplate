@@ -405,12 +405,12 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
         g <- eval(parse(text=paste0(
           "ggplot(df_Graph_plot, aes(x=SCENARIO, y=",indicator, ", color=SCENARIO)) +
             geom_boxplot() +
-            ylim(",axis_range_value[1], ", ",axis_range_value[2], ") +
             stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
             scale_color_manual(values=c(scenario_color)) ")))
+        g <- g + coord_cartesian(ylim = c(-0.1, 0.1)) 
         plot(g)
         filename <- paste(scenarioname,"_","boxplot_World_ylim_",indicator, sep="")
-        ## ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
+        ggsave(file=paste("./png/",filename,".png", sep=""), width=6.4, height=2.5, dpi=100)
       }
       dev.off() 
     } # 箱ヒゲ図  全世界
