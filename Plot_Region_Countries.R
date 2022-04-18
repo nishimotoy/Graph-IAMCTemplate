@@ -686,9 +686,10 @@ for (dummyloop in 1) { # XY散布図 by 17地域 vs 17地域
   #             xlim(",x_axis_min, ", ",x_axis_max, ") +
   #             ylim(",y_axis_min, ", ",y_axis_max, ") +
                 ylim(",y_axis[1], ", ",y_axis[2], ") +
-                geom_hline(yintercept=c(", value_yintercept, ")) + 
                 scale_color_manual(values=c(rep(scenario_color,3))) +
                 scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
+      g <- g + geom_hline(yintercept=value_yintercept)  
+        
       plot(g)
     } 
   } #num
