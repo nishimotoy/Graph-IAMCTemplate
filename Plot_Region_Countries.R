@@ -650,10 +650,16 @@ for (dummyloop in 1) { # XY散布図 by 17地域 vs 17地域
   library(RColorBrewer)
   scenario_color <- c(brewer.pal(5,"Dark2"),brewer.pal(8,"Accent"),brewer.pal(4,"Set1"))  
   df_Graph_plotXY <- df_Graph_plot 
-  # df_Graph_plotXY <- df_Graph_plot %>% filter(SCENARIO!='Historical')
-  # df_Graph_plotXY_His <- df_Graph_plotXY %>% filter(SCENARIO=='Historical_R17')
-  # write_csv(df_Graph_plotXY, "./df_Graph_plotXY_written.csv") 
-  # write_csv(df_Graph_plotXY_His, "./df_Graph_plotXY_His_written.csv") 
+  df_Graph_plotXY <- df_Graph_plot %>% filter(SCENARIO!='Historical')
+  df_Graph_plotXY_His <- df_Graph_plotXY %>% filter(SCENARIO=='Historical_R17')
+  write_csv(df_Graph_plotXY, "./df_Graph_plotXY_written.csv") 
+  write_csv(df_Graph_plotXY_His, "./df_Graph_plotXY_His_written.csv") 
+  percentile_low  <- eval(parse(text=paste0(
+    "quantile(df_Graph_plotXY_His$", y_names[num], ", probs=0.001, na.rm=T)"
+  )))
+  percentile_high  <- eval(parse(text=paste0(
+    "quantile(df_Graph_plotXY_His$", y_names[num], ", probs=0.999, na.rm=T)"
+  )))
   
   pdf(file=paste("./",scenarioname,"_XY_item.pdf", sep=""))    
   for (num in 1:length(x_names)) { #num   
@@ -665,6 +671,7 @@ for (dummyloop in 1) { # XY散布図 by 17地域 vs 17地域
 #             ylim(",-0.5, ", ",1, ") +
               scale_color_manual(values=c(rep(scenario_color,3))) +
               scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
+    g <- g + geom_hline(yintercept=c(percentile_low, percentile_high))  
     plot(g)
     filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
    # ggsave(file=paste("./png/R17_",filename,".png", sep=""), width=5, height=4, dpi=100)
@@ -672,7 +679,6 @@ for (dummyloop in 1) { # XY散布図 by 17地域 vs 17地域
     for (dummyloop in 1) { while(0)  
       small <- 0.01
       y_axis <- c(-0.5, 0.5)
-      value_yintercept  <- c(-0.036, 0.0217, -0.0139, 0.0226, 0.062)
 #     x_axis_min <- min(eval(parse(text=paste0("df_Graph_plotXY$",x_names[num]))), na.rm=T)*(1-small)
 #     y_axis_min <- min(eval(parse(text=paste0("df_Graph_plotXY$",y_names[num]))), na.rm=T)*(1-small)
 #     x_axis_max <- max(eval(parse(text=paste0("df_Graph_plotXY$",x_names[num]))), na.rm=T)*(1+small)
@@ -688,8 +694,7 @@ for (dummyloop in 1) { # XY散布図 by 17地域 vs 17地域
                 ylim(",y_axis[1], ", ",y_axis[2], ") +
                 scale_color_manual(values=c(rep(scenario_color,3))) +
                 scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
-      g <- g + geom_hline(yintercept=value_yintercept)  
-        
+      g <- g + geom_hline(yintercept=c(percentile_low, percentile_high))  
       plot(g)
     } 
   } #num
