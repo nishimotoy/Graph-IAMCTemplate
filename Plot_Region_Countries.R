@@ -319,10 +319,20 @@ df_summary <- df_indicator %>% select(-c(Year, Country, REGION)
 
 
 df_summary_ChangeRate <- df_summary %>% select(SCENARIO, starts_with("ChangeRate_")) 
+
+df_summary_q5 <- df_summary %>% select(SCENARIO, ends_with("q5%"))
+df_summary_q95 <- df_summary %>% select(SCENARIO, ends_with("q95%"))
+df_summary_q5_q95 <- merge(df_summary_q5, df_summary_q95) # 課題残る＞後日
+
+
 df_summary_ChangeRate <- as.data.frame(t(df_summary_ChangeRate))
 df_summary <- as.data.frame(t(df_summary))
-write.csv(df_summary, "./df_summary_written.csv", row.names=T) 
-write.csv(df_summary_ChangeRate, "./df_summary_ChangeRate_written.csv", row.names=T) 
+write.csv(df_summary, "./df_summary_written.csv") 
+write.csv(df_summary_ChangeRate, "./df_summary_ChangeRate_written.csv") 
+
+# df_summary_Outlier <- df_summary_ChangeRate %>% filter(, str_detect("q95%")) # 列名を指定
+
+write.csv(df_summary_q5_q95, "./df_summary_q5_q95_written.csv") 
 
 
 #Graph output ------------------------------------------------------
@@ -661,10 +671,12 @@ for (dummyloop in 1) { # XY散布図 by 17地域 vs 17地域
 
     for (dummyloop in 1) { while(0)  
       small <- 0.01
-      x_axis_min <- min(eval(parse(text=paste0("df_Graph_plotXY$",x_names[num]))), na.rm=T)*(1-small)
-      y_axis_min <- min(eval(parse(text=paste0("df_Graph_plotXY$",y_names[num]))), na.rm=T)*(1-small)
-      x_axis_max <- max(eval(parse(text=paste0("df_Graph_plotXY$",x_names[num]))), na.rm=T)*(1+small)
-      y_axis_max <- max(eval(parse(text=paste0("df_Graph_plotXY$",y_names[num]))), na.rm=T)*(1+small)
+      y_axis <- c(-0.5, 0.5)
+      value_yintercept  <- c(-0.036, 0.0217, -0.0139, 0.0226, 0.062)
+#     x_axis_min <- min(eval(parse(text=paste0("df_Graph_plotXY$",x_names[num]))), na.rm=T)*(1-small)
+#     y_axis_min <- min(eval(parse(text=paste0("df_Graph_plotXY$",y_names[num]))), na.rm=T)*(1-small)
+#     x_axis_max <- max(eval(parse(text=paste0("df_Graph_plotXY$",x_names[num]))), na.rm=T)*(1+small)
+#     y_axis_max <- max(eval(parse(text=paste0("df_Graph_plotXY$",y_names[num]))), na.rm=T)*(1+small)
       
       g <- eval(parse(text=paste0(
         "ggplot(df_Graph_plotXY, aes(x=",x_names[num],",y=",y_names[num], 
@@ -673,7 +685,8 @@ for (dummyloop in 1) { # XY散布図 by 17地域 vs 17地域
   #             geom_line() +
   #             xlim(",x_axis_min, ", ",x_axis_max, ") +
   #             ylim(",y_axis_min, ", ",y_axis_max, ") +
-                ylim(",-0.5, ", ",0.5, ") +
+                ylim(",y_axis[1], ", ",y_axis[2], ") +
+                geom_hline(yintercept=c(", value_yintercept, ")) + 
                 scale_color_manual(values=c(rep(scenario_color,3))) +
                 scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
       plot(g)
