@@ -345,13 +345,14 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
   y_names <- c(rep(indicators,2)) #3
 # scenario_color <- c('#3366CC', '#66AA00', '#0099C6', '#DD4477', '#BB2E2E', '#990099', '#651067', '#22AA99')
   scenario_color <- c('#AAAA11', '#329262', '#FF9900', '#DD4477', '#651067', '#3366CC', '#84919E')
-  axis_cutoff_percentile <- 0.01   # 軸の表示において切り捨てる分位範囲 （0.01: 両端1% cutoff）
-  axis_range <- function(vec_indicator, cutoff_percentile) {
-    axis_range_return <- c(quantile(na.omit(vec_indicator), cutoff_percentile, na.rm=T),
-                           quantile(na.omit(vec_indicator), (1-cutoff_percentile), na.rm=T)
+  
+  percentitle_range <- function(vec_data, cutoff_percentile) {
+    percentitle_range_return <- c(quantile(na.omit(vec_data), cutoff_percentile, na.rm=T),
+                                  quantile(na.omit(vec_data), (1-cutoff_percentile), na.rm=T)
     ) %>% as.numeric()
-    return(axis_range_return)
+    return(percentitle_range_return)
   }
+  axis_cutoff_percentile <- 0.01   # 軸の表示において切り捨てる分位範囲 （0.01: 両端1% cutoff）
   
   # scenarionames <- levels(df_Graph$SCENARIO)    # c('Baseline','2C','1.5C','2.5C','WB2C') # 'Historical'
   scenarionames <- c('Multi') 
@@ -410,8 +411,9 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
         filename <- paste(scenarioname,"_","boxplot_World_",indicator, sep="")
        # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
   
-        vec_indicator <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
-        axis_range_value <- axis_range(vec_indicator, axis_cutoff_percentile)
+        vec_data <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
+        axis_range_value <- percentitle_range(vec_data, axis_cutoff_percentile)
+        
         g <- eval(parse(text=paste0(
           "ggplot(df_Graph_plot, aes(x=SCENARIO, y=",indicator, ", color=SCENARIO)) +
             geom_boxplot() +
@@ -439,8 +441,8 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
         filename <- paste(scenarioname,"_","histogram_",indicator, sep="")
        # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
         
-        vec_indicator <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
-        axis_range_value <- axis_range(vec_indicator, axis_cutoff_percentile)
+        vec_data <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
+        axis_range_value <- percentitle_range(vec_data, axis_cutoff_percentile)
         g <- eval(parse(text=paste0(
           "ggplot(df_Graph_plot, aes(x=",indicator, ",color=SCENARIO)) +
            geom_histogram(bins=50, position='dodge', alpha=0) + # 隣接バー
@@ -456,6 +458,9 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
     } # 頻度分布
     
     for (dummyloop in 1) { # 確率密度分布
+      
+      df_Graph_plotXY_HisR <- df_Graph_plot %>% filter(SCENARIO=='Historical_R17')
+      
       pdf(file=paste("./",scenarioname,"_density.pdf", sep=""))    
       for (indicator in indicators) {
         g <- eval(parse(text=paste0(
@@ -468,8 +473,8 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
         filename <- paste(scenarioname,"_","density_",indicator, sep="")
        # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
         
-        vec_indicator <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
-        axis_range_value <- axis_range(vec_indicator, axis_cutoff_percentile)
+        vec_data <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
+        axis_range_value <- percentitle_range(vec_data, axis_cutoff_percentile)
         g <- eval(parse(text=paste0(
           "ggplot(df_Graph_plot, aes(x=",indicator, ",color=SCENARIO)) +
             geom_density(size=0.7) +
@@ -477,6 +482,13 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
           # xlim(",axis_range_value[1], ", ",axis_range_value[2], ") +
             xlim(-0.1,0.1) +
             ylab('Density (Counts scaled to 1) of Region-Year')")))
+
+        cutoff_percentile <- 0.05
+        vec_data <- eval(parse(text=paste0("df_Graph_plotXY_HisR$",indicator))) 
+        percentile_val <- percentitle_range(vec_data, cutoff_percentile)
+        g <- g + eval(parse(text=paste0( "annotate('rect', xmin=",percentile_val[1],", ymin=",-Inf, 
+                                         ", xmax=",percentile_val[2],", ymax=",0, 
+                                         ", alpha=.1, fill='#329262')"))) 
         plot(g)
         filename <- paste(scenarioname,"_","density_xlim_",indicator, sep="")
         ## ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
@@ -615,8 +627,8 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
        # ggsave(file=paste("./filtered/",filename,".png", sep=""), width=5, height=4, dpi=100)
 
         # 範囲指定のグラフ
-        vec_indicator <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
-        axis_range_value <- axis_range(vec_indicator, axis_cutoff_percentile)
+        vec_data <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
+        axis_range_value <- percentitle_range(vec_data, axis_cutoff_percentile)
         g <- eval(parse(text=paste0(
           "ggplot(df_Graph_filtered, aes(x=",indicator, ",color=SCENARIO)) +
             geom_density(size=0.7) +
@@ -654,26 +666,23 @@ for (dummyloop in 1) { # item 指定出力
   df_Graph_plotXY_His <- df_Graph_plotXY %>% filter(SCENARIO=='Historical_R17')
   write_csv(df_Graph_plotXY, "./df_Graph_plotXY_written.csv") 
   write_csv(df_Graph_plotXY_His, "./df_Graph_plotXY_His_written.csv") 
-
+  y_axis_val <- c(-0.5, 0.1)
+  
   pdf(file=paste("./",scenarioname,"_XY_item.pdf", sep=""))    
   for (num in 1:length(x_names)) { #num   
     
-    y_axis_top <- y_axis[2]-0.1*(y_axis[2]-y_axis[1])
     x_axis_min <- min(eval(parse(text=paste0("df_Graph_plotXY$",x_names[num]))), na.rm=T)
     x_axis_max <- max(eval(parse(text=paste0("df_Graph_plotXY$",x_names[num]))), na.rm=T)
     y_axis_min <- min(eval(parse(text=paste0("df_Graph_plotXY$",y_names[num]))), na.rm=T)
     y_axis_max <- max(eval(parse(text=paste0("df_Graph_plotXY$",y_names[num]))), na.rm=T)
     cutoff_percentile <- 0.05
-    percentile_low  <- eval(parse(text=paste0(
-      "quantile(df_Graph_plotXY_His$", y_names[num], ", probs=", cutoff_percentile,", na.rm=T)"
-    )))
-    percentile_high  <- eval(parse(text=paste0(
-      "quantile(df_Graph_plotXY_His$", y_names[num], ", probs=", 1-cutoff_percentile,", na.rm=T)"
-    )))
+    vec_data <- eval(parse(text=paste0("df_Graph_plotXY_His$",y_names[num]))) 
+    percentile_val <- percentitle_range(vec_data, cutoff_percentile)
+    
     x_axis_right <- x_axis_max - 0.1*(x_axis_max - x_axis_min)
-    y_axis_high <- percentile_high + 0.2*(y_axis_max - y_axis_min)
-    y_axis_low  <- percentile_low  - 0.2*(y_axis_max - y_axis_min)
-    y_axis_top <- y_axis_max-0.1*(y_axis_max-y_axis_min)
+    y_axis_high <- percentile_val[2] + 0.2*(y_axis_max - y_axis_min)
+    y_axis_low  <- percentile_val[1] - 0.2*(y_axis_max - y_axis_min)
+    y_axis_top  <- y_axis_max - 0.1*(y_axis_max - y_axis_min)
     
     g <- eval(parse(text=paste0(
       "ggplot(df_Graph_plotXY, aes(x=",x_names[num],",y=",y_names[num], 
@@ -683,73 +692,30 @@ for (dummyloop in 1) { # item 指定出力
 #             ylim(",-0.5, ", ",1, ") +
               scale_color_manual(values=c(rep(scenario_color,3))) +
               scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
-    g <- g + geom_hline(yintercept=c(percentile_low, percentile_high))  
+    g <- g + geom_hline(yintercept=c(percentile_val[1], percentile_val[2]))  
     g <- g + eval(parse(text=paste0( "annotate('text', x=",x_axis_right,", y=",y_axis_top,", 
                                       label='percentile:",100*cutoff_percentile,"-",100*(1-cutoff_percentile),"%\n", 
-                                      round(100*percentile_high, digits=2),"%\n",
-                                      round(100*percentile_low, digits=2),"%\n')"))) 
+                                      round(100*percentile_val[2], digits=2),"%\n",
+                                      round(100*percentile_val[1], digits=2),"%\n')"))) 
     plot(g)
     filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
    # ggsave(file=paste("./png/R17_",filename,".png", sep=""), width=5, height=4, dpi=100)
-
-    for (dummyloop in 1) { while(0)  
-      y_axis <- c(-0.5, 0.1)
-      y_axis_top <- y_axis[2]-0.1*(y_axis[2]-y_axis[1])
-      
+    
+      y_axis_top <- y_axis_val[2]-0.1*(y_axis_val[2]-y_axis_val[1])
       g <- eval(parse(text=paste0(
         "ggplot(df_Graph_plotXY, aes(x=",x_names[num],",y=",y_names[num], 
         ",color=REGION, shape=SCENARIO)) +
                 geom_point() + 
   #             geom_line() +
-                ylim(",y_axis[1], ", ",y_axis[2], ") +
+                ylim(",y_axis_val[1], ", ",y_axis_val[2], ") +
                 scale_color_manual(values=c(rep(scenario_color,3))) +
                 scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
-      g <- g + geom_hline(yintercept=c(percentile_low, percentile_high))  
+      g <- g + geom_hline(yintercept=c(percentile_val[1], percentile_val[2]))  
       g <- g + eval(parse(text=paste0( "annotate('text', x=",x_axis_right,", y=",y_axis_top,", 
-                                       label='percentile:",100*cutoff_percentile,"-",100*(1-cutoff_percentile),"%\n",
-                                       round(100*percentile_high, digits=2),"%\n", 
-                                       round(100*percentile_low, digits=2),"%\n')"))) 
+                                       label='percentile:",100*cutoff_percentile,"-",100*(1-cutoff_percentile),"%\n", 
+                                       round(100*percentile_val[2], digits=2),"%\n",
+                                       round(100*percentile_val[1], digits=2),"%\n')"))) 
       plot(g)
-    } 
   } #num
   dev.off() 
 } # item 指定出力
-
-
-indicators <- c(
-'ChangeRate_Energy_Intensity', 'ChangeRate_Carbon_Intensity', 'ChangeRate_Electricity_Rate_Total',
-
-) 
-
-
-
-
-for (dummyloop in 1) { # 確率密度分布 with bar
-  pdf(file=paste("./",scenarioname,"_density_bar.pdf", sep=""))    
-  for (indicator in indicators) {
-    g <- eval(parse(text=paste0(
-      "ggplot(df_Graph_plot, aes(x=",indicator, ",color=SCENARIO)) +
-            geom_density(size=0.7) +
-            scale_color_manual(values=c(scenario_color)) +
-          # xlim(-0.2,0.2) +
-            ylab('Density (Counts scaled to 1) of Region-Year')")))
-    plot(g)
-    filename <- paste(scenarioname,"_","density_",indicator, sep="")
-    # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
-    
-    vec_indicator <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
-    axis_range_value <- axis_range(vec_indicator, axis_cutoff_percentile)
-    g <- eval(parse(text=paste0(
-      "ggplot(df_Graph_plot, aes(x=",indicator, ",color=SCENARIO)) +
-            geom_density(size=0.7) +
-            scale_color_manual(values=c(scenario_color)) +
-          # xlim(",axis_range_value[1], ", ",axis_range_value[2], ") +
-            xlim(-0.1,0.1) +
-            ylab('Density (Counts scaled to 1) of Region-Year')")))
-    plot(g)
-    filename <- paste(scenarioname,"_","density_xlim_",indicator, sep="")
-    ## ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
-    
-  }
-  dev.off() 
-} # 確率密度分布 with bar
