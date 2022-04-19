@@ -646,7 +646,7 @@ y_names <- c(rep('ChangeRate_Energy_Intensity',3),
              rep('ChangeRate_Electricity_Rate_Total',3),
              'ChangeRate_Carbon_Intensity') 
 
-for (dummyloop in 1) { # XY散布図 by 17地域 vs 17地域 
+for (dummyloop in 1) { # item 指定出力
   library(RColorBrewer)
   scenario_color <- c(brewer.pal(5,"Dark2"),brewer.pal(8,"Accent"),brewer.pal(4,"Set1"))  
   df_Graph_plotXY <- df_Graph_plot 
@@ -654,12 +654,6 @@ for (dummyloop in 1) { # XY散布図 by 17地域 vs 17地域
   df_Graph_plotXY_His <- df_Graph_plotXY %>% filter(SCENARIO=='Historical_R17')
   write_csv(df_Graph_plotXY, "./df_Graph_plotXY_written.csv") 
   write_csv(df_Graph_plotXY_His, "./df_Graph_plotXY_His_written.csv") 
-  percentile_low  <- eval(parse(text=paste0(
-    "quantile(df_Graph_plotXY_His$", y_names[num], ", probs=0.001, na.rm=T)"
-  )))
-  percentile_high  <- eval(parse(text=paste0(
-    "quantile(df_Graph_plotXY_His$", y_names[num], ", probs=0.999, na.rm=T)"
-  )))
   
   pdf(file=paste("./",scenarioname,"_XY_item.pdf", sep=""))    
   for (num in 1:length(x_names)) { #num   
@@ -679,25 +673,41 @@ for (dummyloop in 1) { # XY散布図 by 17地域 vs 17地域
     for (dummyloop in 1) { while(0)  
       small <- 0.01
       y_axis <- c(-0.5, 0.5)
-#     x_axis_min <- min(eval(parse(text=paste0("df_Graph_plotXY$",x_names[num]))), na.rm=T)*(1-small)
-#     y_axis_min <- min(eval(parse(text=paste0("df_Graph_plotXY$",y_names[num]))), na.rm=T)*(1-small)
-#     x_axis_max <- max(eval(parse(text=paste0("df_Graph_plotXY$",x_names[num]))), na.rm=T)*(1+small)
-#     y_axis_max <- max(eval(parse(text=paste0("df_Graph_plotXY$",y_names[num]))), na.rm=T)*(1+small)
+      x_axis_min <- min(eval(parse(text=paste0("df_Graph_plotXY$",x_names[num]))), na.rm=T)
+      x_axis_max <- max(eval(parse(text=paste0("df_Graph_plotXY$",x_names[num]))), na.rm=T)
+      y_axis_min <- min(eval(parse(text=paste0("df_Graph_plotXY_His$",y_names[num]))), na.rm=T)
+      y_axis_max <- max(eval(parse(text=paste0("df_Graph_plotXY_His$",y_names[num]))), na.rm=T)
+
+      cutoff_percentile <- 0.05
+      percentile_low  <- eval(parse(text=paste0(
+        "quantile(df_Graph_plotXY_His$", y_names[num], ", probs=", cutoff_percentile,", na.rm=T)"
+      )))
+      percentile_high  <- eval(parse(text=paste0(
+        "quantile(df_Graph_plotXY_His$", y_names[num], ", probs=", 1-cutoff_percentile,", na.rm=T)"
+      )))
+      x_axis_right <- x_axis_max - 0.1*(x_axis_max - x_axis_min)
+      y_axis_high <- percentile_high + 0.2*(y_axis_max - y_axis_min)
+      y_axis_low  <- percentile_low  - 0.2*(y_axis_max - y_axis_min)
+      y_axis_top <- y_axis_max + 0.5*(y_axis_max - y_axis_min)
       
       g <- eval(parse(text=paste0(
         "ggplot(df_Graph_plotXY, aes(x=",x_names[num],",y=",y_names[num], 
         ",color=REGION, shape=SCENARIO)) +
                 geom_point() + 
   #             geom_line() +
-  #             xlim(",x_axis_min, ", ",x_axis_max, ") +
-  #             ylim(",y_axis_min, ", ",y_axis_max, ") +
                 ylim(",y_axis[1], ", ",y_axis[2], ") +
                 scale_color_manual(values=c(rep(scenario_color,3))) +
                 scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
       g <- g + geom_hline(yintercept=c(percentile_low, percentile_high))  
+      g <- g + eval(parse(text=paste0( "annotate('text', x=",x_axis_right,", y=",y_axis_low,", 
+                                       label='", round(100*percentile_low, digits=2),"%')"))) 
+      g <- g + eval(parse(text=paste0( "annotate('text', x=",x_axis_right,", y=",y_axis_high,", 
+                                       label='", round(100*percentile_high, digits=2),"%')"))) 
+      g <- g + eval(parse(text=paste0(
+        "annotate('text', x=",x_axis_right,", y=",y_axis_top,", label='cutoff=",100*cutoff_percentile,"%')"))) 
       plot(g)
     } 
   } #num
   dev.off() 
-} # XY散布図 by 17地域 vs 17地域
+} # item 指定出力
 
