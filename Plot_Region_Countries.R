@@ -698,9 +698,22 @@ for (dummyloop in 1) { # item 指定出力
                                       round(100*percentile_val[2], digits=2),"%\n",
                                       round(100*percentile_val[1], digits=2),"%\n')"))) 
     plot(g)
-    filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
-   # ggsave(file=paste("./png/R17_",filename,".png", sep=""), width=5, height=4, dpi=100)
     
+    filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
+    # ggsave(file=paste("./png/R17_",filename,".png", sep=""), width=5, height=4, dpi=100)
+
+    if (x_names[num]=='Year') { #Year
+      g <- eval(parse(text=paste0(
+        "ggplot(df_Graph_plotXY_His, aes(x=",x_names[num],",y=",y_names[num], 
+        ",shape=SCENARIO)) +
+              geom_point() + 
+              xlim(",1970, ", ",2100, ") +
+              theme_bw()"))) # SCENARIO数
+      g <- g +geom_smooth(method=lm, se=TRUE) 
+      plot(g)
+    } #Year
+    
+    if (y_names[num]=='ChangeRate_Carbon_Intensity') { #CI
       y_axis_top <- y_axis_val[2]-0.1*(y_axis_val[2]-y_axis_val[1])
       g <- eval(parse(text=paste0(
         "ggplot(df_Graph_plotXY, aes(x=",x_names[num],",y=",y_names[num], 
@@ -716,6 +729,7 @@ for (dummyloop in 1) { # item 指定出力
                                        round(100*percentile_val[2], digits=2),"%\n",
                                        round(100*percentile_val[1], digits=2),"%\n')"))) 
       plot(g)
+    } #CI
   } #num
   dev.off() 
 } # item 指定出力
