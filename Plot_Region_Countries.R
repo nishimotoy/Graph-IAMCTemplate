@@ -2,6 +2,7 @@
 library(ggplot2)
 library(ggthemes)
 library(tidyverse)
+library(ggpmisc)
 
 root <- 'C:/_Nishimoto/R/WBAL_R02/'
 Titlerow1 <- c('MODEL','SCENARIO','REGION','VARIABLE','UNIT')
@@ -705,11 +706,26 @@ for (dummyloop in 1) { # item 指定出力
     if (x_names[num]=='Year') { #Year
       g <- eval(parse(text=paste0(
         "ggplot(df_Graph_plotXY_His, aes(x=",x_names[num],",y=",y_names[num], 
-        ",shape=SCENARIO)) +
+        ", shape=SCENARIO)) +
+              geom_smooth(method=lm) +
               geom_point() + 
-              xlim(",1970, ", ",2100, ") +
-              theme_bw()"))) # SCENARIO数
-      g <- g +geom_smooth(method=lm, se=TRUE) 
+              xlim(",1970, ", ",2100, ") "))) 
+      g <- g + geom_hline(yintercept=c(percentile_val[1], percentile_val[2]))
+      g <- g + stat_poly_eq(formula = y ~ x,
+                            aes(label = paste("atop(",
+                                              paste(stat(eq.label),
+                                                    stat(rr.label),
+                                                    stat(adj.rr.label),
+                                                    sep = "~~~"),
+                                              ",",
+                                              paste(stat(f.value.label),
+                                                    stat(p.value.label),
+                                                    stat(AIC.label),
+                                                    stat(BIC.label),
+                                                    sep = "~~~"),
+                                              ")",
+                                              sep = "")),
+                            label.x = "right", parse = TRUE)
       plot(g)
     } #Year
     
@@ -733,3 +749,24 @@ for (dummyloop in 1) { # item 指定出力
   } #num
   dev.off() 
 } # item 指定出力
+
+for (dummyloop in 1) { # 相関係数
+  CR <- c('Year', 'ChangeRate_Energy_Intensity', 'ChangeRate_Carbon_Intensity', 'ChangeRate_Electricity_Rate_Total')
+  
+# lm_year <- function(explanatory_variable, response variable) { # 相関係数のサマリーを返す関数　(説明変数x, 目的変数y)
+
+# }
+  
+#  lm_year('ChangeRate_Energy_Intensity', 'Year')
+    
+    df_His_C <- df_Graph_plot %>% filter(SCENARIO=='Historical') %>% select('Year', 'ChangeRate_Carbon_Intensity')
+    (df_His_C.lm<-lm(ChangeRate_Carbon_Intensity~.,data=df_His_C ))
+    summary( df_His_C.lm )
+
+    df_His_R <- df_Graph_plot %>% filter(SCENARIO=='Historical_R17') %>% select('Year', 'ChangeRate_Carbon_Intensity')
+    (df_His_R.lm<-lm(ChangeRate_Carbon_Intensity~.,data=df_His_R ))
+    summary( df_His_R.lm )
+  
+} # 相関係数
+
+
