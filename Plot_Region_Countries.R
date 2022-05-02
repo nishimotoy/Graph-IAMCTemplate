@@ -703,7 +703,25 @@ for (dummyloop in 1) { # item 指定出力
     filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
     # ggsave(file=paste("./png/R17_",filename,".png", sep=""), width=5, height=4, dpi=100)
 
-    if (x_names[num]=='Year') { #Year
+    if (y_names[num]=='ChangeRate_Carbon_Intensity') { #CI
+      y_axis_top <- y_axis_val[2]-0.1*(y_axis_val[2]-y_axis_val[1])
+      g <- eval(parse(text=paste0(
+        "ggplot(df_Graph_plotXY, aes(x=",x_names[num],",y=",y_names[num], 
+        ",color=REGION, shape=SCENARIO)) +
+                geom_point() + 
+  #             geom_line() +
+                ylim(",y_axis_val[1], ", ",y_axis_val[2], ") +
+                scale_color_manual(values=c(rep(scenario_color,3))) +
+                scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
+      g <- g + geom_hline(yintercept=c(percentile_val[1], percentile_val[2]))  
+      g <- g + eval(parse(text=paste0( "annotate('text', x=",x_axis_right,", y=",y_axis_top,", 
+                                       label='percentile:",100*cutoff_percentile,"-",100*(1-cutoff_percentile),"%\n", 
+                                       round(100*percentile_val[2], digits=2),"%\n",
+                                       round(100*percentile_val[1], digits=2),"%\n')"))) 
+      plot(g)
+    } #CI
+
+        if (x_names[num]=='Year') { #Year
       g <- eval(parse(text=paste0(
         "ggplot(df_Graph_plotXY_His, aes(x=",x_names[num],",y=",y_names[num], 
         ", shape=SCENARIO)) +
@@ -728,24 +746,6 @@ for (dummyloop in 1) { # item 指定出力
                             label.x = "right", parse = TRUE)
       plot(g)
     } #Year
-    
-    if (y_names[num]=='ChangeRate_Carbon_Intensity') { #CI
-      y_axis_top <- y_axis_val[2]-0.1*(y_axis_val[2]-y_axis_val[1])
-      g <- eval(parse(text=paste0(
-        "ggplot(df_Graph_plotXY, aes(x=",x_names[num],",y=",y_names[num], 
-        ",color=REGION, shape=SCENARIO)) +
-                geom_point() + 
-  #             geom_line() +
-                ylim(",y_axis_val[1], ", ",y_axis_val[2], ") +
-                scale_color_manual(values=c(rep(scenario_color,3))) +
-                scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
-      g <- g + geom_hline(yintercept=c(percentile_val[1], percentile_val[2]))  
-      g <- g + eval(parse(text=paste0( "annotate('text', x=",x_axis_right,", y=",y_axis_top,", 
-                                       label='percentile:",100*cutoff_percentile,"-",100*(1-cutoff_percentile),"%\n", 
-                                       round(100*percentile_val[2], digits=2),"%\n",
-                                       round(100*percentile_val[1], digits=2),"%\n')"))) 
-      plot(g)
-    } #CI
   } #num
   dev.off() 
 } # item 指定出力
