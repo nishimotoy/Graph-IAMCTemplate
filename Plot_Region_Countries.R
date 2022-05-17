@@ -326,14 +326,57 @@ df_summary_q95 <- df_summary %>% select(SCENARIO, ends_with("q95%"))
 df_summary_q5_q95 <- merge(df_summary_q5, df_summary_q95) # 課題残る＞後日
 
 
-df_summary_ChangeRate <- as.data.frame(t(df_summary_ChangeRate))
-df_summary <- as.data.frame(t(df_summary))
-write.csv(df_summary, "./df_summary_written.csv") 
-write.csv(df_summary_ChangeRate, "./df_summary_ChangeRate_written.csv") 
+# df_summary_ChangeRate <- as.data.frame(t(df_summary_ChangeRate))
+# df_summary <- as.data.frame(t(df_summary))
+write.csv(t(df_summary), "./df_summary_written.csv") 
+write.csv(t(df_summary_ChangeRate), "./df_summary_ChangeRate_written.csv") 
 
 # df_summary_Outlier <- df_summary_ChangeRate %>% filter(, str_detect("q95%")) # 列名を指定
 
 write.csv(df_summary_q5_q95, "./df_summary_q5_q95_written.csv") 
+
+#Feasibility Test ------------------------------------------------------
+for (dummyloop in 1) { # Feasibility Test
+  test_items <- c('ChangeRate_Energy_Intensity', 'ChangeRate_Carbon_Intensity', 'ChangeRate_Electricity_Rate_Total')
+  future_scenarios <- c('Historical_R17','Baseline','2.5C','2C','1.5C','WB2C') #  'Historical', 'Historical_R17'
+  vector_Rate_test_OK <- future_scenarios
+  
+for (item in test_items) {
+    # item <- 'ChangeRate_Energy_Intensity'
+    df_feasibility_window <- df_indicator %>% filter(SCENARIO=='Historical_R17'
+                                        ) %>% select(all_of(item),-SCENARIO
+                                        ) %>% rename('Target'=item) 
+    vector_feasibility_window <- as.vector(df_feasibility_window$Target) %>% na.omit()
+    qua_05 <- quantile(vector_feasibility_window, probs=0.05, na.rm=T)
+    qua_95 <- quantile(vector_feasibility_window, probs=0.95, na.rm=T)
+    names(qua_05) <- NULL
+    names(qua_95) <- NULL
+    
+    for (scenarioname in future_scenarios) {
+      
+      # scenarioname <- 'Baseline'
+      df_feasibility_test <- df_indicator %>% filter(SCENARIO==scenarioname
+                                        ) %>% select(all_of(item),-SCENARIO
+                                        ) %>% rename('Target'=item) 
+      vector_feasibility_test <- as.vector(df_feasibility_test$Target) %>% na.omit()
+      #length_passed <- length(which(vector_feasibility_test<qua_05) && which(vector_feasibility_test>qua_95))
+      # length_passed <- length(which(vector_feasibility_test<qua_05 && vector_feasibility_test>qua_95))
+      length_total <- length(vector_feasibility_test)
+      length_under05 <- length(which(vector_feasibility_test<qua_05))
+      length_over95 <- length(which(vector_feasibility_test>qua_95))
+      
+      Rate_feasibility_test_OK <- (length_total-length_under05-length_over95)/length_total
+      vector_Rate_test_OK <- append(vector_Rate_test_OK, Rate_feasibility_test_OK)
+      # 指定した値を格納
+
+    } # scenarioname
+  } # item
+  df_Rate_feasibility_test_OK <- data.frame(matrix(vector_Rate_test_OK, 
+                                            nrow=length(future_scenarios)))
+  colnames(df_Rate_feasibility_test_OK) <- append(c('SCENARIO'), test_items)
+  write.csv(df_Rate_feasibility_test_OK, "./df_Rate_feasibility_test_OK_written.csv") 
+  
+} # Feasibility Test
 
 
 #Graph output ------------------------------------------------------
@@ -768,5 +811,4 @@ for (dummyloop in 1) { # 相関係数
     summary( df_His_R.lm )
   
 } # 相関係数
-
 
