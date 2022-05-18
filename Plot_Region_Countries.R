@@ -320,30 +320,21 @@ df_summary <- df_indicator %>% select(-c(Year, Country, REGION)
 
 
 df_summary_ChangeRate <- df_summary %>% select(SCENARIO, starts_with("ChangeRate_")) 
-
-df_summary_q5 <- df_summary %>% select(SCENARIO, ends_with("q5%"))
-df_summary_q95 <- df_summary %>% select(SCENARIO, ends_with("q95%"))
-df_summary_q5_q95 <- merge(df_summary_q5, df_summary_q95) # 課題残る＞後日
-
-
 # df_summary_ChangeRate <- as.data.frame(t(df_summary_ChangeRate))
 # df_summary <- as.data.frame(t(df_summary))
 write.csv(t(df_summary), "./df_summary_written.csv") 
 write.csv(t(df_summary_ChangeRate), "./df_summary_ChangeRate_written.csv") 
 
-# df_summary_Outlier <- df_summary_ChangeRate %>% filter(, str_detect("q95%")) # 列名を指定
-
-write.csv(df_summary_q5_q95, "./df_summary_q5_q95_written.csv") 
 
 #Feasibility Test ------------------------------------------------------
 for (dummyloop in 1) { # Feasibility Test
   test_items <- c('ChangeRate_Energy_Intensity', 'ChangeRate_Carbon_Intensity', 'ChangeRate_Electricity_Rate_Total')
-  future_scenarios <- c('Historical_R17','Baseline','2.5C','2C','1.5C','WB2C') #  'Historical', 'Historical_R17'
+  future_scenarios <- levels(df_Graph$SCENARIO) #  'Historical', 'Historical_R17'
   vector_Rate_test_OK <- future_scenarios
   
 for (item in test_items) {
     # item <- 'ChangeRate_Energy_Intensity'
-    df_feasibility_window <- df_indicator %>% filter(SCENARIO=='Historical_R17'
+    df_feasibility_window <- df_indicator %>% filter(SCENARIO=='Historical_R17' # 注意直接指定
                                         ) %>% select(all_of(item),-SCENARIO
                                         ) %>% rename('Target'=item) 
     vector_feasibility_window <- as.vector(df_feasibility_window$Target) %>% na.omit()
