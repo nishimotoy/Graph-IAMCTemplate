@@ -181,6 +181,10 @@ df_long_BaseYear_4 <- full_join(select(df_long_BaseYear_3, -Value), select(df_lo
 df_long <- df_long %>% rbind(df_long_BaseYear_1) %>% rbind(df_long_BaseYear_2) %>% rbind(df_long_BaseYear_4)
 write_csv(df_long, "./df_long_after_add1_written.csv") 
 
+# Global path 算出用
+df_long_global <- aggregate(Value~VARIABLE+SCENARIO+Year, df_long, sum) # 集約対象=REGION
+write_csv(df_long_global, "./df_long_global_written.csv") 
+
 
 # Table format and Indicator  ------------------------------------------------------
 # 指標の処理  # Variable_Names_for_Indicators df_vni <- indicator, numerator, denominator
@@ -350,7 +354,7 @@ for (item in test_items) {
                                         ) %>% select(all_of(item),-SCENARIO
                                         ) %>% rename('Target'=item) 
       vector_feasibility_test <- as.vector(df_feasibility_test$Target) %>% na.omit()
-      #length_passed <- length(which(vector_feasibility_test<qua_05) && which(vector_feasibility_test>qua_95))
+      # length_passed <- length(which(vector_feasibility_test<qua_05) && which(vector_feasibility_test>qua_95))
       # length_passed <- length(which(vector_feasibility_test<qua_05 && vector_feasibility_test>qua_95))
       length_total <- length(vector_feasibility_test)
       length_under05 <- length(which(vector_feasibility_test<qua_05))
@@ -382,7 +386,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
   scenario_color <- c('#AAAA11', '#329262', '#FF9900', '#DD4477', '#651067', '#3366CC', '#84919E')
   
   percentitle_range <- function(vec_data, cutoff_percentile) {
-    percentitle_range_return <- c(quantile(na.omit(vec_data), cutoff_percentile, na.rm=T),
+  percentitle_range_return <- c(quantile(na.omit(vec_data), cutoff_percentile, na.rm=T),
                                   quantile(na.omit(vec_data), (1-cutoff_percentile), na.rm=T)
     ) %>% as.numeric()
     return(percentitle_range_return)
