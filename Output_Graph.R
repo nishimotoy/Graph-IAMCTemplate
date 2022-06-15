@@ -17,7 +17,6 @@ df_Graph_plot <- df_Graph_plot %>% mutate(CO2_fuel_Total_scaled=CO2_fuel_Total_s
 x_names <- c('Year')
 y_names <- c('CO2_fuel_Total_scaled')
 x_names_J <- c('年')
-y_names_J <- c('CO2_fuel_Total_scaled')
 
 scenario_color <- c('#AAAA11', '#329262', '#FF9900', '#DD4477', '#651067', '#3366CC', '#84919E')
 
@@ -37,8 +36,16 @@ for (dummyloop in 1) { # XY散布図
 #   g <- g + xlab('年') + ylab(expression(paste(CO[2]," emissions reduction rate (%)")))
 #   g <- g + xlab('年') + ylab(expression(paste("エネルギー起源   ",CO[2],"排出量  ",(Gt-CO[2]))))
 
-    test <- bquote("エネルギー起源   " ~ CO[2] ~ "排出量  " ~ (Gt-CO[2]))
-    g <- g + xlab('年') + ylab(test)
+    y_names_J <- switch(num,
+                  "1" = bquote("エネルギー起源   " ~ CO[2] ~ "排出量  " ~ (Gt-CO[2])),
+                  "2" = bquote("エネルギー起源   " ~ CO[2] ~ "排出量  " ~ (Gt-CO[2])),
+                  "3" = bquote("エネルギー起源   " ~ CO[2] ~ "排出量  " ~ (Gt-CO[2])),
+                  "4" = bquote("エネルギー起源   " ~ CO[2] ~ "排出量  " ~ (Gt-CO[2])),
+                  stop("Only can use 1, 2, 3, and 4")
+    )
+#   test <- bquote("エネルギー起源   " ~ CO[2] ~ "排出量  " ~ (Gt-CO[2]))
+    g <- g + xlab(x_names_J[num]) +
+             ylab(y_names_J)
     plot(g)
     
 
