@@ -35,10 +35,13 @@ for (dummyloop in 1) { # XY散布図
       "))) 
 #   g <- g + xlab('年') + ylab(expression(x[2]))
 #   g <- g + xlab('年') + ylab(expression(paste(CO[2]," emissions reduction rate (%)")))
-    g <- g + xlab('年') + ylab(expression(paste("エネルギー起源   ",CO[2],"排出量  ",(Gt-CO[2]))))
+#   g <- g + xlab('年') + ylab(expression(paste("エネルギー起源   ",CO[2],"排出量  ",(Gt-CO[2]))))
+
+    test <- bquote("エネルギー起源   " ~ CO[2] ~ "排出量  " ~ (Gt-CO[2]))
+    g <- g + xlab('年') + ylab(test)
     plot(g)
     
-    
+
     filename <- paste("JSCE",num,"_",x_names[num],"-",y_names[num], sep="") # 土木学会用出力
     ggsave(file=paste("./png2/",filename,"_global.png", sep=""), width=5, height=4, dpi=100)
   }
