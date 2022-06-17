@@ -25,7 +25,9 @@ x_names_J <- c('年', rep('GDP/人',3), rep('年',6), I_names_CR)
 
 scenario_color <- c('#AAAA11', '#329262', '#FF9900', '#DD4477', '#651067', '#3366CC', '#84919E')
 library(RColorBrewer)
-region_color <- c(brewer.pal(5,"Dark2"),brewer.pal(8,"Accent"),brewer.pal(4,"Set1"))  
+region_color <- c(brewer.pal(5,"Dark2"),brewer.pal(5,"Set1"),brewer.pal(7,"Paired"))  
+
+cutoff_percentile <- 0.05
 
 df_Graph_p <- df_Graph %>% mutate(Energy_Intensity_scaled=Energy_Intensity_scaled/1000 #kJ>MJ
                      ) %>% mutate(Carbon_Intensity_scaled=Carbon_Intensity_scaled*100  #10^-6>10^-8
@@ -60,22 +62,27 @@ df_Graph_p <- df_Graph %>% mutate(Energy_Intensity_scaled=Energy_Intensity_scale
                                   ",color=REGION, shape=SCENARIO)) +
               geom_line() +
               geom_point() + 
-            # scale_color_manual(values=c(rep(scenario_color,3))) +
+              scale_color_manual(values=c(rep(region_color,3))) +
               scale_shape_manual(values=c(19,21))"))) # 'Historical_R17', 'Baseline'
       plot(g)
       
     } else if ( num>=5 && num<=10 ) { # XY散布図 by 17地域 vs 17地域
       
-      df_Graph_plotXY <- df_Graph_p %>% filter(SCENARIO!='Historical')
+      df_Graph_plot <- df_Graph_p %>% filter(SCENARIO!='Historical')
+      df_Graph_plot_HisR <- df_Graph_plot %>% filter(SCENARIO=='Historical_R17' )
       
       g <- eval(parse(text=paste0(
-        "ggplot(df_Graph_plotXY, aes(x=",x_names[num],",y=",y_names[num], 
+        "ggplot(df_Graph_plot, aes(x=",x_names[num],",y=",y_names[num], 
         ",color=REGION, shape=SCENARIO)) +
               geom_point() + 
               geom_line() +
               scale_color_manual(values=c(rep(region_color,3))) +
               scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
-      # ここで 窓を追加する
+      if ( num>=8 && num<=10 ) { # 窓の追加
+        
+        
+        
+      } # 窓の追加
       plot(g)
 
     } else if ( num>=11 && num<=13 ) { # 確率密度分布
@@ -98,7 +105,7 @@ df_Graph_p <- df_Graph %>% mutate(Energy_Intensity_scaled=Energy_Intensity_scale
         vec_data <- eval(parse(text=paste0("df_Graph_plot_HisR$",indicator))) 
         percentile_val <- percentitle_range(vec_data, cutoff_percentile)
         g <- g + eval(parse(text=paste0( "annotate('rect', xmin=",percentile_val[1],", ymin=",-Inf, 
-                                         ", xmax=",percentile_val[2],", ymax=",0, 
+                                         ", xmax=",percentile_val[2], ", ymax=",0, 
                                          ", alpha=.1, fill='#329262')"))) 
         plot(g)
         
@@ -114,13 +121,15 @@ df_Graph_p <- df_Graph %>% mutate(Energy_Intensity_scaled=Energy_Intensity_scale
     } else if ( y_names_J[num]=='電化率' )       { ylab_name <- paste(y_names_J[num], '(%)')
     } else { ylab_name <-  y_names_J[num] }
 
-    g <- g + xlab(x_names_J[num]) + ylab(ylab_name)
+    g <- g + xlab(x_names_J[num]) + ylab(ylab_name) + theme_bw() + theme(  panel.grid = element_blank() )
+      # + MyThemeLine
     plot(g)
 
     filename <- paste("JSCE",num,"_",x_names[num],"-",y_names[num], sep="") # 土木学会用出力
     ggsave(file=paste("./png2/",filename,".png", sep=""), width=5, height=4, dpi=100)
-
-  }
+    ggsave(file=paste("./png3/",filename,".png", sep=""), width=5, height=7, dpi=100)
+    
+  } # num
   
   
   dev.off() 
