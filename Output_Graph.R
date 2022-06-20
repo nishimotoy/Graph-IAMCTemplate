@@ -37,12 +37,15 @@ df_Graph_p <- df_Graph_p %>% mutate(Energy_Intensity_scaled=Energy_Intensity_sca
                       ) %>% mutate(ChangeRate_Carbon_Intensity=ChangeRate_Carbon_Intensity*100 #percent
                       ) %>% mutate(ChangeRate_Electricity_Rate_Total=ChangeRate_Electricity_Rate_Total*100 #percent
                       )
-                                                       
+df_Graph_p <- df_Graph_p %>% mutate(SCENARIO2 = recode(SCENARIO, 
+                             Historical='歴史的推移(国別)', Historical_R17='歴史的推移', Baseline='ベースライン'))
+df_Graph_p <- df_Graph_p %>% mutate(SCENARIO_f=SCENARIO) %>% mutate(SCENARIO=SCENARIO2) 
+
   pdf(file=paste("./png2/JSCE_Graph.pdf", sep=""))    
   for (num in 1:length(x_names)) {
 
     if ( num==1 ) { 
-      df_Graph_plot <- df_Graph_global %>% filter(SCENARIO!='Historical'
+      df_Graph_plot <- df_Graph_global %>% filter(SCENARIO!='Historical' 
                                      ) %>% mutate(CO2_fuel_Total_scaled=CO2_fuel_Total_scaled/1000000) #kt>Gt-CO2
 
       g <- eval(parse(text=paste0("
@@ -55,7 +58,7 @@ df_Graph_p <- df_Graph_p %>% mutate(Energy_Intensity_scaled=Energy_Intensity_sca
       
     } else if ( num>=2 && num<=4 ) { 
       
-      df_Graph_plot <- df_Graph_p %>% filter(SCENARIO %in% c('Historical_R17', 'Baseline'))
+      df_Graph_plot <- df_Graph_p %>% filter(SCENARIO_f %in% c('Historical_R17', 'Baseline'))
       
       g <- eval(parse(text=paste0("
               ggplot(df_Graph_plot, aes(x=",x_names[num],",y=",y_names[num], 
@@ -68,8 +71,8 @@ df_Graph_p <- df_Graph_p %>% mutate(Energy_Intensity_scaled=Energy_Intensity_sca
       
     } else if ( num>=5 && num<=10 ) { # XY散布図 by 17地域 vs 17地域
       
-      df_Graph_plot <- df_Graph_p %>% filter(SCENARIO!='Historical')
-      df_Graph_plot_HisR <- df_Graph_plot %>% filter(SCENARIO=='Historical_R17' )
+      df_Graph_plot <- df_Graph_p %>% filter(SCENARIO_f!='Historical')
+      df_Graph_plot_HisR <- df_Graph_plot %>% filter(SCENARIO_f=='Historical_R17' )
       
       g <- eval(parse(text=paste0(
         "ggplot(df_Graph_plot, aes(x=",x_names[num],",y=",y_names[num], 
@@ -94,7 +97,7 @@ df_Graph_p <- df_Graph_p %>% mutate(Energy_Intensity_scaled=Energy_Intensity_sca
     } else if ( num>=11 && num<=13 ) { # 確率密度分布
       
       df_Graph_plot <- df_Graph_p
-      df_Graph_plot_HisR <- df_Graph_plot %>% filter(SCENARIO=='Historical_R17' )
+      df_Graph_plot_HisR <- df_Graph_plot %>% filter(SCENARIO_f=='Historical_R17' )
 
       indicator <- x_names[num]
 
