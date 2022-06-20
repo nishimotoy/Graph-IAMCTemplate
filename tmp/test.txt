@@ -1,0 +1,99 @@
+#Packages------------------------------------------------------
+# update.packages("ggplot2")
+library(ggplot2)
+# update.packages("tidyverse")
+library(tidyverse)
+library(patchwork)
+
+setwd("C:/_Nishimoto/R/WBAL_R02/2_data/REF") 
+
+Titlerow1 <- c("MODEL","SCENARIO","REGION","VARIABLE","UNIT")
+# Titlerow2 <- c('IEA_country_name','VARIABLE')
+Titlerow2 <- c('REGION','IEA_country_name','VARIABLE')
+Indicators <- c("GDP_Capita",
+                "Energy_Intensity","ChangeRate_Energy_Intensity",
+                "Carbon_Intensity","ChangeRate_Carbon_Intensity",
+                "Electricity_Rate_Total","ChangeRate_Electricity_Rate_Total")
+
+# Variables_for_Indicators <- c(指標名, 分子となる変数名, 分母となる変数名)
+# indicator = numerator / denominator
+VF_GDP_Capita <- c("GDP_Capita","GDP_IEA","POP_IEA")
+VF_Energy_Intensity <- c("Energy_Intensity","TES_Total","GDP_IEA")
+VF_Carbon_Intensity <- c("Carbon_Intensity","CO2_fuel_Total","TES_Total")
+VF_Electricity_Rate_Total <- c("Electricity_Rate_Total","TFC_Elec_Total","TFC_Total")
+VF_Electricity_Rate_Ind   <- c("Electricity_Rate_Ind","TFC_Elec_Ind","TFC_Ind")
+VF_Electricity_Rate_Tra   <- c("Electricity_Rate_Tra","TFC_Elec_Tra","TFC_Tra")
+VF_Electricity_Rate_Res   <- c("Electricity_Rate_Res","TFC_Elec_Res","TFC_Res")
+VF_Electricity_Rate_Com   <- c("Electricity_Rate_Com","TFC_Elec_Com","TFC_Com")
+
+# 単位の連想配列＞ファイル名にマッチさせる予定
+df_unit <- read.delim(file="./unit.txt", header=T)
+view(df_unit)
+Unit_of_Var        <- df_unit$unit
+names(Unit_of_Var) <- df_unit$filename
+# Unit_of_Var[names(Unit_of_Var)]
+
+# 国コードの連想配列
+df_CC <- read.delim(file="./CC.txt", header=T) 
+df_CC <- rename(df_CC, 'IEA_country_name'='IEA国名')
+view(df_CC)
+Region_Code        <- df_CC$AIM17
+names(Region_Code) <- df_CC$IEA_country_name
+# Region_Code[names(Region_Code)]
+
+
+# 過去ファイル（IEA形式、各国毎）の読み込み＞ファイル名でloopさせて追加書きする予定
+files  <- list.files()    # 指定ディレクトリのファイル一覧を代入
+files
+
+# タイトル行の作成
+
+
+df_past <- read_csv("./POP_IEA.csv") 
+df_past <- df_past  %>% mutate(df_past, 'VARIABLE'='variable', 'REGION'='region'
+                  ) %>% rename('IEA_country_name'='TIME')
+
+
+# 'TIME' OR 'X1'
+df_past <- gather(df_past[1,], key="Year", value="Value", -Titlerow2)
+
+View(df_past)
+
+# 1ファイル毎の処理
+# for (file.name in files) {
+for (file.name in files[2]) {
+    
+  if ( regexpr('\\.csv$', file.name) < 0 ) { next } 
+  d  <- read_csv(file.name)  # ファイルを仮変数に読み込む
+  file.name <- gsub(".csv", "", file.name)
+  d  <- rename(d, 'REGION'='TIME')  # 国コードの形式がREGIONなので
+  d  <- mutate(d, 'VARIABLE'= file.name)
+  
+  # 国コード付与
+  d  <- d %>% mutate(AIM17=Region_Code[d$REGION]
+        ) %>% rename('IEA_country_name'='REGION'
+        ) %>% rename('REGION'='AIM17'
+        ) %>% na.omit()
+  View(d)
+  
+# select(d,'IEA_country_name','REGION')
+  df_past <- rbind(df_past,
+                   gather(d, key="Year", value="Value", -Titlerow2))
+}
+df_past <- mutate(df_past, SCENARIO="Historical"
+    ) %>% filter(IEA_country_name != "COUNTRY"
+    ) %>% na.omit() 
+
+write_csv(df_past, "./../df_past_written.csv")
+
+
+# plot(main = file.name, d$height, d$diameter, type = 'p')      #  散布図を描く
+
+
+
+# 保全中
+# 過去ファイル（IEA形式、各国毎）の読み込み＞ファイル名でloopさせて追加書きする予定
+df_CO2_fuel_Bio <- read_csv("./../2_data/REF/CO2_fuel_Bio.csv") 
+df_CO2_fuel_Bio <- rename(df_CO2_fuel_Bio, 'IEA_country_name'='X1')
+# write_csv(df_CO2_fuel_Bio, "./../2_data/REF2/CO2_fuel_Bio_written.csv")
+view(df_CO2_fuel_Bio)

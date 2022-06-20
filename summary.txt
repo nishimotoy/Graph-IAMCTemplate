@@ -1,0 +1,14 @@
+library(tidyverse)
+
+root <- 'C:/_Nishimoto/R/WBAL_R02/'
+setwd(paste(root,"5_test", sep="")) 
+
+summary(df_Graph)
+
+tri %>% 
+  descr() %>% 
+  tb()
+
+tri %>% 
+  dfSummary() %>% 
+  summarytools::view()
