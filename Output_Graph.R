@@ -20,24 +20,24 @@ y_names <- c('CO2_fuel_Total_scaled',
              rep('Density',3))
 I_names <- c('エネルギー強度', '炭素強度', '電化率')
 I_names_CR <- paste(I_names, 'の変化率 (%)', sep = "")  # c('エネルギー強度の変化率', '炭素強度の変化率', '電化率の変化率')
-y_names_J <- c('エネルギー起源CO2排出量', rep(I_names,2), I_names_CR, rep('確率密度',3))
-x_names_J <- c('年', rep('GDP/人',3), rep('年',6), I_names_CR)
+y_names_J  <- c('エネルギー起源CO2排出量', rep(I_names,2), I_names_CR, rep('確率密度',3))
+x_names_J  <- c('年', rep('GDP/人',3), rep('年',6), I_names_CR)
+cutoff_percentile <- 0.05
 
 scenario_color <- c('#AAAA11', '#329262', '#FF9900', '#DD4477', '#651067', '#3366CC', '#84919E')
 library(RColorBrewer)
 region_color <- c(brewer.pal(5,"Dark2"),brewer.pal(5,"Set1"),brewer.pal(7,"Paired"))  
 
-cutoff_percentile <- 0.05
-
-df_Graph_p <- df_Graph %>% mutate(Energy_Intensity_scaled=Energy_Intensity_scaled/1000 #kJ>MJ
-                     ) %>% mutate(Carbon_Intensity_scaled=Carbon_Intensity_scaled*100  #10^-6>10^-8
-                     ) %>% mutate(Electricity_Rate_Total_scaled=Electricity_Rate_Total_scaled*100 #percent
-                     ) %>% mutate(ChangeRate_Energy_Intensity=ChangeRate_Energy_Intensity*100 #percent
-                     ) %>% mutate(ChangeRate_Carbon_Intensity=ChangeRate_Carbon_Intensity*100 #percent
-                     ) %>% mutate(ChangeRate_Electricity_Rate_Total=ChangeRate_Electricity_Rate_Total*100 #percent
-                     )
-
-
+y_names_tmp <- y_names[-which(y_names %in% 'Density')] 
+df_Graph_p <- df_Graph   %>% select('SCENARIO', 'REGION', unique(sort(c(x_names,y_names_tmp)))) 
+df_Graph_p <- df_Graph_p %>% mutate(Energy_Intensity_scaled=Energy_Intensity_scaled/1000 #kJ>MJ
+                      ) %>% mutate(Carbon_Intensity_scaled=Carbon_Intensity_scaled*100  #10^-6>10^-8
+                      ) %>% mutate(Electricity_Rate_Total_scaled=Electricity_Rate_Total_scaled*100 #percent
+                      ) %>% mutate(ChangeRate_Energy_Intensity=ChangeRate_Energy_Intensity*100 #percent
+                      ) %>% mutate(ChangeRate_Carbon_Intensity=ChangeRate_Carbon_Intensity*100 #percent
+                      ) %>% mutate(ChangeRate_Electricity_Rate_Total=ChangeRate_Electricity_Rate_Total*100 #percent
+                      )
+                                                       
   pdf(file=paste("./png2/JSCE_Graph.pdf", sep=""))    
   for (num in 1:length(x_names)) {
 
@@ -47,8 +47,8 @@ df_Graph_p <- df_Graph %>% mutate(Energy_Intensity_scaled=Energy_Intensity_scale
 
       g <- eval(parse(text=paste0("
               ggplot(df_Graph_plot, aes(x=",x_names[num],",y=",y_names[num], 
-                                  ",color=SCENARIO), shape=SCENARIO) +
-              geom_line(size=2) +
+                                  ",color=SCENARIO)) +
+              geom_line(size=1.6) +
               scale_color_manual(values=c(scenario_color[-1])) 
       "))) 
       plot(g)
@@ -78,11 +78,17 @@ df_Graph_p <- df_Graph %>% mutate(Energy_Intensity_scaled=Energy_Intensity_scale
               geom_line() +
               scale_color_manual(values=c(rep(region_color,3))) +
               scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
+      
       if ( num>=8 && num<=10 ) { # 窓の追加
         
-        
+        vec_data <- eval(parse(text=paste0("df_Graph_plot_HisR$",y_names[num]))) 
+        percentile_val <- percentitle_range(vec_data, cutoff_percentile)
+        g <- g + eval(parse(text=paste0( "annotate('rect', xmin=",-Inf,", ymin=", percentile_val[1], 
+                                         ", xmax=",Inf, ", ymax=",percentile_val[2], 
+                                         ", alpha=.125, fill='#329262')"))) 
         
       } # 窓の追加
+      if ( num==9 ) { g <- g + ylim(-10, 5) } #炭素強度の例外処理
       plot(g)
 
     } else if ( num>=11 && num<=13 ) { # 確率密度分布
@@ -101,12 +107,11 @@ df_Graph_p <- df_Graph %>% mutate(Energy_Intensity_scaled=Energy_Intensity_scale
             xlim(-10,10) + 
             ylab('Density (Counts scaled to 1) of Region-Year')")))
         
-        cutoff_percentile <- 0.05
         vec_data <- eval(parse(text=paste0("df_Graph_plot_HisR$",indicator))) 
         percentile_val <- percentitle_range(vec_data, cutoff_percentile)
         g <- g + eval(parse(text=paste0( "annotate('rect', xmin=",percentile_val[1],", ymin=",-Inf, 
-                                         ", xmax=",percentile_val[2], ", ymax=",0, 
-                                         ", alpha=.1, fill='#329262')"))) 
+                                         ", xmax=",percentile_val[2], ", ymax=",Inf, 
+                                         ", alpha=.2, fill='#329262')"))) 
         plot(g)
         
           
