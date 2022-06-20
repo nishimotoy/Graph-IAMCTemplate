@@ -384,6 +384,8 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
   y_names <- c(rep(indicators,2)) #3
 # scenario_color <- c('#3366CC', '#66AA00', '#0099C6', '#DD4477', '#BB2E2E', '#990099', '#651067', '#22AA99')
   scenario_color <- c('#AAAA11', '#329262', '#FF9900', '#DD4477', '#651067', '#3366CC', '#84919E')
+  library(RColorBrewer)
+  region_color <- c(brewer.pal(5,"Dark2"),brewer.pal(8,"Accent"),brewer.pal(4,"Set1"))  
   
   percentitle_range <- function(vec_data, cutoff_percentile) {
   percentitle_range_return <- c(quantile(na.omit(vec_data), cutoff_percentile, na.rm=T),
@@ -537,8 +539,6 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
     } # 確率密度分布
 
     for (dummyloop in 1) { # XY散布図 by 17地域 vs 17地域 
-      library(RColorBrewer)
-      scenario_color <- c(brewer.pal(5,"Dark2"),brewer.pal(8,"Accent"),brewer.pal(4,"Set1"))  
       # df_Graph_plotXY <- data_frame()
       df_Graph_plotXY <- df_Graph_plot %>% filter(SCENARIO!='Historical')
       df_Graph_plotXY_His <- df_Graph_plotXY %>% filter(SCENARIO=='Historical_R17')
@@ -553,7 +553,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
           ",color=REGION, shape=SCENARIO)) +
               geom_point() + 
               geom_line() +
-              scale_color_manual(values=c(rep(scenario_color,3))) +
+              scale_color_manual(values=c(rep(region_color,3))) +
               scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
         plot(g)
         filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
@@ -698,8 +698,6 @@ y_names <- c(rep('ChangeRate_Energy_Intensity',4),
              ) 
 
 for (dummyloop in 1) { # item 指定出力
-  library(RColorBrewer)
-  scenario_color <- c(brewer.pal(5,"Dark2"),brewer.pal(8,"Accent"),brewer.pal(4,"Set1"))  
   df_Graph_plotXY <- df_Graph_plot 
   df_Graph_plotXY <- df_Graph_plot %>% filter(SCENARIO!='Historical')
   df_Graph_plotXY_His <- df_Graph_plotXY %>% filter(SCENARIO=='Historical_R17')
@@ -729,7 +727,7 @@ for (dummyloop in 1) { # item 指定出力
               geom_point() + 
 #             geom_line() +
 #             ylim(",-0.5, ", ",1, ") +
-              scale_color_manual(values=c(rep(scenario_color,3))) +
+              scale_color_manual(values=c(rep(region_color,3))) +
               scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
     g <- g + geom_hline(yintercept=c(percentile_val[1], percentile_val[2]))  
     g <- g + eval(parse(text=paste0( "annotate('text', x=",x_axis_right,", y=",y_axis_top,", 
@@ -749,7 +747,7 @@ for (dummyloop in 1) { # item 指定出力
                 geom_point() + 
   #             geom_line() +
                 ylim(",y_axis_val[1], ", ",y_axis_val[2], ") +
-                scale_color_manual(values=c(rep(scenario_color,3))) +
+                scale_color_manual(values=c(rep(region_color,3))) +
                 scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
       g <- g + geom_hline(yintercept=c(percentile_val[1], percentile_val[2]))  
       g <- g + eval(parse(text=paste0( "annotate('text', x=",x_axis_right,", y=",y_axis_top,", 
