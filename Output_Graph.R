@@ -1,10 +1,5 @@
 # 土木学会用日本語出力
 
-df_Graph_global <- aggregate(CO2_fuel_Total_scaled~SCENARIO+Year, df_Graph, sum) # 集約対象=REGION
-df_Graph_global_wide <- df_Graph_global %>% spread(key=SCENARIO, value=CO2_fuel_Total_scaled)
-write_csv(df_Graph_global, "./df_Graph_global_written.csv") 
-write_csv(df_Graph_global_wide, "./df_Graph_global_wide_written.csv") 
-
 x_names <- c('Year', rep('GDP_Capita',3), rep('Year',6),
              'ChangeRate_Energy_Intensity','ChangeRate_Carbon_Intensity','ChangeRate_Electricity_Rate_Total' )
 y_names <- c('CO2_fuel_Total_scaled', 
@@ -34,11 +29,17 @@ df_Graph_p <- df_Graph_p %>% mutate(SCENARIO2 = recode(SCENARIO,
                              Historical='歴史的推移(国別)', Historical_R17='歴史的推移', Baseline='ベースライン'))
 df_Graph_p <- df_Graph_p %>% mutate(SCENARIO_f=SCENARIO) %>% mutate(SCENARIO=SCENARIO2) 
 
+df_Graph_global <- aggregate(CO2_fuel_Total_scaled~Year+SCENARIO_f+SCENARIO, df_Graph_p, sum) # 集約対象=REGION
+df_Graph_global_wide <- df_Graph_global %>% spread(key=SCENARIO_f, value=CO2_fuel_Total_scaled)
+write_csv(df_Graph_global, "./df_Graph_global_written.csv") 
+write_csv(df_Graph_global_wide, "./df_Graph_global_wide_written.csv") 
+
+
   pdf(file=paste("./png2/JSCE_Graph.pdf", sep=""))    
   for (num in 1:length(x_names)) {
 
     if ( num==1 ) { 
-      df_Graph_plot <- df_Graph_global %>% filter(SCENARIO!='Historical' 
+      df_Graph_plot <- df_Graph_global %>% filter(SCENARIO_f!='Historical' 
                                      ) %>% mutate(CO2_fuel_Total_scaled=CO2_fuel_Total_scaled/1000000) #kt>Gt-CO2
 
       g <- eval(parse(text=paste0("
@@ -111,8 +112,7 @@ df_Graph_p <- df_Graph_p %>% mutate(SCENARIO_f=SCENARIO) %>% mutate(SCENARIO=SCE
         plot(g)
         
           
-    }  # （仮）df_Graph_plotの切替
-    
+    }  # 確率密度分布
     
 
     if ( y_names_J[num]=='エネルギー起源CO2排出量' ) { 
