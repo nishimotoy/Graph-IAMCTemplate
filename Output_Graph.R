@@ -1,16 +1,9 @@
 # 土木学会用日本語出力
-# df_long_global <- aggregate(Value~VARIABLE+SCENARIO+Year, df_long, sum) # 集約対象=REGION
-# write_csv(df_long_global, "./df_long_global_written.csv") 
-
 
 df_Graph_global <- aggregate(CO2_fuel_Total_scaled~SCENARIO+Year, df_Graph, sum) # 集約対象=REGION
 df_Graph_global_wide <- df_Graph_global %>% spread(key=SCENARIO, value=CO2_fuel_Total_scaled)
-
 write_csv(df_Graph_global, "./df_Graph_global_written.csv") 
 write_csv(df_Graph_global_wide, "./df_Graph_global_wide_written.csv") 
-
-# df_Graph_plot <- df_Graph_global %>% filter(SCENARIO!='Historical')
-# df_Graph_plot <- df_Graph_plot %>% mutate(CO2_fuel_Total_scaled=CO2_fuel_Total_scaled/1000000)
 
 x_names <- c('Year', rep('GDP_Capita',3), rep('Year',6),
              'ChangeRate_Energy_Intensity','ChangeRate_Carbon_Intensity','ChangeRate_Electricity_Rate_Total' )
