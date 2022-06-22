@@ -62,6 +62,7 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
               ggplot(df_Graph_plot, aes(x=",x_names[num],",y=",y_names[num], 
                                 ",color=SCENARIO)) +
               geom_line(size=1.6) +
+              labs(color='シナリオ') +
               scale_color_manual(values=c(scenario_color[-1])) 
       "))) 
     plot(g)
@@ -75,6 +76,8 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
                                 ",color=REGION, shape=SCENARIO)) +
               geom_line() +
               geom_point() + 
+              labs(color='地域') +
+              labs(shape='シナリオ') +
               scale_color_manual(values=c(rep(region_color,3))) +
               scale_shape_manual(values=c(19,21))"))) # 'Historical_R17', 'Baseline'
     plot(g)
@@ -89,6 +92,8 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
       ",color=REGION, shape=SCENARIO)) +
               geom_point() + 
               geom_line() +
+              labs(color='地域') +
+              labs(shape='シナリオ') +
               scale_color_manual(values=c(rep(region_color,3))) +
               scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
     
@@ -114,6 +119,7 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
     g <- eval(parse(text=paste0(
       "ggplot(df_Graph_plot, aes(x=",indicator, ",color=SCENARIO)) +
             geom_density(size=0.7) +
+            labs(color='シナリオ') +
             scale_color_manual(values=c(scenario_color)) +
             xlim(-10,10) + 
             ylab('Density (Counts scaled to 1) of Region-Year')")))
@@ -174,7 +180,7 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
                                    ", alpha=.2, fill='#329262')"))) 
   
   g <-  g + coord_flip(ylim = c(-10, 10)) 
-  g <-  g + xlab('') + ylab(j_names_box[indicator]) +
+  g <-  g + xlab('') + ylab(j_names_box[indicator]) + labs(color='シナリオ') +
             theme_bw() + theme(legend.position="none", panel.grid=element_blank()) 
                        # legend.positionとpanel.grid の順番が逆だとNG
   plot(g)
