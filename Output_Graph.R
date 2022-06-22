@@ -141,19 +141,19 @@ write_csv(df_Graph_global_wide, "./df_Graph_global_wide_written.csv")
 
 for (indicator in y_names_box) { # indicator # 箱ヒゲ図
   df_Graph_plot <- df_Graph_p 
-  
-  g <- eval(parse(text=paste0(
+
+    g <- eval(parse(text=paste0(
     "ggplot(df_Graph_plot, aes(x=SCENARIO, y=",indicator, ", color=SCENARIO)) +
             geom_boxplot() +
-          # geom_jitter(shape=20, position=position_dodge(0.8)) +  # 箱ヒゲに点を重ねる
             stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
             scale_color_manual(values=c(scenario_color)) ")))
   plot(g)
+  num <- num+1
   filename <- paste("JSCE",num,"_", indicator, sep="") # 土木学会用出力
   ggsave(file=paste("./png3/",filename,".png", sep=""), width=5, height=4, dpi=100) # 全範囲
 
-  vec_data <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
-  axis_range_value <- percentitle_range(vec_data, axis_cutoff_percentile)
+#  vec_data <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
+#  axis_range_value <- percentitle_range(vec_data, axis_cutoff_percentile)
   
   g <- eval(parse(text=paste0(
     "ggplot(df_Graph_plot, aes(x=SCENARIO, y=",indicator, ", color=SCENARIO)) +
@@ -161,10 +161,11 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
             stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
             scale_color_manual(values=c(scenario_color)) ")))
   g <-  g + coord_flip(ylim = c(-10, 10)) 
-  g <-  g + ylab(j_names_box[indicator]) 
-            theme_bw() + theme(panel.grid=element_blank(), legend.position="none")
+  g <-  g + xlab('') + ylab(j_names_box[indicator]) +
+            theme_bw() + theme(legend.position="none", panel.grid=element_blank()) 
+                       # legend.positionとpanel.grid の順番が逆だとNG
   plot(g)
-  ggsave(file=paste("./png2/",filename,".png", sep=""), width=6.3, height=2.5, dpi=100)
+  ggsave(file=paste("./png2/",filename,".png", sep=""), width=5, height=2.5, dpi=100)
 
 } # indicator # 箱ヒゲ図
 
