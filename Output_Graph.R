@@ -46,6 +46,11 @@ df_Graph_global_wide <- df_Graph_global %>% spread(key=SCENARIO_f, value=CO2_fue
 write_csv(df_Graph_global, "./df_Graph_global_written.csv") 
 write_csv(df_Graph_global_wide, "./df_Graph_global_wide_written.csv") 
 
+unlink("./png2", recursive=T)
+unlink("./png3", recursive=T)
+dir.create("./png2")
+dir.create("./png3")
+
 pdf(file=paste("./png2/JSCE_Graph.pdf", sep=""))    
 for (num in 1:length(x_names)) { #num # XYグラフの出力
   
@@ -141,16 +146,16 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
 
 for (indicator in y_names_box) { # indicator # 箱ヒゲ図
   df_Graph_plot <- df_Graph_p 
-
+  
     g <- eval(parse(text=paste0(
     "ggplot(df_Graph_plot, aes(x=SCENARIO, y=",indicator, ", color=SCENARIO)) +
             geom_boxplot() +
             stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
             scale_color_manual(values=c(scenario_color)) ")))
-  plot(g)
+  #plot(g)
   num <- num+1
   filename <- paste("JSCE",num,"_", indicator, sep="") # 土木学会用出力
-  ggsave(file=paste("./png3/",filename,".png", sep=""), width=5, height=4, dpi=100) # 全範囲
+  #ggsave(file=paste("./png3/",filename,".png", sep=""), width=5, height=4, dpi=100) # 全範囲
 
 #  vec_data <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
 #  axis_range_value <- percentitle_range(vec_data, axis_cutoff_percentile)
@@ -160,6 +165,14 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
             geom_boxplot() +
             stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
             scale_color_manual(values=c(scenario_color)) ")))
+  
+  df_Graph_plot_HisR <- df_Graph_plot %>% filter(SCENARIO_f=='Historical_R17' )
+  vec_data <- eval(parse(text=paste0("df_Graph_plot_HisR$",indicator))) 
+  percentile_val <- percentitle_range(vec_data, cutoff_percentile)
+  g <- g + eval(parse(text=paste0( "annotate('rect', xmin=",1.8,", ymin=",percentile_val[1], 
+                                   ", xmax=",2.2, ", ymax=",percentile_val[2], 
+                                   ", alpha=.2, fill='#329262')"))) 
+  
   g <-  g + coord_flip(ylim = c(-10, 10)) 
   g <-  g + xlab('') + ylab(j_names_box[indicator]) +
             theme_bw() + theme(legend.position="none", panel.grid=element_blank()) 
@@ -169,10 +182,7 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
 
 } # indicator # 箱ヒゲ図
 
-
-    
-  
-  dev.off() 
+dev.off() 
 
 
 
