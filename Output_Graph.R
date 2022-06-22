@@ -8,23 +8,35 @@ y_names <- c('CO2_fuel_Total_scaled',
              rep('Density',3))
 I_names <- c('エネルギー強度', '炭素強度', '電化率')
 I_names_CR <- paste(I_names, 'の変化率 (%)', sep = "")  # c('エネルギー強度の変化率', '炭素強度の変化率', '電化率の変化率')
-y_names_J  <- c('エネルギー起源CO2排出量', rep(I_names,2), I_names_CR, rep('確率密度',3))
+y_names_J  <- c('エネルギー起源CO2排出量', rep(I_names,2), I_names_CR, rep('確率密度',3), I_names_CR)
 x_names_J  <- c('年', rep('GDP/人',3), rep('年',6), I_names_CR)
 cutoff_percentile <- 0.05
+
+y_names_box <- c('ChangeRate_Energy_Intensity','ChangeRate_Carbon_Intensity','ChangeRate_Electricity_Rate_Total',
+                 'ChangeRate_Electricity_Rate_Ind','ChangeRate_Electricity_Rate_Tra',
+                 'ChangeRate_Electricity_Rate_Res','ChangeRate_Electricity_Rate_Com')
+sec_names <- c('工業部門', '交通部門', '民生部門', '業務部門')
+j_names_CR_sec  <- paste(sec_names, '電化率の変化率 (%)', sep = "　") 
+j_names_box　 <- c(I_names_CR, j_names_CR_sec)
+names(j_names_box) <- y_names_box  # j_names_box[names(j_names_box)]
 
 scenario_color <- c('#AAAA11', '#329262', '#FF9900', '#DD4477', '#651067', '#3366CC', '#84919E')
 library(RColorBrewer)
 region_color <- c(brewer.pal(5,"Dark2"),brewer.pal(5,"Set1"),brewer.pal(7,"Paired"))  
 
 y_names_tmp <- y_names[-which(y_names %in% 'Density')] 
-df_Graph_p <- df_Graph   %>% select('SCENARIO', 'REGION', unique(sort(c(x_names,y_names_tmp)))) 
+df_Graph_p <- df_Graph   %>% select('SCENARIO', 'REGION', unique(sort(c(x_names,y_names_tmp, y_names_box)))) 
 df_Graph_p <- df_Graph_p %>% mutate(Energy_Intensity_scaled=Energy_Intensity_scaled/1000 #kJ>MJ
                       ) %>% mutate(Carbon_Intensity_scaled=Carbon_Intensity_scaled*100  #10^-6>10^-8
                       ) %>% mutate(Electricity_Rate_Total_scaled=Electricity_Rate_Total_scaled*100 #percent
                       ) %>% mutate(ChangeRate_Energy_Intensity=ChangeRate_Energy_Intensity*100 #percent
                       ) %>% mutate(ChangeRate_Carbon_Intensity=ChangeRate_Carbon_Intensity*100 #percent
                       ) %>% mutate(ChangeRate_Electricity_Rate_Total=ChangeRate_Electricity_Rate_Total*100 #percent
-                      )
+                      ) %>% mutate(ChangeRate_Electricity_Rate_Ind=ChangeRate_Electricity_Rate_Ind*100 #percent
+                      ) %>% mutate(ChangeRate_Electricity_Rate_Tra=ChangeRate_Electricity_Rate_Tra*100 #percent
+                      ) %>% mutate(ChangeRate_Electricity_Rate_Res=ChangeRate_Electricity_Rate_Res*100 #percent
+                      ) %>% mutate(ChangeRate_Electricity_Rate_Com=ChangeRate_Electricity_Rate_Com*100 #percent
+                      ) # which
 df_Graph_p <- df_Graph_p %>% mutate(SCENARIO2 = recode(SCENARIO, 
                              Historical='歴史的推移(国別)', Historical_R17='歴史的推移', Baseline='ベースライン'))
 df_Graph_p <- df_Graph_p %>% mutate(SCENARIO_f=SCENARIO) %>% mutate(SCENARIO=SCENARIO2) 
@@ -34,11 +46,10 @@ df_Graph_global_wide <- df_Graph_global %>% spread(key=SCENARIO_f, value=CO2_fue
 write_csv(df_Graph_global, "./df_Graph_global_written.csv") 
 write_csv(df_Graph_global_wide, "./df_Graph_global_wide_written.csv") 
 
-
   pdf(file=paste("./png2/JSCE_Graph.pdf", sep=""))    
-  for (num in 1:length(x_names)) {
+  for (num in 1:length(x_names)) { #num # XYグラフの出力
 
-    if ( num==1 ) { 
+    if ( num==1 ) {
       df_Graph_plot <- df_Graph_global %>% filter(SCENARIO_f!='Historical' 
                                      ) %>% mutate(CO2_fuel_Total_scaled=CO2_fuel_Total_scaled/1000000) #kt>Gt-CO2
 
@@ -95,8 +106,6 @@ write_csv(df_Graph_global_wide, "./df_Graph_global_wide_written.csv")
 
       indicator <- x_names[num]
 
-      # vec_data <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
-      # axis_range_value <- percentitle_range(vec_data, axis_cutoff_percentile)
       g <- eval(parse(text=paste0(
           "ggplot(df_Graph_plot, aes(x=",indicator, ",color=SCENARIO)) +
             geom_density(size=0.7) +
@@ -110,11 +119,9 @@ write_csv(df_Graph_global_wide, "./df_Graph_global_wide_written.csv")
                                          ", xmax=",percentile_val[2], ", ymax=",Inf, 
                                          ", alpha=.2, fill='#329262')"))) 
         plot(g)
-        
-          
+
     }  # 確率密度分布
     
-
     if ( y_names_J[num]=='エネルギー起源CO2排出量' ) { 
       ylab_name <- bquote("エネルギー起源   " ~ CO[2] ~ "排出量  " ~ (Gt-CO[2])) #bquote内では 変数名は文字列とされる
     } else if ( y_names_J[num]=='エネルギー強度' ) { ylab_name <- paste(y_names_J[num], '(MJ/$)')
@@ -122,16 +129,47 @@ write_csv(df_Graph_global_wide, "./df_Graph_global_wide_written.csv")
     } else if ( y_names_J[num]=='電化率' )       { ylab_name <- paste(y_names_J[num], '(%)')
     } else { ylab_name <-  y_names_J[num] }
 
-    g <- g + xlab(x_names_J[num]) + ylab(ylab_name) + theme_bw() + theme(  panel.grid = element_blank() )
-      # + MyThemeLine
+    g <- g + xlab(x_names_J[num]) + ylab(ylab_name) + theme_bw() + theme(panel.grid = element_blank()) # + MyThemeLine
     plot(g)
 
     filename <- paste("JSCE",num,"_",x_names[num],"-",y_names[num], sep="") # 土木学会用出力
     ggsave(file=paste("./png2/",filename,".png", sep=""), width=5, height=4, dpi=100)
-    ggsave(file=paste("./png3/",filename,".png", sep=""), width=5, height=7, dpi=100)
+    ggsave(file=paste("./png3/",filename,".png", sep=""), width=5, height=7, dpi=100) # 凡例の出力
     
-  } # num
+  }  #num # XYグラフの出力
   
+
+for (indicator in y_names_box) { # indicator # 箱ヒゲ図
+  df_Graph_plot <- df_Graph_p 
+  
+  g <- eval(parse(text=paste0(
+    "ggplot(df_Graph_plot, aes(x=SCENARIO, y=",indicator, ", color=SCENARIO)) +
+            geom_boxplot() +
+          # geom_jitter(shape=20, position=position_dodge(0.8)) +  # 箱ヒゲに点を重ねる
+            stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
+            scale_color_manual(values=c(scenario_color)) ")))
+  plot(g)
+  filename <- paste("JSCE",num,"_", indicator, sep="") # 土木学会用出力
+  ggsave(file=paste("./png3/",filename,".png", sep=""), width=5, height=4, dpi=100) # 全範囲
+
+  vec_data <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
+  axis_range_value <- percentitle_range(vec_data, axis_cutoff_percentile)
+  
+  g <- eval(parse(text=paste0(
+    "ggplot(df_Graph_plot, aes(x=SCENARIO, y=",indicator, ", color=SCENARIO)) +
+            geom_boxplot() +
+            stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
+            scale_color_manual(values=c(scenario_color)) ")))
+  g <-  g + coord_flip(ylim = c(-10, 10)) 
+  g <-  g + ylab(j_names_box[indicator]) 
+            theme_bw() + theme(panel.grid=element_blank(), legend.position="none")
+  plot(g)
+  ggsave(file=paste("./png2/",filename,".png", sep=""), width=6.3, height=2.5, dpi=100)
+
+} # indicator # 箱ヒゲ図
+
+
+    
   
   dev.off() 
 
