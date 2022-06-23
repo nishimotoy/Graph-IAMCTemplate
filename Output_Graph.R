@@ -47,8 +47,8 @@ write_csv(df_Graph_global, "./df_Graph_global_written.csv")
 write_csv(df_Graph_global_wide, "./df_Graph_global_wide_written.csv") 
 
 unlink("./png2", recursive=T)
-unlink("./png3", recursive=T)
 dir.create("./png2")
+unlink("./png3", recursive=T)
 dir.create("./png3")
 
 pdf(file=paste("./png2/JSCE_Graph.pdf", sep=""))    
@@ -144,9 +144,13 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
   plot(g)
   
   filename <- paste("JSCE",num,"_",x_names[num],"-",y_names[num], sep="") # 土木学会用出力
-  ggsave(file=paste("./png2/",filename,".png", sep=""), width=5, height=4, dpi=100)
-  ggsave(file=paste("./png3/",filename,".png", sep=""), width=5, height=7, dpi=100) # 凡例の出力
-  
+  if ( num>=11 && num<=13 ) { 
+    ggsave(file=paste("./png2/",filename,".png", sep=""), width=5.35, height=3.6, dpi=100) # 確率密度分布
+  } else { 
+    ggsave(file=paste("./png2/",filename,".png", sep=""), width=5, height=4, dpi=100) # XYグラフ
+    ggsave(file=paste("./png3/",filename,".png", sep=""), width=5, height=7, dpi=100) # 凡例の出力(縦大)
+  } 
+
 }  #num # XYグラフの出力
 
 
@@ -166,16 +170,18 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
                                    ", xmax=",2.2, ", ymax=",percentile_val[2], 
                                    ", alpha=.2, fill='#329262')"))) 
   
-  g <-  g + coord_flip(ylim = c(-10, 10)) 
-  g <-  g + xlab('') + ylab(j_names_box[indicator]) + labs(color='シナリオ') +
-            theme_bw() + theme(legend.position="none", panel.grid=element_blank()) 
+  g <-  g + coord_flip(ylim = c(-10, 10)) + guides(color=guide_legend(reverse=TRUE))
+  g <-  g + xlab('') + ylab(j_names_box[indicator]) + labs(color='シナリオ')
+  ggsave(file=paste("./png3/",filename,"_legend.png", sep=""), width=4.56, height=2.5, dpi=100) # 凡例出力（仮）
+  g <-  g + theme_bw() + theme(legend.position="none", panel.grid=element_blank()) 
                        # legend.positionとpanel.grid の順番が逆だとNG
   plot(g)
   num <- num+1
   filename <- paste("JSCE",num,"_", indicator, sep="") # 土木学会用出力
-  ggsave(file=paste("./png2/",filename,".png", sep=""), width=5, height=2.5, dpi=100)
+  ggsave(file=paste("./png2/",filename,".png", sep=""), width=4.56, height=2.5, dpi=100) # 箱ヒゲ図
 
 } # indicator # 箱ヒゲ図
+
 
 dev.off() 
 
