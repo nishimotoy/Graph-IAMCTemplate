@@ -332,7 +332,9 @@ write.csv(t(df_summary_ChangeRate), "./df_summary_ChangeRate_written.csv")
 
 #Feasibility Test ------------------------------------------------------
 for (dummyloop in 1) { # Feasibility Test
-  test_items <- c('ChangeRate_Energy_Intensity', 'ChangeRate_Carbon_Intensity', 'ChangeRate_Electricity_Rate_Total')
+  test_items <- c('ChangeRate_Energy_Intensity', 'ChangeRate_Carbon_Intensity', 'ChangeRate_Electricity_Rate_Total',
+                  'ChangeRate_Electricity_Rate_Ind','ChangeRate_Electricity_Rate_Tra',
+                  'ChangeRate_Electricity_Rate_Res','ChangeRate_Electricity_Rate_Com' )
   future_scenarios <- levels(df_Graph$SCENARIO) #  'Historical', 'Historical_R17'
   vector_Rate_test_OK <- future_scenarios
   
