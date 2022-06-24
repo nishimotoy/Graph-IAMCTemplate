@@ -171,14 +171,14 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
                                    ", alpha=.2, fill='#329262')"))) 
   
   g <-  g + coord_flip(ylim = c(-10, 10)) + guides(color=guide_legend(reverse=TRUE))
-  g <-  g + xlab('') + ylab(j_names_box[indicator]) + labs(color='シナリオ (d1-3)共通')
-  ggsave(file=paste("./png3/",filename,"_legend.png", sep=""), width=4.56, height=2.5, dpi=100) # 凡例出力（仮）
+  g <-  g + xlab('') + ylab(j_names_box[indicator]) + labs(color='シナリオ (a-d)共通')
+  ggsave(file=paste("./png3/",filename,"_legend.png", sep=""), width=4, height=2.5, dpi=100) # 凡例出力（仮）
   g <-  g + theme_bw() + theme(legend.position="none", panel.grid=element_blank()) 
                        # legend.positionとpanel.grid の順番が逆だとNG
   plot(g)
   num <- num+1
   filename <- paste("JSCE",num,"_", indicator, sep="") # 土木学会用出力
-  ggsave(file=paste("./png2/",filename,".png", sep=""), width=4.56, height=2.5, dpi=100) # 箱ヒゲ図
+  ggsave(file=paste("./png2/",filename,".png", sep=""), width=4.0, height=2.5, dpi=100) # 箱ヒゲ図 width=4.56
 
 } # indicator # 箱ヒゲ図
 
