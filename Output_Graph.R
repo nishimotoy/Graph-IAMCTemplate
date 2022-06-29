@@ -47,9 +47,11 @@ df_Graph_p <- df_Graph_p %>% mutate(Energy_Intensity_scaled=Energy_Intensity_sca
 
       g <- eval(parse(text=paste0("
               ggplot(df_Graph_plot, aes(x=",x_names[num],",y=",y_names[num], 
-                                  ",color=SCENARIO)) +
-              geom_line(size=1.6) +
-              scale_color_manual(values=c(scenario_color[-1])) 
+                                  ", shape=SCENARIO)) +
+              geom_line() + 
+            # scale_color_manual(values=c(scenario_color[-1])) +
+              geom_point() +
+              scale_shape_manual(values=c(19,21,22,23,24,25,1))
       "))) 
       plot(g)
       
@@ -131,7 +133,7 @@ df_Graph_p <- df_Graph_p %>% mutate(Energy_Intensity_scaled=Energy_Intensity_sca
     plot(g)
 
     filename <- paste("JSCE",num,"_",x_names[num],"-",y_names[num], sep="") # 土木学会用出力
-    ggsave(file=paste("./png2/",filename,".png", sep=""), width=5, height=4, dpi=100)
+    ggsave(file=paste("./png2/",filename,".png", sep=""), width=5, height=3.6, dpi=100)
     ggsave(file=paste("./png3/",filename,".png", sep=""), width=5, height=7, dpi=100)
     
   } # num
