@@ -60,10 +60,13 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
     
     g <- eval(parse(text=paste0("
               ggplot(df_Graph_plot, aes(x=",x_names[num],",y=",y_names[num], 
-                                ",color=SCENARIO)) +
-              geom_line(size=1.6) +
+                                ",shape=SCENARIO)) +
+              geom_line() +
               labs(color='シナリオ') +
-              scale_color_manual(values=c(scenario_color[-1])) 
+              scale_color_manual(values=c(scenario_color[-1]))+
+              geom_point() +
+              labs(shape='シナリオ') +
+              scale_shape_manual(values=c(19,21,22,23,24,25,1)) 
       "))) 
     plot(g)
     
@@ -147,7 +150,7 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
   if ( num>=11 && num<=13 ) { 
     ggsave(file=paste("./png2/",filename,".png", sep=""), width=5.35, height=3.6, dpi=100) # 確率密度分布
   } else { 
-    ggsave(file=paste("./png2/",filename,".png", sep=""), width=5, height=4, dpi=100) # XYグラフ
+    ggsave(file=paste("./png2/",filename,".png", sep=""), width=5, height=3.5, dpi=100) # XYグラフ
     ggsave(file=paste("./png3/",filename,".png", sep=""), width=5, height=7, dpi=100) # 凡例の出力(縦大)
   } 
 
