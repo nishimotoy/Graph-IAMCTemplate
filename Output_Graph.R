@@ -46,12 +46,12 @@ df_Graph_global_wide <- df_Graph_global %>% spread(key=SCENARIO_f, value=CO2_fue
 write_csv(df_Graph_global, "./df_Graph_global_written.csv") 
 write_csv(df_Graph_global_wide, "./df_Graph_global_wide_written.csv") 
 
-unlink("./png2", recursive=T)
-dir.create("./png2")
-unlink("./png3", recursive=T)
-dir.create("./png3")
+# unlink("./png2", recursive=T)
+# dir.create("./png2")
+# unlink("./png3", recursive=T)
+# dir.create("./png3")
 
-pdf(file=paste("./png2/JSCE_Graph.pdf", sep=""))    
+# pdf(file=paste("./png2/JSCE_Graph.pdf", sep=""))    
 for (num in 1:length(x_names)) { #num # XYグラフの出力
   
   if ( num==1 ) {
@@ -60,13 +60,11 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
     
     g <- eval(parse(text=paste0("
               ggplot(df_Graph_plot, aes(x=",x_names[num],",y=",y_names[num], 
-                                ",shape=SCENARIO)) +
+                                ", color=SCENARIO, size=SCENARIO)) +
               geom_line() +
-              labs(color='シナリオ') +
+              labs(color='シナリオ',size='シナリオ') +  # 凡例を指定しながらまとめる
               scale_color_manual(values=c(scenario_color[-1]))+
-              geom_point() +
-              labs(shape='シナリオ') +
-              scale_shape_manual(values=c(19,21,22,23,24,25,1)) 
+              scale_size_manual(values=c(2.2, rep(1.2, length(df_Graph_plot$SCENARIO)-1))) 
       "))) 
     plot(g)
     
@@ -151,7 +149,7 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
     ggsave(file=paste("./png2/",filename,".png", sep=""), width=5.35, height=3.6, dpi=100) # 確率密度分布
   } else { 
     ggsave(file=paste("./png2/",filename,".png", sep=""), width=5, height=3.5, dpi=100) # XYグラフ
-    ggsave(file=paste("./png3/",filename,".png", sep=""), width=5, height=7, dpi=100) # 凡例の出力(縦大)
+    ggsave(file=paste("./png3/",filename,".png", sep=""), width=5, height=7, dpi=100) # 凡例の出力(縦長)
   } 
 
 }  #num # XYグラフの出力
@@ -185,8 +183,7 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
 
 } # indicator # 箱ヒゲ図
 
-
-dev.off() 
+# dev.off() 
 
 
 
