@@ -47,9 +47,9 @@ write_csv(df_Graph_global, "./df_Graph_global_written.csv")
 write_csv(df_Graph_global_wide, "./df_Graph_global_wide_written.csv") 
 
 # unlink("./png2", recursive=T)
-# dir.create("./png2")
 # unlink("./png3", recursive=T)
-# dir.create("./png3")
+if(!dir.exists("./png2")){ dir.create("./png2") }
+if(!dir.exists("./png3")){ dir.create("./png3") }
 
 # pdf(file=paste("./png2/JSCE_Graph.pdf", sep=""))    
 for (num in 1:length(x_names)) { #num # XYグラフの出力
@@ -148,7 +148,7 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
   if ( num>=11 && num<=13 ) { 
     ggsave(file=paste("./png2/",filename,".png", sep=""), width=5.35, height=3.6, dpi=100) # 確率密度分布
   } else { 
-    ggsave(file=paste("./png2/",filename,".png", sep=""), width=5, height=3.5, dpi=100) # XYグラフ
+    ggsave(file=paste("./png2/",filename,".png", sep=""), width=5.34, height=3.6, dpi=100) # XYグラフ
     ggsave(file=paste("./png3/",filename,".png", sep=""), width=5, height=7, dpi=100) # 凡例の出力(縦長)
   } 
 
@@ -179,7 +179,7 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
   plot(g)
   num <- num+1
   filename <- paste("JSCE",num,"_", indicator, sep="") # 土木学会用出力
-  ggsave(file=paste("./png2/",filename,".png", sep=""), width=4.0, height=2.5, dpi=100) # 箱ヒゲ図 width=4.56
+  ggsave(file=paste("./png2/",filename,".png", sep=""), width=4.55, height=2, dpi=100) # 箱ヒゲ図 width=4.56
 
 } # indicator # 箱ヒゲ図
 
