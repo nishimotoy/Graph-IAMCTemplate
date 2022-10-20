@@ -62,6 +62,8 @@ for (file_name in files) {
   df_past <- rbind(df_past, d)
 }
 setwd(paste(root,"4_output/", sep="")) 
+unlink("./png", recursive=T)
+dir.create("./png")
 
 df_past <- df_past %>% filter(REGION!='region')  # ダミー行のデータを削除
 df_past <- df_past %>% mutate(SCENARIO='Historical')   # 書式を揃える
