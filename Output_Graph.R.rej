@@ -1,0 +1,16 @@
+diff a/Output_Graph.R b/Output_Graph.R	(rejected hunks)
+@@ -47,9 +47,11 @@
+ 
+       g <- eval(parse(text=paste0("
+               ggplot(df_Graph_plot, aes(x=",x_names[num],",y=",y_names[num], 
+-                                  ",color=SCENARIO)) +
+-              geom_line(size=1.6) +
+-              scale_color_manual(values=c(scenario_color[-1])) 
++                                  ", shape=SCENARIO)) +
++              geom_line() + 
++            # scale_color_manual(values=c(scenario_color[-1])) +
++              geom_point() +
++              scale_shape_manual(values=c(19,21,22,23,24,25,1))
+       "))) 
+       plot(g)
+       
