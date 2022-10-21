@@ -50,6 +50,7 @@ for (scenarioname in scenarionames) {
   
   for (indicator in indicators) {
     
+<<<<<<< HEAD
     df_toMerge <- filter(df_all, VARIABLE==indicator, SCENARIO %in% c('Historical',scenarioname)
             ) %>% select(-c('MODEL','UNIT','VARIABLE'))
     df_toMerge <- eval(parse(text=paste0("rename(df_toMerge,", indicator, "=Value)")))
@@ -61,6 +62,19 @@ for (scenarioname in scenarionames) {
   
   # XY散布図 by 軸名のテキスト指定
   pdf(file=paste("./",scenarioname,"_XY.pdf", sep=""))    
+=======
+    df_Graph <- filter(df_all, VARIABLE==indicator, SCENARIO %in% c('Historical',scenarioname)
+    ) %>% select(-c('MODEL','UNIT','VARIABLE'))
+    df_Graph <- eval(parse(text=paste0("rename(df_Graph,", indicator, "=Value)")))
+    df_Graph <- df_Graph[order(df_Graph$Year),]
+    View(df_Graph)
+    df_forMerge <- merge(df_forMerge, df_Graph)
+  }
+  View(df_forMerge)
+  
+  # XY散布図 by 軸名のテキスト指定
+  pdf(file=paste("./4_output/XY_",scenarioname,".pdf", sep=""))    
+>>>>>>> 04a7b3014dcab86b7364ba4a975627cca6ef413e
   for (num in 1:length(x_names)) {
     
     g <- eval(parse(text=paste0(
@@ -71,16 +85,28 @@ for (scenarioname in scenarionames) {
         scale_shape_manual(values=c(19,21))")))
     plot(g)
     filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
+<<<<<<< HEAD
     ggsave(file=paste("./png/",filename,".png"))
+=======
+    # ggsave(file=paste("./4_output/",filename,".png"))
+>>>>>>> 04a7b3014dcab86b7364ba4a975627cca6ef413e
   }
   dev.off() 
 
   # 4in1 レイアウト
+<<<<<<< HEAD
   pdf(file=paste("./../5_test/",scenarioname,"_XY.pdf", sep=""))    
   for (num in 1:length(x_names)) {
     
     p1 <- eval(parse(text=paste0(
       "ggplot(df_Graph, aes(x=",x_names[num],",y=",y_names[num], 
+=======
+  pdf(file=paste("./5_test/figures_",scenarioname,".pdf", sep=""))    
+  for (num in 1:length(x_names)) {
+    
+    p1 <- eval(parse(text=paste0(
+      "ggplot(df_forMerge, aes(x=",x_names[num],",y=",y_names[num], 
+>>>>>>> 04a7b3014dcab86b7364ba4a975627cca6ef413e
       ",color=REGION,shape=SCENARIO)) +
         geom_line() +
         geom_point() + 
@@ -89,6 +115,7 @@ for (scenarioname in scenarionames) {
     if ( num%%4==1 ) { p <- p1 } else { p <- p + p1 }
     if ( num%%4==0 ) { plot(p) } 
   }
+<<<<<<< HEAD
   if ( length(x_names)%%4!=0 ) { 
     for (num in 1:(4-(length(x_names)%%4))) { p <- p + ggplot() } 
     plot(p) 
@@ -101,6 +128,16 @@ for (scenarioname in scenarionames) {
 
     g <- eval(parse(text=paste0(
       "ggplot(df_Graph, aes(x=","REGION",",y=",indicator, 
+=======
+  dev.off() 
+  
+  # バイオリン
+  pdf(file=paste("./4_output/violin_",scenarioname,".pdf", sep=""))    
+  for (indicator in indicators) {
+
+    g <- eval(parse(text=paste0(
+      "ggplot(df_forMerge, aes(x=","REGION",",y=",indicator, 
+>>>>>>> 04a7b3014dcab86b7364ba4a975627cca6ef413e
       ",color=SCENARIO)) +
         geom_violin() + 
         geom_jitter(shape=20, position=position_dodge(1.0))")))
@@ -109,11 +146,19 @@ for (scenarioname in scenarionames) {
   dev.off() 
   
   # 箱ヒゲ図
+<<<<<<< HEAD
   pdf(file=paste("./",scenarioname,"_boxplot.pdf", sep=""))    
   for (indicator in indicators) {
     
     g <- eval(parse(text=paste0(
       "ggplot(df_Graph, aes(x=","REGION",",y=",indicator, 
+=======
+  pdf(file=paste("./4_output/boxplot_",scenarioname,".pdf", sep=""))    
+  for (indicator in indicators) {
+    
+    g <- eval(parse(text=paste0(
+      "ggplot(df_forMerge, aes(x=","REGION",",y=",indicator, 
+>>>>>>> 04a7b3014dcab86b7364ba4a975627cca6ef413e
       ",color=SCENARIO)) +
         geom_boxplot() + 
         geom_jitter(shape=20, position=position_dodge(0.8))")))
@@ -122,15 +167,24 @@ for (scenarioname in scenarionames) {
   dev.off() 
   
   # 頻度分布
+<<<<<<< HEAD
   pdf(file=paste("./",scenarioname,"_histogram.pdf", sep=""))    
   for (indicator in indicators) {
     
     g <- eval(parse(text=paste0(
       "ggplot(df_Graph, aes(x=",indicator, 
+=======
+  pdf(file=paste("./4_output/histogram_",scenarioname,".pdf", sep=""))    
+  for (indicator in indicators) {
+    
+    g <- eval(parse(text=paste0(
+      "ggplot(df_forMerge, aes(x=",indicator, 
+>>>>>>> 04a7b3014dcab86b7364ba4a975627cca6ef413e
       ",color=SCENARIO)) +
         geom_histogram(bins=50) +
         ylab('Count of Region-Year')")))
     plot(g)
+<<<<<<< HEAD
     filename <- paste(scenarioname,"_","histogram_",indicator, sep="")
     ggsave(file=paste("./png/",filename,".png", sep=""), width=6, height=4, dpi=100)
   }
@@ -148,7 +202,17 @@ for (scenarioname in scenarionames) {
     plot(g)
     filename <- paste(scenarioname,"_","density_",indicator, sep="")
     ggsave(file=paste("./png/",filename,".png", sep=""), width=6, height=4, dpi=100)
+=======
+>>>>>>> 04a7b3014dcab86b7364ba4a975627cca6ef413e
   }
   dev.off() 
   
 }
+
+# 頻度分布を作る
+# g <- ggplot(df_forMerge, aes(x = ChangeRate_Electricity_Rate_Total))
+# g <- g + geom_histogram(binwidth=0.005) # set histogram chart
+# g <- g + xlab("Class value (cm)") # x label
+# g <- g + ylab("Frequency")        # y label 
+# g <- g + ggtitle("Histogram by ggplot") # title
+# plot(g)  
