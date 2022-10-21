@@ -254,7 +254,7 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理2   # テスト後に戻す (i i
 
   indicator   <- df_vni[1,i]
   
-  # 指標の変化率（t年比）　ChangeRate_Indicator=(I(t)-I(t-1))/SQRT(0.5*({I(t)^2+I(t-1)^2})/((t)-(t-1))
+  # 指標の変化率（t年比）　
   df_Graph <- eval(parse(text=paste0(
         "df_Graph %>%  mutate(ChangeRateBY_",indicator,
         "=(",indicator,"_scaled-lag(",indicator,"_scaled, n=1))/(Year-lag(Year, n=1))
@@ -263,9 +263,9 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理2   # テスト後に戻す (i i
               /abs(lag(",indicator,",n=1))
               /(Year-lag(Year, n=1))
                   )")))
+ 
+ #  過去の試み
  #  "=(",indicator,"/lag(",indicator,",n=1)-1)  t-1 期で割る
-  
-
  #  "=(",indicator,"-lag(",indicator,",n=1))  共通
  #    /lag(",indicator,",n=1)       t-1 期で割る
  #    /(",indicator,"+lag(",indicator,",n=1))*2   t期と(t-1)期の平均
