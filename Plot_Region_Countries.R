@@ -230,7 +230,7 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理1   # テスト後に戻す (i i
       "df_Graph %>% mutate(",indicator,"_scaled=",indicator,"/",indicator,"[Year==0]*",indicator,"[Year==1]
               ) %>% mutate(",numerator,"_scaled=",numerator,"/",numerator,"[Year==0]*",numerator,"[Year==1]
               ) %>% mutate(",denominator,"_scaled=",denominator,"/",denominator,"[Year==0]*",denominator,"[Year==1])"
-    )))                     # indicator_scaled = I(t,F/H)/I(t=BaseYear,F/H)*I(t=BaseYear,H)
+    )))                     # indicator_scaled = I(t,F/H)/I(t=BaseYear,F/H)*I(t=BaseYear,H)  # 基準年の Historical に合わせる
     while (0) {  # 基準年値=1 とする場合（このloopを活かすと直前の上書き）
       df_Graph<- eval(parse(text=paste0(
         "df_Graph %>% mutate(",indicator,"_scaled=",indicator,"/",indicator,"[Year==0]
@@ -264,7 +264,7 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理2   # テスト後に戻す (i i
               /(Year-lag(Year, n=1))
                   )")))
  
- #  過去の試み
+ #  指標の変化率  過去の試み
  #  "=(",indicator,"/lag(",indicator,",n=1)-1)  t-1 期で割る
  #  "=(",indicator,"-lag(",indicator,",n=1))  共通
  #    /lag(",indicator,",n=1)       t-1 期で割る
@@ -272,6 +272,13 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理2   # テスト後に戻す (i i
  #    /(sqrt(",indicator,"^2)+sqrt(lag(",indicator,",n=1)^2))*2　ABS1
  #    /(abs(",indicator,")+abs(lag(",indicator,",n=1)))*2     ABS2
  #    /(sqrt(",indicator,"^2)+sqrt(lag(",indicator,",n=1)^2))*2 
+
+  # 指標の変化量（前の期からの変化量）　Henkaryo_Carbon_Intensity, Henkaryo_Electricity_Rate_Total
+  df_Graph <- eval(parse(text=paste0(
+    "df_Graph %>%  mutate(Henkaryo_",indicator,
+    "=(",indicator,"-lag(",indicator,",n=1))
+              /(Year-lag(Year, n=1))
+                  )")))
   
 } # 指標毎の処理2
 
@@ -301,6 +308,7 @@ df_Graph[df_Graph==Inf] <- NA
 indicators <- c('ChangeRate_Energy_Intensity','ChangeRate_Carbon_Intensity','ChangeRate_Electricity_Rate_Total',
               'ChangeRate_Electricity_Rate_Ind','ChangeRate_Electricity_Rate_Tra',
               'ChangeRate_Electricity_Rate_Res','ChangeRate_Electricity_Rate_Com',
+              'Henkaryo_Energy_Intensity','Henkaryo_Carbon_Intensity','Henkaryo_Electricity_Rate_Total',
               'Energy_Intensity_scaled','Carbon_Intensity_scaled','Electricity_Rate_Total_scaled',
               'Electricity_Rate_Ind_scaled','Electricity_Rate_Tra_scaled',
               'Electricity_Rate_Res_scaled','Electricity_Rate_Com_scaled')
