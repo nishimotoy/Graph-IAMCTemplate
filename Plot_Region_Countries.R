@@ -457,7 +457,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
             scale_color_manual(values=c(scenario_color)) ")))
         plot(g)
         filename <- paste(scenarioname,"_","boxplot_World_",indicator, sep="")
-       # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
+        ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
   
         vec_data <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
         axis_range_value <- percentitle_range(vec_data, axis_cutoff_percentile)
