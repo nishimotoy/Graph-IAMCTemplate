@@ -457,19 +457,11 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
             scale_color_manual(values=c(scenario_color)) ")))
         plot(g)
         filename <- paste(scenarioname,"_","boxplot_World_",indicator, sep="")
-        ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
-  
-        vec_data <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
-        axis_range_value <- percentitle_range(vec_data, axis_cutoff_percentile)
-        
-        g <- eval(parse(text=paste0(
-          "ggplot(df_Graph_plot, aes(x=SCENARIO, y=",indicator, ", color=SCENARIO)) +
-            geom_boxplot() +
-            stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
-            scale_color_manual(values=c(scenario_color)) ")))
+        ggsave(file=paste("./png/",filename,".png", sep=""), width=6.3, height=2.5, dpi=100)
+
         g <- g + coord_flip(ylim = c(-0.1, 0.1)) 
         plot(g)
-        filename <- paste(scenarioname,"_","boxplot_World_ylim_",indicator, sep="")
+        filename <- paste(scenarioname,"_","boxplot_World_",indicator,"_ylim", sep="")
         ggsave(file=paste("./png/",filename,".png", sep=""), width=6.3, height=2.5, dpi=100)
       }
       dev.off() 
