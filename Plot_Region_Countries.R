@@ -276,8 +276,7 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理2   # テスト後に戻す (i i
   # 指標の変化量（前の期からの変化量）　Henkaryo_Carbon_Intensity, Henkaryo_Electricity_Rate_Total
   df_Graph <- eval(parse(text=paste0(
     "df_Graph %>%  mutate(Henkaryo_",indicator,
-    "=(",indicator,"-lag(",indicator,",n=1))
-              /(Year-lag(Year, n=1))
+    "=(",indicator,"_scaled-lag(",indicator,"_scaled, n=1))/(Year-lag(Year, n=1))
                   )")))
   
 } # 指標毎の処理2
