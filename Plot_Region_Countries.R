@@ -544,7 +544,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
 
     for (dummyloop in 1) { # XY散布図 by 17地域 vs 17地域 
       library(RColorBrewer)
-      scenario_color <- c(brewer.pal(5,"Dark2"),brewer.pal(8,"Accent"),brewer.pal(4,"Set1"))  
+      region17_color <- c(brewer.pal(5,"Dark2"),brewer.pal(8,"Accent"),brewer.pal(4,"Set1"))  
       # df_Graph_plotXY <- data_frame()
       df_Graph_plotXY <- df_Graph_plot %>% filter(SCENARIO!='Historical')
       df_Graph_plotXY_His <- df_Graph_plotXY %>% filter(SCENARIO=='Historical_R17')
@@ -559,7 +559,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
           ",color=REGION, shape=SCENARIO)) +
               geom_point() + 
               geom_line() +
-              scale_color_manual(values=c(rep(scenario_color,3))) +
+              scale_color_manual(values=c(rep(region17_color,3))) +
               scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
         plot(g)
         filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
@@ -578,7 +578,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
               geom_line() +
               xlim(",x_axis_min, ", ",x_axis_max, ") +
               ylim(",y_axis_min, ", ",y_axis_max, ") +
-              scale_color_manual(values=c(rep(scenario_color,3))) +
+              scale_color_manual(values=c(rep(region17_color,3))) +
               scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
         plot(g)
 
@@ -590,7 +590,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
               geom_line() +
               xlim(",x_axis_min, ", ",x_axis_max, ") +
               ylim(",-0.5, ", ",0.1, ") +
-              scale_color_manual(values=c(rep(scenario_color,3))) +
+              scale_color_manual(values=c(rep(region17_color,3))) +
               scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
           plot(g)
           
@@ -601,7 +601,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
               geom_line() +
             # xlim(",x_axis_min, ", ",x_axis_max, ") +
               ylim(",-0.05, ", ",0.05, ") +
-              scale_color_manual(values=c(rep(scenario_color,3))) +
+              scale_color_manual(values=c(rep(region17_color,3))) +
               scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
           plot(g)
           
@@ -617,7 +617,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
           ",color=REGION, shape=SCENARIO)) +
               geom_point() + 
               geom_line() +
-              scale_color_manual(values=c(rep(scenario_color,3))) +
+              scale_color_manual(values=c(rep(region17_color,3))) +
               scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
         plot(g)
         
@@ -636,7 +636,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
           ",color=REGION, shape=SCENARIO)) +
             geom_line() +
             geom_point() +
-            scale_color_manual(values=c(rep(scenario_color,3))) +
+            scale_color_manual(values=c(rep(region17_color,3))) +
           # theme(legend.position='none') +
             scale_shape_manual(values=c(19,19,21,21,21,21,21))")))
         plot(g)
@@ -666,7 +666,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
           "ggplot(df_Graph_filtered, aes(x=",indicator, ",color=SCENARIO)) +
             geom_density(size=0.7) +
             ylab('Density (Counts scaled to 1) of Region-Year') +
-            scale_color_manual(values=c(rep(scenario_color,3)))")))
+            scale_color_manual(values=c(rep(region17_color,3)))")))
         plot(g)
         filename <- paste(scenarioname,"_","density_filtered_",indicator, sep="")
        # ggsave(file=paste("./filtered/",filename,".png", sep=""), width=5, height=4, dpi=100)
@@ -679,7 +679,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
             geom_density(size=0.7) +
             xlim(",axis_range_value[1], ", ",axis_range_value[2], ") +  # 
             ylab('Density (Counts scaled to 1) of Region-Year') +
-            scale_color_manual(values=c(rep(scenario_color,3)))")))
+            scale_color_manual(values=c(rep(region17_color,3)))")))
         plot(g)
         ## ggsave(file=paste("./filtered/",filename,"_xlim.png", sep=""), width=5, height=4, dpi=100)
         
@@ -705,7 +705,6 @@ y_names <- c(rep('ChangeRate_Energy_Intensity',4),
 
 for (dummyloop in 1) { # item 指定出力
   library(RColorBrewer)
-  scenario_color <- c(brewer.pal(5,"Dark2"),brewer.pal(8,"Accent"),brewer.pal(4,"Set1"))  
   df_Graph_plotXY <- df_Graph_plot 
   df_Graph_plotXY <- df_Graph_plot %>% filter(SCENARIO!='Historical')
   df_Graph_plotXY_His <- df_Graph_plotXY %>% filter(SCENARIO=='Historical_R17')
@@ -735,7 +734,7 @@ for (dummyloop in 1) { # item 指定出力
               geom_point() + 
 #             geom_line() +
 #             ylim(",-0.5, ", ",1, ") +
-              scale_color_manual(values=c(rep(scenario_color,3))) +
+              scale_color_manual(values=c(rep(region17_color,3))) +
               scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
     g <- g + geom_hline(yintercept=c(percentile_val[1], percentile_val[2]))  
     g <- g + eval(parse(text=paste0( "annotate('text', x=",x_axis_right,", y=",y_axis_top,", 
@@ -755,7 +754,7 @@ for (dummyloop in 1) { # item 指定出力
                 geom_point() + 
   #             geom_line() +
                 ylim(",y_axis_val[1], ", ",y_axis_val[2], ") +
-                scale_color_manual(values=c(rep(scenario_color,3))) +
+                scale_color_manual(values=c(rep(region17_color,3))) +
                 scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
       g <- g + geom_hline(yintercept=c(percentile_val[1], percentile_val[2]))  
       g <- g + eval(parse(text=paste0( "annotate('text', x=",x_axis_right,", y=",y_axis_top,", 
