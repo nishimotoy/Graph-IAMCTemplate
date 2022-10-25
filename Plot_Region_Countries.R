@@ -765,8 +765,6 @@ for (dummyloop in 1) { # item 指定出力
     } #CI
 
         if (x_names[num]=='Year') { #Year
-    
-    if (x_names[num]=='Year') { #Year
       g <- eval(parse(text=paste0(
         "ggplot(df_Graph_plotXY_His, aes(x=",x_names[num],",y=",y_names[num], 
         ", shape=SCENARIO)) +
