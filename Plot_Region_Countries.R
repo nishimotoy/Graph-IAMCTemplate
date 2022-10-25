@@ -463,7 +463,6 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
         g <- eval(parse(text=paste0(
           "ggplot(df_Graph_plot, aes(x=SCENARIO, y=",indicator, ", color=SCENARIO)) +
             geom_boxplot() +
-          # geom_jitter(shape=20, position=position_dodge(0.8)) +  # 箱ヒゲに点を重ねる
             stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
             scale_color_manual(values=c(scenario_color)) ")))
         g <- g + coord_flip(ylim = c(-0.1, 0.1)) 
