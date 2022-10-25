@@ -64,6 +64,7 @@ for (file_name in files) {
 setwd(paste(root,"4_output/", sep="")) 
 unlink("./png", recursive=T)
 dir.create("./png")
+dir.create("./png/ylim")
 
 df_past <- df_past %>% filter(REGION!='region')  # ダミー行のデータを削除
 df_past <- df_past %>% mutate(SCENARIO='Historical')   # 書式を揃える
@@ -450,7 +451,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
       pdf(file=paste("./",scenarioname,"_boxplot_World.pdf", sep=""))    
       for (indicator in indicators) {
         g <- eval(parse(text=paste0(
-          "ggplot(df_Graph_plot, aes(x=SCENARIO, y=",indicator, ", color=SCENARIO)) +
+          "ggplot(df_Graph_plot, aes(y=SCENARIO, x=",indicator, ", color=SCENARIO)) +
             geom_boxplot() +
           # geom_jitter(shape=20, position=position_dodge(0.8)) +  # 箱ヒゲに点を重ねる
             stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
@@ -459,10 +460,15 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
         filename <- paste(scenarioname,"_","boxplot_World_",indicator, sep="")
         ggsave(file=paste("./png/",filename,".png", sep=""), width=6.3, height=2.5, dpi=100)
 
+        g <- eval(parse(text=paste0(
+          "ggplot(df_Graph_plot, aes(x=SCENARIO, y=",indicator, ", color=SCENARIO)) +
+            geom_boxplot() +
+          # geom_jitter(shape=20, position=position_dodge(0.8)) +  # 箱ヒゲに点を重ねる
+            stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
+            scale_color_manual(values=c(scenario_color)) ")))
         g <- g + coord_flip(ylim = c(-0.1, 0.1)) 
         plot(g)
-        filename <- paste(scenarioname,"_","boxplot_World_",indicator,"_ylim", sep="")
-        ggsave(file=paste("./png/",filename,".png", sep=""), width=6.3, height=2.5, dpi=100)
+        ggsave(file=paste("./png/ylim/",filename,"_ylim.png", sep=""), width=6.3, height=2.5, dpi=100)
       }
       dev.off() 
     } # 箱ヒゲ図  全世界
