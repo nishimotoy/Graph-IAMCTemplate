@@ -395,11 +395,11 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
 # scenario_color <- c('#3366CC', '#66AA00', '#0099C6', '#DD4477', '#BB2E2E', '#990099', '#651067', '#22AA99')
   scenario_color <- c('#AAAA11', '#329262', '#FF9900', '#DD4477', '#651067', '#3366CC', '#84919E')
   
-  percentitle_range <- function(vec_data, cutoff_percentile) {
-  percentitle_range_return <- c(quantile(na.omit(vec_data), cutoff_percentile, na.rm=T),
+  percentile_range <- function(vec_data, cutoff_percentile) {
+  percentile_range_return <- c(quantile(na.omit(vec_data), cutoff_percentile, na.rm=T),
                                   quantile(na.omit(vec_data), (1-cutoff_percentile), na.rm=T)
     ) %>% as.numeric()
-    return(percentitle_range_return)
+    return(percentile_range_return)
   }
   axis_cutoff_percentile <- 0.01   # 軸の表示において切り捨てる分位範囲 （0.01: 両端1% cutoff）
   
@@ -487,7 +487,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
        # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
         
         vec_data <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
-        axis_range_value <- percentitle_range(vec_data, axis_cutoff_percentile)
+        axis_range_value <- percentile_range(vec_data, axis_cutoff_percentile)
         g <- eval(parse(text=paste0(
           "ggplot(df_Graph_plot, aes(x=",indicator, ",color=SCENARIO)) +
            geom_histogram(bins=50, position='dodge', alpha=0) + # 隣接バー
@@ -519,7 +519,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
        # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
         
         vec_data <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
-        axis_range_value <- percentitle_range(vec_data, axis_cutoff_percentile)
+        axis_range_value <- percentile_range(vec_data, axis_cutoff_percentile)
         g <- eval(parse(text=paste0(
           "ggplot(df_Graph_plot, aes(x=",indicator, ",color=SCENARIO)) +
             geom_density(size=0.7) +
@@ -530,7 +530,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
 
         cutoff_percentile <- 0.05
         vec_data <- eval(parse(text=paste0("df_Graph_plotXY_HisR$",indicator))) 
-        percentile_val <- percentitle_range(vec_data, cutoff_percentile)
+        percentile_val <- percentile_range(vec_data, cutoff_percentile)
         g <- g + eval(parse(text=paste0( "annotate('rect', xmin=",percentile_val[1],", ymin=",-Inf, 
                                          ", xmax=",percentile_val[2],", ymax=",0, 
                                          ", alpha=.1, fill='#329262')"))) 
@@ -673,7 +673,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
 
         # 範囲指定のグラフ
         vec_data <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
-        axis_range_value <- percentitle_range(vec_data, axis_cutoff_percentile)
+        axis_range_value <- percentile_range(vec_data, axis_cutoff_percentile)
         g <- eval(parse(text=paste0(
           "ggplot(df_Graph_filtered, aes(x=",indicator, ",color=SCENARIO)) +
             geom_density(size=0.7) +
@@ -721,7 +721,7 @@ for (dummyloop in 1) { # item 指定出力
     y_axis_max <- max(eval(parse(text=paste0("df_Graph_plotXY$",y_names[num]))), na.rm=T)
     cutoff_percentile <- 0.05
     vec_data <- eval(parse(text=paste0("df_Graph_plotXY_His$",y_names[num]))) 
-    percentile_val <- percentitle_range(vec_data, cutoff_percentile)
+    percentile_val <- percentile_range(vec_data, cutoff_percentile)
     
     x_axis_right <- x_axis_max - 0.1*(x_axis_max - x_axis_min)
     y_axis_high <- percentile_val[2] + 0.2*(y_axis_max - y_axis_min)

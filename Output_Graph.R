@@ -101,7 +101,7 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
     if ( num>=8 && num<=10 ) { # 窓の追加
       
       vec_data <- eval(parse(text=paste0("df_Graph_plot_HisR$",y_names[num]))) 
-      percentile_val <- percentitle_range(vec_data, cutoff_percentile)
+      percentile_val <- percentile_range(vec_data, cutoff_percentile)
       g <- g + eval(parse(text=paste0( "annotate('rect', xmin=",-Inf,", ymin=", percentile_val[1], 
                                        ", xmax=",Inf, ", ymax=",percentile_val[2], 
                                        ", alpha=.125, fill='#329262')"))) 
@@ -126,7 +126,7 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
             ylab('Density (Counts scaled to 1) of Region-Year')")))
     
     vec_data <- eval(parse(text=paste0("df_Graph_plot_HisR$",indicator))) 
-    percentile_val <- percentitle_range(vec_data, cutoff_percentile)
+    percentile_val <- percentile_range(vec_data, cutoff_percentile)
     g <- g + eval(parse(text=paste0( "annotate('rect', xmin=",percentile_val[1],", ymin=",-Inf, 
                                      ", xmax=",percentile_val[2], ", ymax=",Inf, 
                                      ", alpha=.2, fill='#329262')"))) 
@@ -166,7 +166,7 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
   
   df_Graph_plot_HisR <- df_Graph_plot %>% filter(SCENARIO_f=='Historical_R17' )
   vec_data <- eval(parse(text=paste0("df_Graph_plot_HisR$",indicator))) 
-  percentile_val <- percentitle_range(vec_data, cutoff_percentile)
+  percentile_val <- percentile_range(vec_data, cutoff_percentile)
   g <- g + eval(parse(text=paste0( "annotate('rect', xmin=",1.8,", ymin=",percentile_val[1], 
                                    ", xmax=",2.2, ", ymax=",percentile_val[2], 
                                    ", alpha=.2, fill='#329262')"))) 
