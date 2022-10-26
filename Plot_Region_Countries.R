@@ -465,13 +465,23 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
             geom_boxplot() +
             stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
             scale_color_manual(values=c(scenario_color)) ")))
-        g <- g + coord_flip(ylim = c(-0.1, 0.1)) 
+        
+        if ( regexpr('^ChangeRate*', indicator)==1 ) { 
+          ylim_value <- c(-0.1, 0.1) 
+        } else {
+          vectorization_df <- eval(parse(text=paste0( 
+            "as.vector(df_Graph_plot$", indicator, ") %>% na.omit()" 
+            )))
+          ylim_value <- c(quantile(vectorization_df, probs=0.05, na.rm=T), 
+                          quantile(vectorization_df, probs=0.95, na.rm=T))
+        }
+        g <- g + coord_flip(ylim = ylim_value) 
         plot(g)
         ggsave(file=paste("./png/ylim/",filename,"_ylim.png", sep=""), width=6.3, height=2.5, dpi=100)
       }
       dev.off() 
     } # 箱ヒゲ図  全世界
-        
+ 
     for (dummyloop in 1) { # 頻度分布
       pdf(file=paste("./",scenarioname,"_histogram.pdf", sep=""))    
       for (indicator in indicators) {
