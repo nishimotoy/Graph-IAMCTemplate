@@ -309,10 +309,13 @@ df_Graph[df_Graph==Inf] <- NA
 indicators <- c('ChangeRate_Energy_Intensity','ChangeRate_Carbon_Intensity','ChangeRate_Electricity_Rate_Total',
               'ChangeRate_Electricity_Rate_Ind','ChangeRate_Electricity_Rate_Tra',
               'ChangeRate_Electricity_Rate_Res','ChangeRate_Electricity_Rate_Com',
-              'Henkaryo_Energy_Intensity','Henkaryo_Carbon_Intensity','Henkaryo_Electricity_Rate_Total',
               'Energy_Intensity_scaled','Carbon_Intensity_scaled','Electricity_Rate_Total_scaled',
               'Electricity_Rate_Ind_scaled','Electricity_Rate_Tra_scaled',
-              'Electricity_Rate_Res_scaled','Electricity_Rate_Com_scaled')
+              'Electricity_Rate_Res_scaled','Electricity_Rate_Com_scaled',
+              'Henkaryo_Energy_Intensity','Henkaryo_Carbon_Intensity','Henkaryo_Electricity_Rate_Total',
+              'Henkaryo_Electricity_Rate_Ind','Henkaryo_Electricity_Rate_Tra',
+              'Henkaryo_Electricity_Rate_Res','Henkaryo_Electricity_Rate_Com'
+)
 
 df_indicator <- df_Graph %>% select(one_of(Titlerow3),one_of(indicators)
                        ) %>% group_by(SCENARIO)
@@ -485,7 +488,6 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
         gb$widths = grid::unit.pmax(g1$widths, g2$widths)
         plot(gb)
         ggsave(plot=gb, file=paste("./png/ylim_compare/",filename,"_ylim_compare.png", sep=""), width=6.3, height=5.0, dpi=100)
-        
       }
       dev.off() 
     } # 箱ヒゲ図  全世界
