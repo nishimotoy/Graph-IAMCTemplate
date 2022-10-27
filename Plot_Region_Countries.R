@@ -333,6 +333,12 @@ df_summary <- df_indicator %>% select(-c(Year, Country, REGION)
                      )
   ) # %>% arrange(colnames(df_summary ))
 
+df_check <- df_indicator %>% select(-c(Year, Country, REGION)
+) %>% group_by(SCENARIO
+) %>% summarise_at(vars(everything()),
+                   funs(median(., na.rm=T)-quantile(., probs=0.50, na.rm=T))
+) # %>% arrange(colnames(df_summary ))
+
 # df_summary <- df_summary  %>% mutate(item=names) 
 # colnames(df_summary) <- df_summary[1,]
 
