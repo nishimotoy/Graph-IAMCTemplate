@@ -306,16 +306,17 @@ write_csv(df_Graph, "./df_Graph_written.csv")
 df_Graph[df_Graph==Inf] <- NA
 # write_csv(anti_join(df_Graph, df_Graph_bk), "./df_Graph_antijoin_written.csv") 
 
-indicators <- c('ChangeRate_Energy_Intensity','ChangeRate_Carbon_Intensity','ChangeRate_Electricity_Rate_Total',
-              'ChangeRate_Electricity_Rate_Ind','ChangeRate_Electricity_Rate_Tra',
-              'ChangeRate_Electricity_Rate_Res','ChangeRate_Electricity_Rate_Com',
-              'Energy_Intensity_scaled','Carbon_Intensity_scaled','Electricity_Rate_Total_scaled',
-              'Electricity_Rate_Ind_scaled','Electricity_Rate_Tra_scaled',
-              'Electricity_Rate_Res_scaled','Electricity_Rate_Com_scaled',
-              'Henkaryo_Energy_Intensity','Henkaryo_Carbon_Intensity','Henkaryo_Electricity_Rate_Total',
-              'Henkaryo_Electricity_Rate_Ind','Henkaryo_Electricity_Rate_Tra',
-              'Henkaryo_Electricity_Rate_Res','Henkaryo_Electricity_Rate_Com'
-              )
+indicators <- c(
+   'Energy_Intensity_scaled','Carbon_Intensity_scaled','Electricity_Rate_Total_scaled'
+  # ,'Electricity_Rate_Ind_scaled','Electricity_Rate_Tra_scaled'
+  # ,'Electricity_Rate_Res_scaled','Electricity_Rate_Com_scaled'
+  ,'Henkaryo_Energy_Intensity','Henkaryo_Carbon_Intensity','Henkaryo_Electricity_Rate_Total'
+  # ,'Henkaryo_Electricity_Rate_Ind','Henkaryo_Electricity_Rate_Tra'
+  # ,'Henkaryo_Electricity_Rate_Res','Henkaryo_Electricity_Rate_Com'
+  ,'ChangeRate_Energy_Intensity','ChangeRate_Carbon_Intensity','ChangeRate_Electricity_Rate_Total'
+  # ,'ChangeRate_Electricity_Rate_Ind','ChangeRate_Electricity_Rate_Tra'
+  # ,'ChangeRate_Electricity_Rate_Res','ChangeRate_Electricity_Rate_Com'
+)
 
 df_indicator <- df_Graph %>% select(one_of(Titlerow3),one_of(indicators)
                        ) %>% group_by(SCENARIO)
