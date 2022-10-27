@@ -315,7 +315,7 @@ indicators <- c('ChangeRate_Energy_Intensity','ChangeRate_Carbon_Intensity','Cha
               'Henkaryo_Energy_Intensity','Henkaryo_Carbon_Intensity','Henkaryo_Electricity_Rate_Total',
               'Henkaryo_Electricity_Rate_Ind','Henkaryo_Electricity_Rate_Tra',
               'Henkaryo_Electricity_Rate_Res','Henkaryo_Electricity_Rate_Com'
-)
+              )
 
 df_indicator <- df_Graph %>% select(one_of(Titlerow3),one_of(indicators)
                        ) %>% group_by(SCENARIO)
@@ -400,9 +400,9 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
   scenario_color <- c('#AAAA11', '#329262', '#FF9900', '#DD4477', '#651067', '#3366CC', '#84919E')
   
   percentile_range <- function(vec_data, cutoff_percentile) {
-  percentile_range_return <- c(quantile(na.omit(vec_data), cutoff_percentile, na.rm=T),
-                                  quantile(na.omit(vec_data), (1-cutoff_percentile), na.rm=T)
-    ) %>% as.numeric()
+    percentile_range_return <- c(quantile(na.omit(vec_data), cutoff_percentile, na.rm=T),
+                                 quantile(na.omit(vec_data), (1-cutoff_percentile), na.rm=T)
+                                 ) %>% as.numeric()
     return(percentile_range_return)
   }
   axis_cutoff_percentile <- 0.01   # 軸の表示において切り捨てる分位範囲 （0.01: 両端1% cutoff）
