@@ -326,8 +326,8 @@ df_summary <- df_indicator %>% select(-c(Year, Country, REGION)
   ) %>% summarise_at(vars(everything()),
                      funs(length, n=length(na.omit(.)), min(., na.rm=T), max(., na.rm=T), 
                           median(., na.rm=T), mean(., na.rm=T), sd(., na.rm=T),
-                          'q1%'=quantile(., probs=0.01, na.rm=T), 
-                          'q99%'=quantile(., probs=0.99, na.rm=T),
+                          'q25%'=quantile(., probs=0.25, na.rm=T), 
+                          'q75%'=quantile(., probs=0.75, na.rm=T),
                           'q5%'=quantile(., probs=0.05, na.rm=T), 
                           'q95%'=quantile(., probs=0.95, na.rm=T), 
                      )
