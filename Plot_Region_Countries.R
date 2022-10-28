@@ -461,22 +461,20 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
     for (dummyloop in 1) { # 箱ヒゲ図  全世界
       pdf(file=paste("./",scenarioname,"_boxplot_World.pdf", sep=""))    
       for (indicator in indicators) {
+        indicator <- 'Henkaryo_Energy_Intensity'
         g <- eval(parse(text=paste0(
+        # "ggplot(df_Graph_plot, aes(y=SCENARIO, x=",indicator, ", color=SCENARIO)) + # 
           "ggplot(df_Graph_plot, aes(y=SCENARIO, x=",indicator, ", color=SCENARIO)) +
             geom_boxplot() +
           # geom_jitter(shape=20, position=position_dodge(0.8)) +  # 箱ヒゲに点を重ねる
             stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
-            scale_color_manual(values=c(scenario_color)) ")))
+            scale_color_manual(values=c(scenario_color)) 
+          ")))
         plot(g)
         filename <- paste(scenarioname,"_","boxplot_World_",indicator, sep="")
         ggsave(file=paste("./png/",filename,".png", sep=""), width=6.3, height=2.5, dpi=100)
         g1 <- ggplotGrob(g)
-          
-        g <- eval(parse(text=paste0(
-          "ggplot(df_Graph_plot, aes(x=SCENARIO, y=",indicator, ", color=SCENARIO)) +
-            geom_boxplot() +
-            stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
-            scale_color_manual(values=c(scenario_color)) ")))
+        plot(g1)  
         
         if ( regexpr('^ChangeRate*', indicator)==1 ) { 
           ylim_value <- c(-0.1, 0.1) 
@@ -487,10 +485,19 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
           ylim_value <- c(quantile(vectorization_df, probs=0.05, na.rm=T), 
                           quantile(vectorization_df, probs=0.95, na.rm=T))
         }
+        g <- eval(parse(text=paste0(
+          "ggplot(df_Graph_plot, aes(y=",indicator, ", color=SCENARIO)) +
+            geom_boxplot() +
+            stat_boxplot(geom='errorbar') + # ヒゲ先端の横線
+            scale_color_manual(values=c(scenario_color)) 
+          ")))
+        plot(g)
         g <- g + coord_flip(ylim = ylim_value) 
         plot(g)
         ggsave(file=paste("./png/ylim/",filename,"_ylim.png", sep=""), width=6.3, height=2.5, dpi=100)
         g2 <- ggplotGrob(g)
+        plot(g2)  
+        
         gb <- rbind(g1, g2, size = "first")
         gb$widths = grid::unit.pmax(g1$widths, g2$widths)
         plot(gb)
