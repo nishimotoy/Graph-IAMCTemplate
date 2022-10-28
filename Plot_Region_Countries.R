@@ -476,24 +476,23 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
         g1 <- ggplotGrob(g)
         plot(g1)  
         
-        if ( regexpr('^ChangeRate*', indicator)==1 ) { 
-          ylim_value <- c(-0.1, 0.1) 
-        } else {
+        # if ( regexpr('^ChangeRate*', indicator)==1 ) { 
+        #   ylim_value <- c(-0.1, 0.1) 
+        # } else {
           vectorization_df <- eval(parse(text=paste0( 
             "as.vector(df_Graph_plot$", indicator, ") %>% na.omit()" 
             )))
           ylim_value <- c(quantile(vectorization_df, probs=0.05, na.rm=T), 
                           quantile(vectorization_df, probs=0.95, na.rm=T))
-        }
+        # }
         g <- eval(parse(text=paste0(
           "ggplot(df_Graph_plot, aes(y=",indicator, ", color=SCENARIO)) +
             geom_boxplot() +
-            stat_boxplot(geom='errorbar') + # ヒゲ先端の横線
             scale_color_manual(values=c(scenario_color) + 
             coord_flip(ylim = ylim_value) 
           ")))
         plot(g)
-        g <- g + coord_flip(ylim = ylim_value) 
+        g <- g + coord_flip(xlim = ylim_value) 
         plot(g)
         ggsave(file=paste("./png/ylim/",filename,"_ylim.png", sep=""), width=6.3, height=2.5, dpi=100)
         g2 <- ggplotGrob(g)
