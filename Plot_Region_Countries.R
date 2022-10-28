@@ -489,7 +489,8 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
           "ggplot(df_Graph_plot, aes(y=",indicator, ", color=SCENARIO)) +
             geom_boxplot() +
             stat_boxplot(geom='errorbar') + # ヒゲ先端の横線
-            scale_color_manual(values=c(scenario_color)) 
+            scale_color_manual(values=c(scenario_color) + 
+            coord_flip(ylim = ylim_value) 
           ")))
         plot(g)
         g <- g + coord_flip(ylim = ylim_value) 
