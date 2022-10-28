@@ -461,7 +461,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
     for (dummyloop in 1) { # 箱ヒゲ図  全世界
       pdf(file=paste("./",scenarioname,"_boxplot_World.pdf", sep=""))    
       for (indicator in indicators) {
-        indicator <- 'Henkaryo_Energy_Intensity'
+        # indicator <- 'Henkaryo_Energy_Intensity' # for test
         g <- eval(parse(text=paste0(
         # "ggplot(df_Graph_plot, aes(y=SCENARIO, x=",indicator, ", color=SCENARIO)) + # 
           "ggplot(df_Graph_plot, aes(y=SCENARIO, x=",indicator, ", color=SCENARIO)) +
@@ -485,12 +485,6 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
           ylim_value <- c(quantile(vectorization_df, probs=0.05, na.rm=T), 
                           quantile(vectorization_df, probs=0.95, na.rm=T))
         # }
-        g <- eval(parse(text=paste0(
-          "ggplot(df_Graph_plot, aes(y=",indicator, ", color=SCENARIO)) +
-            geom_boxplot() +
-            scale_color_manual(values=c(scenario_color) + 
-            coord_flip(ylim = ylim_value) 
-          ")))
         plot(g)
         g <- g + coord_flip(xlim = ylim_value) 
         plot(g)
