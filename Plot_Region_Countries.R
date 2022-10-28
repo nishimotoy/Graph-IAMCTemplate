@@ -9,6 +9,7 @@ Titlerow1 <- c('MODEL','SCENARIO','REGION','VARIABLE','UNIT')
 Titlerow2 <- c('REGION','Country','VARIABLE','SCENARIO')
 Titlerow3 <- c('SCENARIO','Country','REGION','Year')
 scenarioname <- 'Baseline'  # 読込対象の将来シナリオ（読込の時点でシナリオを絞る場合）
+scenarionames_order <- c('Historical','Historical_R17','Baseline','2.5C','2C','1.5C','WB2C')
 BaseYear <- 2010  # %>% as.numeric()  # 基準年値
 Sample_Country <- c('Former Soviet Union','Former Yugoslavia','South Sudan','Bosnia and Herzegovina')  # GDP(2010)が無い国
 Interpolate_NA <- 'fill'   # 'fill_latest_or_first_existing_value'
@@ -245,8 +246,8 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理1   # テスト後に戻す (i i
   } # 基準年値で調整した値をdf_Graphに追加する
   
 } # 指標毎の処理1
-df_Graph$SCENARIO <- factor(df_Graph$SCENARIO, 
-         levels=c('Historical','Historical_R17','Baseline','2.5C','2C','1.5C','WB2C'))
+df_Graph$SCENARIO <- factor(df_Graph$SCENARIO, levels=scenarionames_order)
+#        levels=c('Historical','Historical_R17','Baseline','2.5C','2C','1.5C','WB2C'))
 df_Graph <- df_Graph %>% group_by(SCENARIO,Country) %>% arrange(SCENARIO,Country,Year)
 write_csv(df_Graph, "./df_Graph_afterfulljoin_written.csv") 
 df_Graph <- df_Graph %>% filter(Year!=0 & Year!=1) 
@@ -449,6 +450,8 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
         g <- eval(parse(text=paste0(
           "ggplot(df_Graph_plot, aes(x=REGION ,y=",indicator, ", color=SCENARIO)) +
             geom_boxplot() +
+            scale_x_discrete(limit=rev(scenarionames)) +
+         
           # geom_jitter(shape=20, position=position_dodge(0.8)) +
             scale_color_manual(values=c(scenario_color)) ")))
         plot(g)
@@ -462,40 +465,39 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
       pdf(file=paste("./",scenarioname,"_boxplot_World.pdf", sep=""))    
       for (indicator in indicators) {
         indicator <- 'Henkaryo_Energy_Intensity' # for test
-        g <- eval(parse(text=paste0(
-        # "ggplot(df_Graph_plot, aes(y=SCENARIO, x=",indicator, ", color=SCENARIO)) + # 
-          "ggplot(df_Graph_plot, aes(y=",indicator, ", color=SCENARIO)) +
+        if ( regexpr('^ChangeRate*', indicator)==1 ) { 
+          ylim_value <- c(-0.1, 0.1) 
+        } else {
+        vectorization_df <- eval(parse(text=paste0( 
+          "as.vector(df_Graph_plot$", indicator, ") %>% na.omit()" 
+        )))
+        ylim_value <- c(quantile(vectorization_df, probs=0.05, na.rm=T), 
+                        quantile(vectorization_df, probs=0.95, na.rm=T))
+        yall_value <- c(quantile(vectorization_df, probs=0.00, na.rm=T), 
+                        quantile(vectorization_df, probs=1.00, na.rm=T))
+        }
+        g1 <- eval(parse(text=paste0(
+          "ggplotGrob(df_Graph_plot, aes(x=SCENARIO, y=",indicator, ", color=SCENARIO)) +
             geom_boxplot() +
-          # geom_jitter(shape=20, position=position_dodge(0.8)) +  # 箱ヒゲに点を重ねる
+            scale_x_discrete(limit=rev(scenarionames_order)) +  # 系列の順序
+          # guides(color = guide_legend(reverse = TRUE)) +      # 凡例の順序
             stat_boxplot(geom='errorbar') + # ヒゲ先端の横線
-            scale_color_manual(values=c(scenario_color)) 
+            scale_color_manual(values=c(scenario_color)) + 
+            coord_flip(ylim = ylim_value)
           ")))
-        plot(g)
+        plot(g1)
         filename <- paste(scenarioname,"_","boxplot_World_",indicator, sep="")
         ggsave(file=paste("./png/",filename,".png", sep=""), width=6.3, height=2.5, dpi=100)
-        g1 <- ggplotGrob(g)
-        plot(g1)  
-        
-        # if ( regexpr('^ChangeRate*', indicator)==1 ) { 
-        #   ylim_value <- c(-0.1, 0.1) 
-        # } else {
-          vectorization_df <- eval(parse(text=paste0( 
-            "as.vector(df_Graph_plot$", indicator, ") %>% na.omit()" 
-            )))
-          ylim_value <- c(quantile(vectorization_df, probs=0.05, na.rm=T), 
-                          quantile(vectorization_df, probs=0.95, na.rm=T))
-        # }
-        plot(g)
-        g <- g + coord_flip(ylim = ylim_value) 
-        plot(g)
+
+        g2 <- g1 + coord_flip(ylim = yall_value)
+        plot(g2)
         ggsave(file=paste("./png/ylim/",filename,"_ylim.png", sep=""), width=6.3, height=2.5, dpi=100)
-        g2 <- ggplotGrob(g)
-        plot(g2)  
-        
-        gb <- rbind(g1, g2, size = "first")
-        gb$widths = grid::unit.pmax(g1$widths, g2$widths)
-        plot(gb)
-        ggsave(plot=gb, file=paste("./png/ylim_compare/",filename,"_ylim_compare.png", sep=""), width=6.3, height=5.0, dpi=100)
+
+        plot(g1)
+        gb <- rbind(g2, g1, size = "first")
+      # gb$widths = grid::unit.pmax(g2$widths, g1$widths)
+      # plot(gb)
+      # ggsave(plot=gb, file=paste("./png/ylim_compare/",filename,"_ylim_compare.png", sep=""), width=6.3, height=5.0, dpi=100)
       }
       dev.off() 
     } # 箱ヒゲ図  全世界
