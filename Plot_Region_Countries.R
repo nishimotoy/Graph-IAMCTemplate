@@ -461,13 +461,13 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
     for (dummyloop in 1) { # 箱ヒゲ図  全世界
       pdf(file=paste("./",scenarioname,"_boxplot_World.pdf", sep=""))    
       for (indicator in indicators) {
-        # indicator <- 'Henkaryo_Energy_Intensity' # for test
+        indicator <- 'Henkaryo_Energy_Intensity' # for test
         g <- eval(parse(text=paste0(
         # "ggplot(df_Graph_plot, aes(y=SCENARIO, x=",indicator, ", color=SCENARIO)) + # 
-          "ggplot(df_Graph_plot, aes(y=SCENARIO, x=",indicator, ", color=SCENARIO)) +
+          "ggplot(df_Graph_plot, aes(y=",indicator, ", color=SCENARIO)) +
             geom_boxplot() +
           # geom_jitter(shape=20, position=position_dodge(0.8)) +  # 箱ヒゲに点を重ねる
-            stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
+            stat_boxplot(geom='errorbar') + # ヒゲ先端の横線
             scale_color_manual(values=c(scenario_color)) 
           ")))
         plot(g)
@@ -486,7 +486,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
                           quantile(vectorization_df, probs=0.95, na.rm=T))
         # }
         plot(g)
-        g <- g + coord_flip(xlim = ylim_value) 
+        g <- g + coord_flip(ylim = ylim_value) 
         plot(g)
         ggsave(file=paste("./png/ylim/",filename,"_ylim.png", sep=""), width=6.3, height=2.5, dpi=100)
         g2 <- ggplotGrob(g)
