@@ -66,6 +66,7 @@ setwd(paste(root,"4_output/", sep=""))
 unlink("./png", recursive=T)
 dir.create("./png")
 dir.create("./png/ylim")
+dir.create("./png/yall")
 dir.create("./png/ylim_compare")
 
 df_past <- df_past %>% filter(REGION!='region')  # ダミー行のデータを削除
@@ -464,7 +465,8 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
     for (dummyloop in 1) { # 箱ヒゲ図  全世界
       pdf(file=paste("./",scenarioname,"_boxplot_World.pdf", sep=""))    
       for (indicator in indicators) {
-        indicator <- 'Henkaryo_Energy_Intensity' # for test
+        # indicator <- 'Henkaryo_Energy_Intensity' # for test
+        filename <- paste(scenarioname,"_","boxplot_World_",indicator, sep="")
         if ( regexpr('^ChangeRate*', indicator)==1 ) { 
           ylim_value <- c(-0.1, 0.1) 
         } else {
@@ -477,28 +479,28 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
                         quantile(vectorization_df, probs=1.00, na.rm=T))
         }
         g1 <- eval(parse(text=paste0(
-          "ggplotGrob(df_Graph_plot, aes(x=SCENARIO, y=",indicator, ", color=SCENARIO)) +
+          "ggplot(df_Graph_plot, aes(x=SCENARIO, y=",indicator, ", color=SCENARIO)) +
             geom_boxplot() +
-            scale_x_discrete(limit=rev(scenarionames_order)) +  # 系列の順序
+            scale_x_discrete(limit=rev(scenarionames_order)) +  # 系列の順序 # x=SCENARIO 必要
           # guides(color = guide_legend(reverse = TRUE)) +      # 凡例の順序
             stat_boxplot(geom='errorbar') + # ヒゲ先端の横線
             scale_color_manual(values=c(scenario_color)) + 
             coord_flip(ylim = ylim_value)
           ")))
         plot(g1)
-        filename <- paste(scenarioname,"_","boxplot_World_",indicator, sep="")
-        ggsave(file=paste("./png/",filename,".png", sep=""), width=6.3, height=2.5, dpi=100)
-
+        ggsave(plot=g1, file=paste("./png/ylim/",filename,"_ylim.png", sep=""), width=6.3, height=2.5, dpi=100)
+        
         g2 <- g1 + coord_flip(ylim = yall_value)
         plot(g2)
-        ggsave(file=paste("./png/ylim/",filename,"_ylim.png", sep=""), width=6.3, height=2.5, dpi=100)
+        ggsave(plot=g2, file=paste("./png/yall/",filename,".png", sep=""), width=6.3, height=2.5, dpi=100)
 
-        plot(g1)
+        g1 <- ggplotGrob(g1)
+        g2 <- ggplotGrob(g2)
         gb <- rbind(g2, g1, size = "first")
-      # gb$widths = grid::unit.pmax(g2$widths, g1$widths)
-      # plot(gb)
-      # ggsave(plot=gb, file=paste("./png/ylim_compare/",filename,"_ylim_compare.png", sep=""), width=6.3, height=5.0, dpi=100)
-      }
+      # gb$widths = grid::unit.pmax(g2$widths, g1$widths) # 今回の g1/g2 の組合せであれば不要
+        plot(gb)
+        ggsave(plot=gb, file=paste("./png/ylim_compare/",filename,"_ylim_compare.png", sep=""), width=6.3, height=5.0, dpi=100)
+      } # indicator
       dev.off() 
     } # 箱ヒゲ図  全世界
  
@@ -528,7 +530,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
         plot(g)
         filename <- paste(scenarioname,"_","histogram_xlim_",indicator, sep="")
         ## ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
-      }
+      } 
       dev.off()
     } # 頻度分布
     
