@@ -468,7 +468,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
         # indicator <- 'Henkaryo_Energy_Intensity' # for test
         filename <- paste(scenarioname,"_","boxplot_World_",indicator, sep="")
         if ( regexpr('^ChangeRate*', indicator)==1 ) { 
-          ylim_value <- c(-0.1, 0.1) 
+          ylim_value <- c(-0.11, 0.11) 
         } else {
         vectorization_df <- eval(parse(text=paste0( 
           "as.vector(df_Graph_plot$", indicator, ") %>% na.omit()" 
