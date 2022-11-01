@@ -473,11 +473,18 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
         vectorization_df <- eval(parse(text=paste0( 
           "as.vector(df_Graph_plot$", indicator, ") %>% na.omit()" 
         )))
-        ylim_value <- c(quantile(vectorization_df, probs=0.05, na.rm=T), 
-                        quantile(vectorization_df, probs=0.95, na.rm=T))
+        ylim_value <- c(quantile(vectorization_df, probs=0.04, na.rm=T), 
+                        quantile(vectorization_df, probs=0.96, na.rm=T))
         yall_value <- c(quantile(vectorization_df, probs=0.00, na.rm=T), 
                         quantile(vectorization_df, probs=1.00, na.rm=T))
         }
+        df_Graph_plot_HisR <- df_Graph_plot %>% filter(SCENARIO=='Historical_R17')
+        vectorization_df <- eval(parse(text=paste0( 
+          "as.vector(df_Graph_plot_HisR$", indicator, ") %>% na.omit()"
+        )))
+        window_value <- c(quantile(vectorization_df, probs=0.05, na.rm=T), 
+                          quantile(vectorization_df, probs=0.95, na.rm=T))
+
         g1 <- eval(parse(text=paste0(
           "ggplot(df_Graph_plot, aes(x=SCENARIO, y=",indicator, ", color=SCENARIO)) +
             geom_boxplot() +
@@ -485,7 +492,10 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
           # guides(color = guide_legend(reverse = TRUE)) +      # 凡例の順序
             stat_boxplot(geom='errorbar') + # ヒゲ先端の横線
             scale_color_manual(values=c(scenario_color)) + 
-            coord_flip(ylim = ylim_value)
+            coord_flip(ylim = ylim_value) + 
+            annotate('rect', alpha=.26, fill='#329262', 
+            xmin=",5.8, ", ymin=",window_value[1], 
+          ",xmax=",6.2, ", ymax=",window_value[2], ")
           ")))
         plot(g1)
         ggsave(plot=g1, file=paste("./png/ylim/",filename,"_ylim.png", sep=""), width=6.3, height=2.5, dpi=100)
