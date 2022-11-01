@@ -614,7 +614,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
               scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
         plot(g)
 
-        if(num==2) { # CIのみ範囲指定       
+        if ( y_names[num]=='ChangeRate_Carbon_Intensity' ) { # CIのみylim範囲指定 旧(num==2)    
           g <- eval(parse(text=paste0(
           "ggplot(df_Graph_plotXY, aes(x=",x_names[num],",y=",y_names[num], 
           ",color=REGION, shape=SCENARIO)) +
