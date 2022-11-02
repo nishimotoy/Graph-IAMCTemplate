@@ -466,23 +466,30 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
       for (indicator in indicators) {
         # indicator <- 'Henkaryo_Energy_Intensity' # for test
         filename <- paste(scenarioname,"_","boxplot_World_",indicator, sep="")
-        if ( regexpr('^ChangeRate*', indicator)==1 ) { 
-          ylim_value <- c(-0.11, 0.11) 
-        } else {
-        vectorization_df <- eval(parse(text=paste0( 
+
+        vectorized_Graph_plot <- eval(parse(text=paste0( 
           "as.vector(df_Graph_plot$", indicator, ") %>% na.omit()" 
         )))
-        ylim_value <- c(quantile(vectorization_df, probs=0.03, na.rm=T), 
-                        quantile(vectorization_df, probs=0.97, na.rm=T))
-        yall_value <- c(quantile(vectorization_df, probs=0.00, na.rm=T), 
-                        quantile(vectorization_df, probs=1.00, na.rm=T))
-        }
-        df_Graph_plot_HisR <- df_Graph_plot %>% filter(SCENARIO=='Historical_R17')
-        vectorization_df <- eval(parse(text=paste0( 
-          "as.vector(df_Graph_plot_HisR$", indicator, ") %>% na.omit()"
+        yall_value <- c(quantile(vectorized_Graph_plot, probs=0.00, na.rm=T), 
+                        quantile(vectorized_Graph_plot, probs=1.00, na.rm=T))
+
+        df_Graph_plot_His <- df_Graph_plot %>% filter(SCENARIO=='Historical')
+        vectorized_Graph_plot_His <- eval(parse(text=paste0( 
+          "as.vector(df_Graph_plot_His$", indicator, ") %>% na.omit()" 
         )))
-        window_value <- c(quantile(vectorization_df, probs=0.05, na.rm=T), 
-                          quantile(vectorization_df, probs=0.95, na.rm=T))
+        ylim_value <- c(quantile(vectorized_Graph_plot_His, probs=0.05, na.rm=T), 
+                        quantile(vectorized_Graph_plot_His, probs=0.95, na.rm=T))
+        
+        df_Graph_plot_HisR17 <- df_Graph_plot %>% filter(SCENARIO=='Historical_R17')
+        vectorized_Graph_plot_HisR17 <- eval(parse(text=paste0( 
+          "as.vector(df_Graph_plot_HisR17$", indicator, ") %>% na.omit()"
+        )))
+        window_value <- c(quantile(vectorized_Graph_plot_HisR17, probs=0.05, na.rm=T), 
+                          quantile(vectorized_Graph_plot_HisR17, probs=0.95, na.rm=T))
+
+        if ( regexpr('^ChangeRate*', indicator)==1 ) { 
+          ylim_value <- c(-0.11, 0.11) 
+        } 
 
         g1 <- eval(parse(text=paste0(
           "ggplot(df_Graph_plot, aes(x=SCENARIO, y=",indicator, ", color=SCENARIO)) +
@@ -494,7 +501,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
             coord_flip(ylim = ylim_value) + 
             annotate('rect', alpha=.26, fill='#329262', 
             xmin=",5.8, ", ymin=",window_value[1], 
-          ",xmax=",6.2, ", ymax=",window_value[2], ")
+          ",xmax=",6.2, ", ymax=",window_value[2], ")  # HisR17:6th 6-0.2 6+0.2
           ")))
         plot(g1)
         ggsave(plot=g1, file=paste("./png/ylim/",filename,"_ylim.png", sep=""), width=6.3, height=2.5, dpi=100)
