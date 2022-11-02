@@ -18,6 +18,29 @@ Year5 <- c(1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010, 2015,
            2070, 2075, 2080, 2085, 2090, 2095, 2100) # %>% as.character() 
 # Year==0 as Base-Year
 
+df_vni <- matrix(c(  # 指標の定義 指標, 分子, 分母
+  'GDP_Capita',    'GDP_IEA', 'POP_IEA', 
+  'Energy_Intensity',    'TES_Total', 'GDP_IEA', 
+  'Carbon_Intensity',    'CO2_fuel_Total', 'TES_Total', 
+  'Electricity_Rate_Total',    'TFC_Elec_Total', 'TFC_Total_Total', 
+  'Electricity_Rate_Ind',    'TFC_Elec_Ind',    'TFC_Total_Ind', 
+  'Electricity_Rate_Tra',    'TFC_Elec_Tra',    'TFC_Total_Tra', 
+  'Electricity_Rate_Res',    'TFC_Elec_Res',    'TFC_Total_Res', 
+  'Electricity_Rate_Com',    'TFC_Elec_Com',    'TFC_Total_Com'), 
+  ncol=8, nrow=3) # Variable_Names_for_Indicators df_vni <- indicator, numerator, denominator
+
+indicators <- c(  # 出力対象の指標
+  'Energy_Intensity_scaled','Carbon_Intensity_scaled','Electricity_Rate_Total_scaled'
+  ,'Electricity_Rate_Ind_scaled','Electricity_Rate_Tra_scaled'
+  ,'Electricity_Rate_Res_scaled','Electricity_Rate_Com_scaled'
+  ,'Henkaryo_Energy_Intensity','Henkaryo_Carbon_Intensity','Henkaryo_Electricity_Rate_Total'
+  ,'Henkaryo_Electricity_Rate_Ind','Henkaryo_Electricity_Rate_Tra'
+  ,'Henkaryo_Electricity_Rate_Res','Henkaryo_Electricity_Rate_Com'
+  ,'ChangeRate_Energy_Intensity','ChangeRate_Carbon_Intensity','ChangeRate_Electricity_Rate_Total'
+  ,'ChangeRate_Electricity_Rate_Ind','ChangeRate_Electricity_Rate_Tra'
+  ,'ChangeRate_Electricity_Rate_Res','ChangeRate_Electricity_Rate_Com'
+)
+
 # Past ------------------------------------------------------
 setwd(paste(root,"2_data/REF", sep="")) 
 
@@ -193,17 +216,7 @@ write_csv(df_long_global, "./df_long_global_written.csv")
 
 
 # Table format and Indicator  ------------------------------------------------------
-# 指標の処理  # Variable_Names_for_Indicators df_vni <- indicator, numerator, denominator
-df_vni <- matrix(c(
-  'GDP_Capita',    'GDP_IEA', 'POP_IEA', 
-  'Energy_Intensity',    'TES_Total', 'GDP_IEA', 
-  'Carbon_Intensity',    'CO2_fuel_Total', 'TES_Total', 
-  'Electricity_Rate_Total',    'TFC_Elec_Total', 'TFC_Total_Total', 
-  'Electricity_Rate_Ind',    'TFC_Elec_Ind',    'TFC_Total_Ind', 
-  'Electricity_Rate_Tra',    'TFC_Elec_Tra',    'TFC_Total_Tra', 
-  'Electricity_Rate_Res',    'TFC_Elec_Res',    'TFC_Total_Res', 
-  'Electricity_Rate_Com',    'TFC_Elec_Com',    'TFC_Total_Com'), 
-  ncol=8, nrow=3)
+# 指標の処理  
 
 for (dummyloop in 1) {  # 国名のみのダミー列の作成
   df_Graph <- df_long %>% select(c('Country')) %>% arrange(Country) %>% distinct() 
@@ -307,18 +320,6 @@ write_csv(df_Graph, "./df_Graph_written.csv")
 # df_Graph_bk <- df_Graph
 df_Graph[df_Graph==Inf] <- NA
 # write_csv(anti_join(df_Graph, df_Graph_bk), "./df_Graph_antijoin_written.csv") 
-
-indicators <- c(
-   'Energy_Intensity_scaled','Carbon_Intensity_scaled','Electricity_Rate_Total_scaled'
-  # ,'Electricity_Rate_Ind_scaled','Electricity_Rate_Tra_scaled'
-  # ,'Electricity_Rate_Res_scaled','Electricity_Rate_Com_scaled'
-  ,'Henkaryo_Energy_Intensity','Henkaryo_Carbon_Intensity','Henkaryo_Electricity_Rate_Total'
-  # ,'Henkaryo_Electricity_Rate_Ind','Henkaryo_Electricity_Rate_Tra'
-  # ,'Henkaryo_Electricity_Rate_Res','Henkaryo_Electricity_Rate_Com'
-  ,'ChangeRate_Energy_Intensity','ChangeRate_Carbon_Intensity','ChangeRate_Electricity_Rate_Total'
-  # ,'ChangeRate_Electricity_Rate_Ind','ChangeRate_Electricity_Rate_Tra'
-  # ,'ChangeRate_Electricity_Rate_Res','ChangeRate_Electricity_Rate_Com'
-)
 
 df_indicator <- df_Graph %>% select(one_of(Titlerow3),one_of(indicators)
                        ) %>% group_by(SCENARIO)
