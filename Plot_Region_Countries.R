@@ -474,8 +474,8 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
         vectorization_df <- eval(parse(text=paste0( 
           "as.vector(df_Graph_plot$", indicator, ") %>% na.omit()" 
         )))
-        ylim_value <- c(quantile(vectorization_df, probs=0.04, na.rm=T), 
-                        quantile(vectorization_df, probs=0.96, na.rm=T))
+        ylim_value <- c(quantile(vectorization_df, probs=0.03, na.rm=T), 
+                        quantile(vectorization_df, probs=0.97, na.rm=T))
         yall_value <- c(quantile(vectorization_df, probs=0.00, na.rm=T), 
                         quantile(vectorization_df, probs=1.00, na.rm=T))
         }
