@@ -330,28 +330,26 @@ df_summary <- df_indicator %>% select(-c(Year, Country, REGION)
   ) %>% summarise_at(vars(everything()),
                      funs(length, n=length(na.omit(.)), min(., na.rm=T), max(., na.rm=T), 
                           median(., na.rm=T), mean(., na.rm=T), sd(., na.rm=T),
+                          'q00%'=quantile(., probs=0.00, na.rm=T), 
+                          'q04%'=quantile(., probs=0.03, na.rm=T), 
+                          'q05%'=quantile(., probs=0.05, na.rm=T), 
                           'q25%'=quantile(., probs=0.25, na.rm=T), 
+                          'q50%'=quantile(., probs=0.50, na.rm=T), 
                           'q75%'=quantile(., probs=0.75, na.rm=T),
-                          'q5%'=quantile(., probs=0.05, na.rm=T), 
                           'q95%'=quantile(., probs=0.95, na.rm=T), 
+                          'q96%'=quantile(., probs=0.97, na.rm=T), 
+                          'qmax'=quantile(., probs=1.00, na.rm=T), 
                      )
   ) # %>% arrange(colnames(df_summary ))
 
-df_check <- df_indicator %>% select(-c(Year, Country, REGION)
-) %>% group_by(SCENARIO
-) %>% summarise_at(vars(everything()),
-                   funs(median(., na.rm=T)-quantile(., probs=0.50, na.rm=T))
-) # %>% arrange(colnames(df_summary ))
-
-# df_summary <- df_summary  %>% mutate(item=names) 
-# colnames(df_summary) <- df_summary[1,]
-
-
+sorted_names_list <- sort(names(df_summary))
+df_summary <- df_summary %>% select(all_of(sorted_names_list))
+                                      
+df_summary_quantile <- df_summary %>% select(SCENARIO, contains('_q')) 
 df_summary_ChangeRate <- df_summary %>% select(SCENARIO, starts_with("ChangeRate_")) 
-# df_summary_ChangeRate <- as.data.frame(t(df_summary_ChangeRate))
-# df_summary <- as.data.frame(t(df_summary))
 write.csv(t(df_summary), "./df_summary_written.csv") 
 write.csv(t(df_summary_ChangeRate), "./df_summary_ChangeRate_written.csv") 
+write.csv(t(df_summary_quantile), "./df_summary_quantile_written.csv") 
 
 
 #Feasibility Test ------------------------------------------------------
