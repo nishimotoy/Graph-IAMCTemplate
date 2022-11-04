@@ -472,10 +472,8 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
         sample_vec_data <- eval(parse(text=paste0( 
           "as.vector(df_Graph_plot$", indicator, ") %>% na.omit()"  # all SCENARIO
         )))
-        yall_value <- c(quantile(vectorized_Graph_plot, probs=0.00, na.rm=T), 
-                        quantile(vectorized_Graph_plot, probs=1.00, na.rm=T))
-        ylim_value <- c(quantile(vectorized_Graph_plot_His, probs=0.03, na.rm=T), 
-                        quantile(vectorized_Graph_plot_His, probs=0.97, na.rm=T))
+        yall_value <- quantile(sample_vec_data, probs=c(0.00, 1.00), na.rm=T)
+        ylim_value <- quantile(sample_vec_data, probs=c(0.03, 0.97), na.rm=T)
 
                 df_Graph_plot_HisR17 <- df_Graph_plot %>% filter(SCENARIO=='Historical_R17')
         sample_vec_data <- eval(parse(text=paste0( 
