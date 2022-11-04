@@ -10,7 +10,7 @@ I_names <- c('エネルギー強度', '炭素強度', '電化率')
 I_names_CR <- paste(I_names, 'の変化率 (%)', sep = "")  # c('エネルギー強度の変化率', '炭素強度の変化率', '電化率の変化率')
 y_names_J  <- c('エネルギー起源CO2排出量', rep(I_names,2), I_names_CR, rep('確率密度',3), I_names_CR)
 x_names_J  <- c('年', rep('GDP/人',3), rep('年',6), I_names_CR)
-cutoff_percentile <- 0.05
+cutoff_prob <- 0.05
 
 y_names_box <- c('ChangeRate_Energy_Intensity','ChangeRate_Carbon_Intensity','ChangeRate_Electricity_Rate_Total',
                  'ChangeRate_Electricity_Rate_Ind','ChangeRate_Electricity_Rate_Tra',
@@ -101,10 +101,10 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
     if ( num>=8 && num<=10 ) { # 窓の追加
       
       vec_data <- eval(parse(text=paste0("df_Graph_plot_HisR$",y_names[num]))) 
-      percentile_val <- percentile_range(vec_data, cutoff_percentile)
-      g <- g + eval(parse(text=paste0( "annotate('rect', xmin=",-Inf,", ymin=", percentile_val[1], 
-                                       ", xmax=",Inf, ", ymax=",percentile_val[2], 
-                                       ", alpha=.125, fill='#329262')"))) 
+      axis_range <- quantile(vec_data, probs=c(cutoff_prob, (1-cutoff_prob)), na.rm=T)
+      g <- g + eval(parse(text=paste0( "annotate('rect', xmin=",-Inf,", ymin=",axis_range[1], 
+                                       ", xmax=",Inf, ", ymax=",axis_range[2], 
+                                       ", alpha=.22, fill='#329262')"))) 
       
     } # 窓の追加
     if ( num==9 ) { g <- g + ylim(-10, 5) } #炭素強度の例外処理
@@ -126,10 +126,10 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
             ylab('Density (Counts scaled to 1) of Region-Year')")))
     
     vec_data <- eval(parse(text=paste0("df_Graph_plot_HisR$",indicator))) 
-    percentile_val <- percentile_range(vec_data, cutoff_percentile)
-    g <- g + eval(parse(text=paste0( "annotate('rect', xmin=",percentile_val[1],", ymin=",-Inf, 
-                                     ", xmax=",percentile_val[2], ", ymax=",Inf, 
-                                     ", alpha=.2, fill='#329262')"))) 
+    axis_range <- quantile(vec_data, probs=c(cutoff_prob, (1-cutoff_prob)), na.rm=T)
+    g <- g + eval(parse(text=paste0( "annotate('rect', xmin=",axis_range[1],", ymin=",-Inf, 
+                                     ", xmax=",axis_range[2], ", ymax=",Inf, 
+                                     ", alpha=.22, fill='#329262')"))) 
     plot(g)
     
   }  # 確率密度分布
@@ -166,10 +166,10 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
   
   df_Graph_plot_HisR <- df_Graph_plot %>% filter(SCENARIO_f=='Historical_R17' )
   vec_data <- eval(parse(text=paste0("df_Graph_plot_HisR$",indicator))) 
-  percentile_val <- percentile_range(vec_data, cutoff_percentile)
-  g <- g + eval(parse(text=paste0( "annotate('rect', xmin=",1.8,", ymin=",percentile_val[1], 
-                                   ", xmax=",2.2, ", ymax=",percentile_val[2], 
-                                   ", alpha=.2, fill='#329262')"))) 
+  axis_range <- quantile(vec_data, probs=c(cutoff_prob, (1-cutoff_prob)), na.rm=T)
+  g <- g + eval(parse(text=paste0( "annotate('rect', xmin=",1.8,", ymin=",axis_range[1], 
+                                   ", xmax=",2.2, ", ymax=",axis_range[2], 
+                                   ", alpha=.26, fill='#329262')"))) 
   
   g <-  g + coord_flip(ylim = c(-10, 10)) + guides(color=guide_legend(reverse=TRUE))
   g <-  g + xlab('') + ylab(j_names_box[indicator]) + labs(color='シナリオ (a-d)共通')
