@@ -426,6 +426,52 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
         df_Graph_plot <- rbind(filter(df_Graph, SCENARIO==scenarioname),
                                filter(df_Graph, SCENARIO=='Historical'))
     }
+
+    # for y-axis ------------------------------------------------------
+    
+    # ylim_colnames <- indicators
+    ylim_rownames <- c('window_min', 'window_max', 'yall_min', 'yall_max',
+                       'ylim_min', 'ylim_max', 'ylim_CR_min', 'ylim_CR_max')
+    df_ylim <- data.frame(matrix(rep(NA, length(ylim_rownames)), nrow=length(ylim_rownames)))
+    rownames(df_ylim) <- ylim_rownames
+
+    for (indicator in indicators) { # indicator
+      # indicator <- 'Henkaryo_Energy_Intensity' # for test
+      vectorized_Graph_plot <- eval(parse(text=paste0( 
+        "as.vector(df_Graph_plot$", indicator, ") %>% na.omit()"
+        )))
+      df_Graph_plot_HisR17 <- df_Graph_plot %>% filter(SCENARIO=='Historical_R17')
+      vectorized_Graph_plot_HisR17 <- eval(parse(text=paste0( 
+        "as.vector(df_Graph_plot_HisR17$", indicator, ") %>% na.omit()"
+        )))
+      add_to_df_ylim <- c(
+        quantile(vectorized_Graph_plot_HisR17, probs=0.05, na.rm=T),    # window_min 
+        quantile(vectorized_Graph_plot_HisR17, probs=0.95, na.rm=T),    # window_max 
+        quantile(vectorized_Graph_plot, probs=0.00, na.rm=T),           # yall_min 
+        quantile(vectorized_Graph_plot, probs=1.00, na.rm=T),           # yall_max 
+        quantile(vectorized_Graph_plot, probs=0.03, na.rm=T),           # ylim_min 
+        quantile(vectorized_Graph_plot, probs=0.97, na.rm=T),           # ylim_max 
+        -0.11,                                                          # ylim_CR_min
+        0.11                                                            # ylim_CR_max
+      )
+      df_ylim <- eval(parse(text=paste0(
+        "df_ylim %>% mutate(",indicator,"=add_to_df_ylim) "
+        )))
+    }  # indicator
+    
+    while (0) {
+      window_min <- quantile(vectorized_Graph_plot_HisR17, probs=0.05, na.rm=T)
+      window_max <- quantile(vectorized_Graph_plot_HisR17, probs=0.95, na.rm=T)
+      yall_min <- quantile(vectorized_Graph_plot, probs=0.00, na.rm=T)
+      yall_max <- quantile(vectorized_Graph_plot, probs=1.00, na.rm=T)
+      ylim_min <- quantile(vectorized_Graph_plot, probs=0.03, na.rm=T)
+      ylim_max <- quantile(vectorized_Graph_plot, probs=0.97, na.rm=T)
+      ylim_CR_min <- -0.11
+      ylim_CR_max <-  0.11
+    }
+    
+    
+    # Graph ------------------------------------------------------
     
     while (0) { # for (dummyloop in 1) { # XY散布図 by 17地域 bk
         pdf(file=paste("./",scenarioname,"_XY.pdf", sep=""))    
