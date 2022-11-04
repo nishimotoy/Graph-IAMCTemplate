@@ -469,25 +469,21 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
         # indicator <- 'Henkaryo_Energy_Intensity' # for test
         filename <- paste(scenarioname,"_","boxplot_World_",indicator, sep="")
 
-        vectorized_Graph_plot <- eval(parse(text=paste0( 
-          "as.vector(df_Graph_plot$", indicator, ") %>% na.omit()" 
+        sample_vec_data <- eval(parse(text=paste0( 
+          "as.vector(df_Graph_plot$", indicator, ") %>% na.omit()"  # all SCENARIO
         )))
-        yall_value <- c(quantile(vectorized_Graph_plot, probs=0.00, na.rm=T), 
-                        quantile(vectorized_Graph_plot, probs=1.00, na.rm=T))
-        ylim_value <- c(quantile(vectorized_Graph_plot_His, probs=0.03, na.rm=T), 
-                        quantile(vectorized_Graph_plot_His, probs=0.97, na.rm=T))
-        
+        yall_value <- quantile(sample_vec_data, probs=c(0.00, 1.00), na.rm=T)
+        ylim_value <- quantile(sample_vec_data, probs=c(0.03, 0.97), na.rm=T)
+
         df_Graph_plot_HisR17 <- df_Graph_plot %>% filter(SCENARIO=='Historical_R17')
-        vectorized_Graph_plot_HisR17 <- eval(parse(text=paste0( 
+        sample_vec_data <- eval(parse(text=paste0( 
           "as.vector(df_Graph_plot_HisR17$", indicator, ") %>% na.omit()"
         )))
-        window_value <- c(quantile(vectorized_Graph_plot_HisR17, probs=0.05, na.rm=T), 
-                          quantile(vectorized_Graph_plot_HisR17, probs=0.95, na.rm=T))
+        window_value <- quantile(sample_vec_data, probs=c(0.05, 0.95), na.rm=T)
 
         if ( regexpr('^ChangeRate*', indicator)==1 ) { 
           ylim_value <- c(-0.11, 0.11) 
         } 
-
         g1 <- eval(parse(text=paste0(
           "ggplot(df_Graph_plot, aes(x=SCENARIO, y=",indicator, ", color=SCENARIO)) +
             geom_boxplot() +
@@ -578,7 +574,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
         percentile_val <- percentile_range(vec_data, cutoff_percentile)
         g <- g + eval(parse(text=paste0( "annotate('rect', xmin=",percentile_val[1],", ymin=",-Inf, 
                                          ", xmax=",percentile_val[2],", ymax=",0, 
-                                         ", alpha=.1, fill='#329262')"))) 
+                                         ", alpha=.26, fill='#329262')"))) 
         plot(g)
         filename <- paste(scenarioname,"_","density_xlim_",indicator, sep="")
         ## ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
