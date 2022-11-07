@@ -592,8 +592,8 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
       df_Graph_plotXY <- df_Graph_plot %>% filter(SCENARIO!='Historical')
       df_Graph_plotXY_His <- df_Graph_plotXY %>% filter(SCENARIO=='Historical_R17')
       
-      write_csv(df_Graph_plotXY, "./df_Graph_plotXY_written.csv") 
-      write_csv(df_Graph_plotXY_His, "./df_Graph_plotXY_His_written.csv") 
+      # write_csv(df_Graph_plotXY, "./df_Graph_plotXY_written.csv") 
+      # write_csv(df_Graph_plotXY_His, "./df_Graph_plotXY_His_written.csv") 
       
       pdf(file=paste("./",scenarioname,"_XY_R17.pdf", sep=""))    
       for (num in 1:length(x_names)) { #num   
@@ -604,6 +604,15 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
               geom_line() +
               scale_color_manual(values=c(rep(region17_color,3))) +
               scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
+        
+        # if ( num>=8 && num<=10 ) { # 窓の追加
+          vec_data <- eval(parse(text=paste0("df_Graph_plotXY_His$",y_names[num]))) 
+          axis_range <- quantile(vec_data, probs=c(0.05, (1-0.05)), na.rm=T)
+          g <- g + eval(parse(text=paste0( "annotate('rect', xmin=",-Inf,", ymin=",axis_range[1], 
+                                           ", xmax=",Inf, ", ymax=",axis_range[2], 
+                                           ", alpha=.22, fill='#329262')"))) 
+        # } # 窓の追加
+        
         plot(g)
         filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
        # ggsave(file=paste("./png/R17",filename,".png", sep=""), width=5, height=4, dpi=100)
