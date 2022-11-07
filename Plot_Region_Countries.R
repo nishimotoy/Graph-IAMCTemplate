@@ -597,7 +597,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
       
       pdf(file=paste("./",scenarioname,"_XY_R17.pdf", sep=""))    
       for (num in 1:length(x_names)) { #num   
-        g <- eval(parse(text=paste0(
+        g1 <- eval(parse(text=paste0(
           "ggplot(df_Graph_plotXY, aes(x=",x_names[num],",y=",y_names[num], 
           ",color=REGION, shape=SCENARIO)) +
               geom_point() + 
@@ -605,15 +605,13 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
               scale_color_manual(values=c(rep(region17_color,3))) +
               scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
         
-        # if ( num>=8 && num<=10 ) { # 窓の追加
+        # 窓の追加
           vec_data <- eval(parse(text=paste0("df_Graph_plotXY_His$",y_names[num]))) 
           axis_range <- quantile(vec_data, probs=c(0.05, (1-0.05)), na.rm=T)
-          g <- g + eval(parse(text=paste0( "annotate('rect', xmin=",-Inf,", ymin=",axis_range[1], 
+          g1 <- g1 + eval(parse(text=paste0( "annotate('rect', xmin=",-Inf,", ymin=",axis_range[1], 
                                            ", xmax=",Inf, ", ymax=",axis_range[2], 
                                            ", alpha=.22, fill='#329262')"))) 
-        # } # 窓の追加
-        
-        plot(g)
+        plot(g1)
         filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
        # ggsave(file=paste("./png/R17",filename,".png", sep=""), width=5, height=4, dpi=100)
 
@@ -623,7 +621,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
         x_axis_max <- max(eval(parse(text=paste0("df_Graph_plotXY$",x_names[num]))), na.rm=T)*(1+small)
         y_axis_max <- max(eval(parse(text=paste0("df_Graph_plotXY$",y_names[num]))), na.rm=T)*(1+small)
 
-        g <- eval(parse(text=paste0(
+        g2 <- eval(parse(text=paste0(
           "ggplot(df_Graph_plotXY_His, aes(x=",x_names[num],",y=",y_names[num], 
           ",color=REGION, shape=SCENARIO)) +
               geom_point() + 
@@ -632,31 +630,16 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
               ylim(",y_axis_min, ", ",y_axis_max, ") +
               scale_color_manual(values=c(rep(region17_color,3))) +
               scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
-        plot(g)
+        plot(g2)
 
         if ( y_names[num]=='ChangeRate_Carbon_Intensity' ) { # CIのみylim範囲指定 旧(num==2)    
-          g <- eval(parse(text=paste0(
-          "ggplot(df_Graph_plotXY, aes(x=",x_names[num],",y=",y_names[num], 
-          ",color=REGION, shape=SCENARIO)) +
-              geom_point() + 
-              geom_line() +
-              xlim(",x_axis_min, ", ",x_axis_max, ") +
-              ylim(",-0.5, ", ",0.1, ") +
-              scale_color_manual(values=c(rep(region17_color,3))) +
-              scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
-          plot(g)
-          
-          g <- eval(parse(text=paste0(
-            "ggplot(df_Graph_plotXY_His, aes(x=",x_names[num],",y=",y_names[num], 
-            ",color=REGION, shape=SCENARIO)) +
-              geom_point() + 
-              geom_line() +
-            # xlim(",x_axis_min, ", ",x_axis_max, ") +
-              ylim(",-0.05, ", ",0.05, ") +
-              scale_color_manual(values=c(rep(region17_color,3))) +
-              scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
-          plot(g)
-          
+          g1 <- eval(parse(text=paste0(
+          "g1 + xlim(",x_axis_min, ", ",x_axis_max, ") +
+                ylim(",-0.5, ", ",0.1, ")"))) 
+          plot(g1)
+          g2 <- eval(parse(text=paste0(
+            "g2 + ylim(",-0.05, ", ",0.05, ")"))) 
+          plot(g2)
         } # CIのみ範囲指定
       } #num
 
