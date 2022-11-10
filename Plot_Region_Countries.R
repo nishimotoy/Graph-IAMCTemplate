@@ -354,7 +354,8 @@ write.csv(t(df_summary_quantile), "./df_summary_quantile_written.csv")
 
 #Feasibility Test ------------------------------------------------------
 for (dummyloop in 1) { # Feasibility Test
-  test_items <- c('ChangeRate_Energy_Intensity', 'ChangeRate_Carbon_Intensity', 'ChangeRate_Electricity_Rate_Total')
+  # test_items <- c('ChangeRate_Energy_Intensity', 'ChangeRate_Carbon_Intensity', 'ChangeRate_Electricity_Rate_Total')
+  test_items <- indicators
   future_scenarios <- levels(df_Graph$SCENARIO) #  'Historical', 'Historical_R17'
   vector_Rate_test_OK <- future_scenarios
   
@@ -391,7 +392,7 @@ for (item in test_items) {
   df_Rate_feasibility_test_OK <- data.frame(matrix(vector_Rate_test_OK, 
                                             nrow=length(future_scenarios)))
   colnames(df_Rate_feasibility_test_OK) <- append(c('SCENARIO'), test_items)
-  write.csv(df_Rate_feasibility_test_OK, "./df_Rate_feasibility_test_OK_written.csv") 
+  write.csv(t(df_Rate_feasibility_test_OK), "./df_Rate_feasibility_test_OK_written.csv") 
   
 } # Feasibility Test
 
