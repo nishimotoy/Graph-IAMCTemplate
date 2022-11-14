@@ -730,13 +730,19 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
 # 項目指定出力
 scenarioname <- 'Multi'
 x_names <- c(
-  'Year', 'Energy_Intensity_scaled', 'TES_Total_scaled', 'GDP_IEA_scaled', 
-  'Year', 'Carbon_Intensity_scaled', 'CO2_fuel_Total_scaled', 'TES_Total_scaled', 
-  'Year', 'Electricity_Rate_Total_scaled', 'TFC_Elec_Total_scaled', 'TFC_Total_Total_scaled'
-  ) 
-y_names <- c(rep('ChangeRate_Energy_Intensity',4),
-             rep('ChangeRate_Carbon_Intensity',4),
-             rep('ChangeRate_Electricity_Rate_Total',4)
+    'Year', 'Energy_Intensity_scaled', 'TES_Total_scaled', 'GDP_IEA_scaled' 
+  , 'Year', 'Carbon_Intensity_scaled', 'CO2_fuel_Total_scaled', 'TES_Total_scaled' 
+  , 'Year', 'Electricity_Rate_Total_scaled', 'TFC_Elec_Total_scaled', 'TFC_Total_Total_scaled'
+  , 'Year', 'Energy_Intensity_scaled', 'TES_Total_scaled', 'GDP_IEA_scaled' 
+  , 'Year', 'Carbon_Intensity_scaled', 'CO2_fuel_Total_scaled', 'TES_Total_scaled' 
+  , 'Year', 'Electricity_Rate_Total_scaled', 'TFC_Elec_Total_scaled', 'TFC_Total_Total_scaled'
+) 
+y_names <- c( rep('ChangeRate_Energy_Intensity',4)
+             ,rep('ChangeRate_Carbon_Intensity',4)
+             ,rep('ChangeRate_Electricity_Rate_Total',4)
+             ,rep('Henkaryo_Energy_Intensity',4)
+             ,rep('Henkaryo_Carbon_Intensity',4)
+             ,rep('Henkaryo_Electricity_Rate_Total',4)
              ) 
 
 for (dummyloop in 1) { # item 指定出力
@@ -774,7 +780,7 @@ for (dummyloop in 1) { # item 指定出力
               scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
     g <- g + geom_hline(yintercept=c(axis_range[1], axis_range[2]))  
     g <- g + eval(parse(text=paste0( "annotate('text', x=",x_axis_right,", y=",y_axis_top,", 
-                                      label='percentile:",100*cutoff_prob,"-",100*(1-cutoff_prob),"%\n", 
+                                      label='y-percentile:",100*cutoff_prob,"-",100*(1-cutoff_prob),"%\n", 
                                       round(100*axis_range[2], digits=2),"%\n",
                                       round(100*axis_range[1], digits=2),"%\n')"))) 
     plot(g)
@@ -794,7 +800,7 @@ for (dummyloop in 1) { # item 指定出力
                 scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
       g <- g + geom_hline(yintercept=c(axis_range[1], axis_range[2]))  
       g <- g + eval(parse(text=paste0( "annotate('text', x=",x_axis_right,", y=",y_axis_top,", 
-                                       label='percentile:",100*cutoff_prob,"-",100*(1-cutoff_prob),"%\n", 
+                                       label='y-percentile:",100*cutoff_prob,"-",100*(1-cutoff_prob),"%\n", 
                                        round(100*axis_range[2], digits=2),"%\n",
                                        round(100*axis_range[1], digits=2),"%\n')"))) 
       plot(g)
