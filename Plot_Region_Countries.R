@@ -817,21 +817,11 @@ for (dummyloop in 1) { # item 指定出力
               geom_point() + 
               xlim(",1970, ", ",2100, ") "))) 
       g <- g + geom_hline(yintercept=c(axis_range[1], axis_range[2]))
-      g <- g + stat_poly_eq(formula = y ~ x,
-                            aes(label = paste("atop(",
-                                              paste(stat(eq.label),
-                                                    stat(rr.label),
-                                                    stat(adj.rr.label),
-                                                    sep = "~~~"),
-                                              ",",
-                                              paste(stat(f.value.label),
-                                                    stat(p.value.label),
-                                                    stat(AIC.label),
-                                                    stat(BIC.label),
-                                                    sep = "~~~"),
-                                              ")",
-                                              sep = "")),
-                            label.x = "right", parse = TRUE)
+      g <- g + stat_poly_eq(formula=y~x, aes(label=paste(
+        "atop(", paste(stat(eq.label),stat(rr.label),stat(adj.rr.label),sep="~~~"), ",",
+        paste(stat(f.value.label),stat(p.value.label),stat(AIC.label),stat(BIC.label),sep="~~~"),
+        ")", sep="")),
+        label.x="right", parse=TRUE)
       plot(g)
     } #Year
   } #num
