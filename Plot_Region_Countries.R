@@ -168,13 +168,13 @@ df_future <- df_future %>% mutate(VARIABLE = str_replace_all(VARIABLE, pattern =
   'Final Energy.Commercial' = 'TFC_Total_Com',
   'Final Energy' = 'TFC_Total_Total')))  # 順番注意／.最長マッチ
 # View(df_future)
-write_csv(df_future, "./df_future_pre_written.csv") 
+write_csv(df_future, "./df_future_pre.csv") 
 # ここで、上記以外のデータは捨てる
 df_future <- df_future %>% filter(VARIABLE %in% 
               c('GDP_IEA','POP_IEA','TES_Total','CO2_fuel_Total',
                 'TFC_Total_Total','TFC_Total_Ind','TFC_Total_Tra','TFC_Total_Res','TFC_Total_Com',
                 'TFC_Elec_Total','TFC_Elec_Ind','TFC_Elec_Tra','TFC_Elec_Res','TFC_Elec_Com'))
-write_csv(df_future, "./df_future_written.csv") 
+write_csv(df_future, "./df_future.csv") 
 # }  # 将来シナリオの読込
 
 # Connect Past & Future ------------------------------------------------------
@@ -186,7 +186,7 @@ df_long_future$Year  <- as.numeric(df_long_future$Year)
 df_long <- rbind(df_long_past, df_long_future)
 df_long$Year  <- as.numeric(df_long$Year) 
 df_long$Value <- as.numeric(df_long$Value)   # NA warning ＞ 確認済 
-write_csv(df_long, "./df_long_written.csv")  
+write_csv(df_long, "./df_long.csv")  
 
 # Aggregation to Region ------------------------------------------------------
 for (dummyloop in 1) {  # 地域集約 # while (0)
@@ -199,7 +199,7 @@ for (dummyloop in 1) {  # 地域集約 # while (0)
     df_long <- df_long %>% rbind(df_long_agg)
   } # 併記する場合
 }  # 地域集約
-write_csv(df_long, "./df_long_after_R17_written.csv") 
+write_csv(df_long, "./df_long_after_R17.csv") 
 
 # Historical/Future基準年値 (Year=0) から調整用の値 (Year=1) を作る
 df_long_BaseYear <- df_long %>% filter(Year==0) %>% mutate(Year=1)  # 基準年値をコピーして調整年値を作る
@@ -208,11 +208,11 @@ df_long_BaseYear_2 <- df_long_BaseYear %>% filter(SCENARIO=='Historical_R17')
 df_long_BaseYear_3 <- df_long_BaseYear %>% filter(SCENARIO!='Historical', SCENARIO!='Historical_R17') 
 df_long_BaseYear_4 <- full_join(select(df_long_BaseYear_3, -Value), select(df_long_BaseYear_2, -SCENARIO)) 
 df_long <- df_long %>% rbind(df_long_BaseYear_1) %>% rbind(df_long_BaseYear_2) %>% rbind(df_long_BaseYear_4)
-write_csv(df_long, "./df_long_after_add1_written.csv") 
+write_csv(df_long, "./df_long_after_add1.csv") 
 
 # Global path 算出用
 df_long_global <- aggregate(Value~VARIABLE+SCENARIO+Year, df_long, sum) # 集約対象=REGION
-write_csv(df_long_global, "./df_long_global_written.csv") 
+write_csv(df_long_global, "./df_long_global.csv") 
 
 
 # Table format and Indicator  ------------------------------------------------------
@@ -238,7 +238,7 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理1   # テスト後に戻す (i i
   df_Graph <- df_Graph %>% drop_na('REGION','Year')  # ダミー列のデータを削除
   df_Graph <- eval(parse(text=paste0(
               "df_Graph %>% mutate(",indicator,"=",numerator,"/",denominator,")"))) # 指標の算出
-  write_csv(df_Graph, "./df_Graph_afterfulljoin_written.csv") 
+  write_csv(df_Graph, "./df_Graph_afterfulljoin.csv") 
   
   for (dummyloop in 1) { # 基準年値で調整した値をdf_Graphに追加する
     
@@ -263,7 +263,7 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理1   # テスト後に戻す (i i
 df_Graph$SCENARIO <- factor(df_Graph$SCENARIO, levels=scenarionames_order)
 #        levels=c('Historical','Historical_R17','Baseline','2.5C','2C','1.5C','WB2C'))
 df_Graph <- df_Graph %>% group_by(SCENARIO,Country) %>% arrange(SCENARIO,Country,Year)
-write_csv(df_Graph, "./df_Graph_afterfulljoin_written.csv") 
+write_csv(df_Graph, "./df_Graph_afterfulljoin.csv") 
 df_Graph <- df_Graph %>% filter(Year!=0 & Year!=1) 
 
 # Change rate ------------------------------------------------------
@@ -305,25 +305,25 @@ while (0) { # 正負切替直後のna置換 <炭素強度のみ>
                false=ChangeRate_Carbon_Intensity)
         ) %>% mutate(ChangeRate_Carbon_Intensity=CR_Carbon_Intensity_inv)
 #   df_check <- df_Graph %>% select(SCENARIO,Country,Year,ChangeRate_Carbon_Intensity,CR_Carbon_Intensity_inv) 
-#   write_csv(df_check, "./df_check_written.csv") 
+#   write_csv(df_check, "./df_check.csv") 
 
 } # 正負切替直後のna置換
 
 df_Graph <- df_Graph %>% ungroup() %>% arrange(SCENARIO,Country,Year)
 # df_Graph <- df_Graph %>% ungroup() %>% group_by(SCENARIO,REGION) %>% arrange(SCENARIO,Country,Year)
 # View(df_Graph)
-write_csv(df_Graph, "./df_Graph_written.csv") 
+write_csv(df_Graph, "./df_Graph.csv") 
 
 #Summary ------------------------------------------------------
 
 # ここで置換 df_Graph のうち Inf を NA に
 # df_Graph_bk <- df_Graph
 df_Graph[df_Graph==Inf] <- NA
-# write_csv(anti_join(df_Graph, df_Graph_bk), "./df_Graph_antijoin_written.csv") 
+# write_csv(anti_join(df_Graph, df_Graph_bk), "./df_Graph_antijoin.csv") 
 
 df_indicator <- df_Graph %>% select(one_of(Titlerow3),one_of(indicators)
                        ) %>% group_by(SCENARIO)
-write_csv(df_indicator, "./df_indicator_written.csv")  # Year, Country, REGION入りのデータで保存
+write_csv(df_indicator, "./df_indicator.csv")  # Year, Country, REGION入りのデータで保存
 
 df_summary <- df_indicator %>% select(-c(Year, Country, REGION)
   ) %>% group_by(SCENARIO
@@ -347,9 +347,9 @@ df_summary <- df_summary %>% select(all_of(sorted_names_list))
                                       
 df_summary_quantile <- df_summary %>% select(SCENARIO, contains('_q')) 
 df_summary_ChangeRate <- df_summary %>% select(SCENARIO, starts_with("ChangeRate_")) 
-write.csv(t(df_summary), "./df_summary_written.csv") 
-write.csv(t(df_summary_ChangeRate), "./df_summary_ChangeRate_written.csv") 
-write.csv(t(df_summary_quantile), "./df_summary_quantile_written.csv") 
+write.csv(t(df_summary), "./df_summary.csv") 
+write.csv(t(df_summary_ChangeRate), "./df_summary_ChangeRate.csv") 
+write.csv(t(df_summary_quantile), "./df_summary_quantile.csv") 
 
 
 #Feasibility Test ------------------------------------------------------
@@ -392,7 +392,7 @@ for (item in test_items) {
   df_Rate_feasibility_test_OK <- data.frame(matrix(vector_Rate_test_OK, 
                                             nrow=length(future_scenarios)))
   colnames(df_Rate_feasibility_test_OK) <- append(c('SCENARIO'), test_items)
-  write.csv(t(df_Rate_feasibility_test_OK), "./df_Rate_feasibility_test_OK_written.csv") 
+  write.csv(t(df_Rate_feasibility_test_OK), "./df_Rate_feasibility_test_OK.csv") 
   
 } # Feasibility Test
 
@@ -593,8 +593,8 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
       df_Graph_plotXY <- df_Graph_plot %>% filter(SCENARIO!='Historical')
       df_Graph_plotXY_His <- df_Graph_plotXY %>% filter(SCENARIO=='Historical_R17')
       
-      # write_csv(df_Graph_plotXY, "./df_Graph_plotXY_written.csv") 
-      # write_csv(df_Graph_plotXY_His, "./df_Graph_plotXY_His_written.csv") 
+      # write_csv(df_Graph_plotXY, "./df_Graph_plotXY.csv") 
+      # write_csv(df_Graph_plotXY_His, "./df_Graph_plotXY_His.csv") 
       
       pdf(file=paste("./",scenarioname,"_XY_R17.pdf", sep=""))    
       for (num in 1:length(x_names)) { #num   
@@ -744,8 +744,8 @@ for (dummyloop in 1) { # item 指定出力
   df_Graph_plotXY <- df_Graph_plot 
   df_Graph_plotXY <- df_Graph_plot %>% filter(SCENARIO!='Historical')
   df_Graph_plotXY_His <- df_Graph_plotXY %>% filter(SCENARIO=='Historical_R17')
-  write_csv(df_Graph_plotXY, "./df_Graph_plotXY_written.csv") 
-  write_csv(df_Graph_plotXY_His, "./df_Graph_plotXY_His_written.csv") 
+  write_csv(df_Graph_plotXY, "./df_Graph_plotXY.csv") 
+  write_csv(df_Graph_plotXY_His, "./df_Graph_plotXY_His.csv") 
   y_axis_val <- c(-0.5, 0.1)
   
   pdf(file=paste("./",scenarioname,"_XY_item.pdf", sep=""))    
