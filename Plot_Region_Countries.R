@@ -765,24 +765,33 @@ for (dummyloop in 1) { # item 指定出力
     vec_data <- eval(parse(text=paste0("df_Graph_plotXY_His$",y_names[num]))) 
     axis_range <- quantile(vec_data, probs=c(cutoff_prob, (1-cutoff_prob)), na.rm=T)
     
-    x_axis_right <- x_axis_max - 0.1*(x_axis_max - x_axis_min)
-    y_axis_high <- axis_range[2] + 0.2*(y_axis_max - y_axis_min)
-    y_axis_low  <- axis_range[1] - 0.2*(y_axis_max - y_axis_min)
-    y_axis_top  <- y_axis_max - 0.1*(y_axis_max - y_axis_min)
-    
+    x_axis_right <- x_axis_max    - 0.1*(x_axis_max - x_axis_min)
+    y_axis_high  <- axis_range[2] + 0.2*(y_axis_max - y_axis_min)
+    y_axis_low   <- axis_range[1] - 0.2*(y_axis_max - y_axis_min)
+    y_axis_top   <- y_axis_max    - 0.1*(y_axis_max - y_axis_min)
+
+    if ((regexpr('^ChangeRate*', y_names[num]))||(regexpr('*Electricity_Rate*', y_names[num]))) { 
+      annotate_text <- eval(parse(text=paste0(
+        "annotate('text', x=",x_axis_right,", y=",y_axis_top,", 
+        label='y-percentile: ",100*cutoff_prob,"-",100*(1-cutoff_prob),"%\n", 
+        round(100*axis_range[2], digits=2),"%\n",
+        round(100*axis_range[1], digits=2),"%\n')"
+      ))) 
+    } else {
+      annotate_text <- eval(parse(text=paste0(
+        "annotate('text', x=",x_axis_right,", y=",y_axis_top,",
+        label='y-percentile: ",100*cutoff_prob,"-",100*(1-cutoff_prob),"%\n", 
+        formatC(axis_range[2], digits=2, format='e'),"\n",
+        formatC(axis_range[1], digits=2, format='e'),"\n')"
+      ))) 
+    }
     g <- eval(parse(text=paste0(
       "ggplot(df_Graph_plotXY, aes(x=",x_names[num],",y=",y_names[num], 
       ",color=REGION, shape=SCENARIO)) +
               geom_point() + 
-#             geom_line() +
-#             ylim(",-0.5, ", ",1, ") +
               scale_color_manual(values=c(rep(region17_color,3))) +
               scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
-    g <- g + geom_hline(yintercept=c(axis_range[1], axis_range[2]))  
-    g <- g + eval(parse(text=paste0( "annotate('text', x=",x_axis_right,", y=",y_axis_top,", 
-                                      label='y-percentile:",100*cutoff_prob,"-",100*(1-cutoff_prob),"%\n", 
-                                      round(100*axis_range[2], digits=2),"%\n",
-                                      round(100*axis_range[1], digits=2),"%\n')"))) 
+    g <- g + geom_hline(yintercept=c(axis_range[1], axis_range[2])) + annotate_text 
     plot(g)
     
     filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
@@ -790,23 +799,17 @@ for (dummyloop in 1) { # item 指定出力
 
     if (y_names[num]=='ChangeRate_Carbon_Intensity') { #CI
       y_axis_top <- y_axis_val[2]-0.1*(y_axis_val[2]-y_axis_val[1])
-      g <- eval(parse(text=paste0(
-        "ggplot(df_Graph_plotXY, aes(x=",x_names[num],",y=",y_names[num], 
-        ",color=REGION, shape=SCENARIO)) +
-                geom_point() + 
-  #             geom_line() +
-                ylim(",y_axis_val[1], ", ",y_axis_val[2], ") +
-                scale_color_manual(values=c(rep(region17_color,3))) +
-                scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
-      g <- g + geom_hline(yintercept=c(axis_range[1], axis_range[2]))  
-      g <- g + eval(parse(text=paste0( "annotate('text', x=",x_axis_right,", y=",y_axis_top,", 
-                                       label='y-percentile:",100*cutoff_prob,"-",100*(1-cutoff_prob),"%\n", 
-                                       round(100*axis_range[2], digits=2),"%\n",
-                                       round(100*axis_range[1], digits=2),"%\n')"))) 
+      annotate_text_ylim <- eval(parse(text=paste0(
+        "annotate('text', x=",x_axis_right,", y=",y_axis_top,", 
+        label='y-percentile:" ,100*cutoff_prob,"-",100*(1-cutoff_prob),"%\n", 
+        round(100*axis_range[2], digits=2),"%\n",
+        round(100*axis_range[1], digits=2),"%\n')"
+      ))) 
+      g <- g + ylim(c(y_axis_val[1], y_axis_val[2])) + annotate_text_ylim 
       plot(g)
     } #CI
 
-        if (x_names[num]=='Year') { #Year
+    if (x_names[num]=='Year') { #Year
       g <- eval(parse(text=paste0(
         "ggplot(df_Graph_plotXY_His, aes(x=",x_names[num],",y=",y_names[num], 
         ", shape=SCENARIO)) +
