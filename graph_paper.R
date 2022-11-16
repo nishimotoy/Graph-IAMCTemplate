@@ -1,4 +1,4 @@
-# 土木学会用日本語出力
+# 土木学会用日本語出力 査読後
 
 x_names <- c('Year', rep('GDP_Capita',3), rep('Year',6),
              'ChangeRate_Energy_Intensity','ChangeRate_Carbon_Intensity','ChangeRate_Electricity_Rate_Total' )

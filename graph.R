@@ -8,15 +8,8 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
   y_names <- c(rep(indicators,2)) #3
   # scenario_color <- c('#3366CC', '#66AA00', '#0099C6', '#DD4477', '#BB2E2E', '#990099', '#651067', '#22AA99')
   scenario_color <- c('#AAAA11', '#329262', '#FF9900', '#DD4477', '#651067', '#3366CC', '#84919E')
-  
-  while (0) { 
-    percentile_range <- function(vec_data, cutoff_prob) {
-      percentile_range_return <- c(quantile(na.omit(vec_data), cutoff_prob, na.rm=T),
-                                   quantile(na.omit(vec_data), (1-cutoff_prob), na.rm=T)
-      ) %>% as.numeric()
-      return(percentile_range_return)
-    }
-  }
+  scenario_shape1 <- c(19,19,21,21,21,21,21)
+  scenario_shape2 <- c(19,21,22,23,24,25,1)
   axis_cutoff_prob <- 0.01   # 軸の表示において切り捨てる分位範囲 （0.01: 両端1% cutoff）
   
   # scenarionames <- levels(df_Graph$SCENARIO)    # c('Baseline','2C','1.5C','2.5C','WB2C') # 'Historical'
@@ -42,7 +35,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
               geom_line() +
               geom_point() + 
             # scale_color_manual(values=c(rep(scenario_color,3))) +
-              scale_shape_manual(values=c(19,19,21,21,21,21,21))"))) # Historical2本
+              scale_shape_manual(values=scenario_shape1)"))) # Historical2本
         plot(g)
         filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
         ## ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
@@ -205,7 +198,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
               geom_point() + 
               geom_line() +
               scale_color_manual(values=c(rep(region17_color,3))) +
-              scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
+              scale_shape_manual(values=scenario_shape2)"))) # SCENARIO数
         
         # 窓の追加
         vec_data <- eval(parse(text=paste0("df_Graph_plotXY_His$",y_names[num]))) 
@@ -231,7 +224,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
               xlim(",x_axis_min, ", ",x_axis_max, ") +
               ylim(",y_axis_min, ", ",y_axis_max, ") +
               scale_color_manual(values=c(rep(region17_color,3))) +
-              scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
+              scale_shape_manual(values=scenario_shape2)"))) # SCENARIO数
         plot(g2)
         
         if ( y_names[num]=='ChangeRate_Carbon_Intensity' ) { # CIのみylim範囲指定 旧(num==2)    
@@ -255,7 +248,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
               geom_point() + 
               geom_line() +
               scale_color_manual(values=c(rep(region17_color,3))) +
-              scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
+              scale_shape_manual(values=scenario_shape2)"))) # SCENARIO数
         plot(g)
         
       } #num
@@ -275,7 +268,7 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
             geom_point() +
             scale_color_manual(values=c(rep(region17_color,3))) +
           # theme(legend.position='none') +
-            scale_shape_manual(values=c(19,19,21,21,21,21,21))")))
+            scale_shape_manual(values=scenario_shape1)")))
         plot(g)
         filename <- paste(scenarioname,"_",num,"_",x_names[num],"-",y_names[num],"_CN", sep="")
         # ggsave(file=paste("./png/",filename,".png", sep=""), width=5, height=4, dpi=100)
@@ -391,7 +384,7 @@ for (dummyloop in 1) { # item 指定出力
       ",color=REGION, shape=SCENARIO)) +
               geom_point() + 
               scale_color_manual(values=c(rep(region17_color,3))) +
-              scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
+              scale_shape_manual(values=scenario_shape2)"))) # SCENARIO数
     g <- g + geom_hline(yintercept=c(axis_range[1], axis_range[2])) + annotate_text 
     plot(g)
     
@@ -428,23 +421,4 @@ for (dummyloop in 1) { # item 指定出力
   } #num
   dev.off() 
 } # item 指定出力
-
-for (dummyloop in 1) { # 相関係数
-  CR <- c('Year', 'ChangeRate_Energy_Intensity', 'ChangeRate_Carbon_Intensity', 'ChangeRate_Electricity_Rate_Total')
-  
-  # lm_year <- function(explanatory_variable, response variable) { # 相関係数のサマリーを返す関数　(説明変数x, 目的変数y)
-  
-  # }
-  
-  #  lm_year('ChangeRate_Energy_Intensity', 'Year')
-  
-  df_His_C <- df_Graph_plot %>% filter(SCENARIO=='Historical') %>% select('Year', 'ChangeRate_Carbon_Intensity')
-  (df_His_C.lm<-lm(ChangeRate_Carbon_Intensity~.,data=df_His_C ))
-  summary( df_His_C.lm )
-  
-  df_His_R <- df_Graph_plot %>% filter(SCENARIO=='Historical_R17') %>% select('Year', 'ChangeRate_Carbon_Intensity')
-  (df_His_R.lm<-lm(ChangeRate_Carbon_Intensity~.,data=df_His_R ))
-  summary( df_His_R.lm )
-  
-} # 相関係数
 

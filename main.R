@@ -8,7 +8,6 @@ root <- 'C:/_Nishimoto/R/WBAL_R02/'
 Titlerow1 <- c('MODEL','SCENARIO','REGION','VARIABLE','UNIT')
 Titlerow2 <- c('REGION','Country','VARIABLE','SCENARIO')
 Titlerow3 <- c('SCENARIO','Country','REGION','Year')
-scenarioname <- 'Baseline'  # 読込対象の将来シナリオ（読込の時点でシナリオを絞る場合）
 scenarionames_order <- c('Historical','Historical_R17','Baseline','2.5C','2C','1.5C','WB2C')
 BaseYear <- 2010  # %>% as.numeric()  # 基準年値
 Sample_Country <- c('Former Soviet Union','Former Yugoslavia','South Sudan','Bosnia and Herzegovina')  # GDP(2010)が無い国
@@ -395,5 +394,19 @@ for (item in test_items) {
   write.csv(t(df_Rate_feasibility_test_OK), "./df_Rate_feasibility_test_OK.csv") 
   
 } # Feasibility Test
+
+#相関係数 ------------------------------------------------------
+for (dummyloop in 1) { # 相関係数
+  CR <- c('Year', 'ChangeRate_Energy_Intensity', 'ChangeRate_Carbon_Intensity', 'ChangeRate_Electricity_Rate_Total')
+  
+  df_His_C <- df_Graph %>% filter(SCENARIO=='Historical') %>% select('Year', 'ChangeRate_Carbon_Intensity')
+  (df_His_C.lm<-lm(ChangeRate_Carbon_Intensity~.,data=df_His_C ))
+  summary( df_His_C.lm )
+  
+  df_His_R <- df_Graph %>% filter(SCENARIO=='Historical_R17') %>% select('Year', 'ChangeRate_Carbon_Intensity')
+  (df_His_R.lm<-lm(ChangeRate_Carbon_Intensity~.,data=df_His_R ))
+  summary( df_His_R.lm )
+  
+} # 相関係数
 
 
