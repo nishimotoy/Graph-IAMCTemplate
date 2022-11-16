@@ -1,28 +1,30 @@
-# 土木学会用日本語出力 査読後
+# 土木学会用日本語出力 査読対応
 
 x_names <- c('Year', rep('GDP_Capita',3), rep('Year',6),
-             'ChangeRate_Energy_Intensity','ChangeRate_Carbon_Intensity','ChangeRate_Electricity_Rate_Total' )
+             'ChangeRate_Energy_Intensity','Henkaryo_Carbon_Intensity','Henkaryo_Electricity_Rate_Total' )
 y_names <- c('CO2_fuel_Total_scaled', 
              rep(c('Energy_Intensity_scaled','Carbon_Intensity_scaled','Electricity_Rate_Total_scaled'),2), 
-             c('ChangeRate_Energy_Intensity','ChangeRate_Carbon_Intensity','ChangeRate_Electricity_Rate_Total'),
+             c('ChangeRate_Energy_Intensity','Henkaryo_Carbon_Intensity','Henkaryo_Electricity_Rate_Total'),
              rep('Density',3))
 I_names <- c('エネルギー強度', '炭素強度', '電化率')
-I_names_CR <- paste(I_names, 'の変化率 (%)', sep = "")  # c('エネルギー強度の変化率', '炭素強度の変化率', '電化率の変化率')
-y_names_J  <- c('エネルギー起源CO2排出量', rep(I_names,2), I_names_CR, rep('確率密度',3), I_names_CR)
-x_names_J  <- c('年', rep('GDP/人',3), rep('年',6), I_names_CR)
+I_names_attach <- c('の変化率 (%)', 'の変化量 (unit)', 'の変化量 (%)')
+I_names_C <- paste(I_names, I_names_attach, sep = "") 
+y_names_J  <- c('エネルギー起源CO2排出量', rep(I_names,2), I_names_C, rep('確率密度',3), I_names_C)
+x_names_J  <- c('年', rep('GDP/人',3), rep('年',6), I_names_C)
 cutoff_prob <- 0.05
 
-y_names_box <- c('ChangeRate_Energy_Intensity','ChangeRate_Carbon_Intensity','ChangeRate_Electricity_Rate_Total',
-                 'ChangeRate_Electricity_Rate_Ind','ChangeRate_Electricity_Rate_Tra',
-                 'ChangeRate_Electricity_Rate_Res','ChangeRate_Electricity_Rate_Com')
-sec_names <- c('工業部門', '交通部門', '民生部門', '業務部門')
-j_names_CR_sec  <- paste(sec_names, '電化率の変化率 (%)', sep = "　") 
-j_names_box　 <- c(I_names_CR, j_names_CR_sec)
+y_names_box <- c('ChangeRate_Energy_Intensity','Henkaryo_Carbon_Intensity','Henkaryo_Electricity_Rate_Total',
+                 'Henkaryo_Electricity_Rate_Ind','Henkaryo_Electricity_Rate_Tra',
+                 'Henkaryo_Electricity_Rate_Res','Henkaryo_Electricity_Rate_Com')
+sec_names <- c('工業部門', '交通部門', '家庭部門', '業務部門')
+j_names_CR_sec  <- paste(sec_names, '電化率の変化量 (%)', sep = "　") 
+j_names_box　 <- c(I_names_C, j_names_CR_sec)
 names(j_names_box) <- y_names_box  # j_names_box[names(j_names_box)]
 
-scenario_color <- c('#AAAA11', '#329262', '#FF9900', '#DD4477', '#651067', '#3366CC', '#84919E')
 library(RColorBrewer)
 region_color <- c(brewer.pal(5,"Dark2"),brewer.pal(5,"Set1"),brewer.pal(7,"Paired"))  
+scenario_color <- c('#AAAA11', '#329262', '#FF9900', '#DD4477', '#651067', '#3366CC', '#84919E')
+scenario_shape2 <- c(19,21,22,23,24,25,1)
 
 y_names_tmp <- y_names[-which(y_names %in% 'Density')] 
 df_Graph_p <- df_Graph   %>% select('SCENARIO', 'REGION', unique(sort(c(x_names,y_names_tmp, y_names_box)))) 
@@ -30,12 +32,12 @@ df_Graph_p <- df_Graph_p %>% mutate(Energy_Intensity_scaled=Energy_Intensity_sca
                       ) %>% mutate(Carbon_Intensity_scaled=Carbon_Intensity_scaled*100  #10^-6>10^-8
                       ) %>% mutate(Electricity_Rate_Total_scaled=Electricity_Rate_Total_scaled*100 #percent
                       ) %>% mutate(ChangeRate_Energy_Intensity=ChangeRate_Energy_Intensity*100 #percent
-                      ) %>% mutate(ChangeRate_Carbon_Intensity=ChangeRate_Carbon_Intensity*100 #percent
-                      ) %>% mutate(ChangeRate_Electricity_Rate_Total=ChangeRate_Electricity_Rate_Total*100 #percent
-                      ) %>% mutate(ChangeRate_Electricity_Rate_Ind=ChangeRate_Electricity_Rate_Ind*100 #percent
-                      ) %>% mutate(ChangeRate_Electricity_Rate_Tra=ChangeRate_Electricity_Rate_Tra*100 #percent
-                      ) %>% mutate(ChangeRate_Electricity_Rate_Res=ChangeRate_Electricity_Rate_Res*100 #percent
-                      ) %>% mutate(ChangeRate_Electricity_Rate_Com=ChangeRate_Electricity_Rate_Com*100 #percent
+                      ) %>% mutate(Henkaryo_Carbon_Intensity=Henkaryo_Carbon_Intensity*100  #10^-6>10^-8
+                      ) %>% mutate(Henkaryo_Electricity_Rate_Total=Henkaryo_Electricity_Rate_Total*100 #percent
+                      ) %>% mutate(Henkaryo_Electricity_Rate_Ind=Henkaryo_Electricity_Rate_Ind*100 #percent
+                      ) %>% mutate(Henkaryo_Electricity_Rate_Tra=Henkaryo_Electricity_Rate_Tra*100 #percent
+                      ) %>% mutate(Henkaryo_Electricity_Rate_Res=Henkaryo_Electricity_Rate_Res*100 #percent
+                      ) %>% mutate(Henkaryo_Electricity_Rate_Com=Henkaryo_Electricity_Rate_Com*100 #percent
                       ) # which
 df_Graph_p <- df_Graph_p %>% mutate(SCENARIO2 = recode(SCENARIO, 
                              Historical='歴史的推移(国別)', Historical_R17='歴史的推移', Baseline='ベースライン'))
@@ -96,7 +98,7 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
               labs(color='地域 (a1-b3)共通') +
               labs(shape='シナリオ (a1-b3)共通') +
               scale_color_manual(values=c(rep(region_color,3))) +
-              scale_shape_manual(values=c(19,21,22,23,24,25,1))"))) # SCENARIO数
+              scale_shape_manual(values=scenario_shape2)"))) # SCENARIO数
     
     if ( num>=8 && num<=10 ) { # 窓の追加
       
@@ -107,7 +109,7 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
                                        ", alpha=.22, fill='#329262')"))) 
       
     } # 窓の追加
-    if ( num==9 ) { g <- g + ylim(-10, 5) } #炭素強度の例外処理
+    # if ( num==9 ) { g <- g + ylim(-10, 5) } #炭素強度の例外処理
     plot(g)
     
   } else if ( num>=11 && num<=13 ) { # 確率密度分布
