@@ -11,7 +11,8 @@ I_names_attach <- c('の変化率 (%)', 'の変化量 (unit)', 'の変化量 (%)
 I_names_C <- paste(I_names, I_names_attach, sep = "") 
 y_names_J  <- c('エネルギー起源CO2排出量', rep(I_names,2), I_names_C, rep('確率密度',3), I_names_C)
 x_names_J  <- c('年', rep('GDP/人',3), rep('年',6), I_names_C)
-cutoff_prob <- 0.05
+window_prob <- 0.05
+cutoff_prob <- 0.04
 
 y_names_box <- c('ChangeRate_Energy_Intensity','Henkaryo_Carbon_Intensity','Henkaryo_Electricity_Rate_Total',
                  'Henkaryo_Electricity_Rate_Ind','Henkaryo_Electricity_Rate_Tra',
@@ -24,7 +25,8 @@ names(j_names_box) <- y_names_box  # j_names_box[names(j_names_box)]
 library(RColorBrewer)
 region_color <- c(brewer.pal(5,"Dark2"),brewer.pal(5,"Set1"),brewer.pal(7,"Paired"))  
 scenario_color <- c('#AAAA11', '#329262', '#FF9900', '#DD4477', '#651067', '#3366CC', '#84919E')
-scenario_shape2 <- c(19,21,22,23,24,25,1)
+scenario_shape <- c(19,4,22,23,24,25,1)
+scenario_size <- c(1,4,4,4,4,4,4)
 
 y_names_tmp <- y_names[-which(y_names %in% 'Density')] 
 df_Graph_p <- df_Graph   %>% select('SCENARIO', 'REGION', unique(sort(c(x_names,y_names_tmp, y_names_box)))) 
@@ -48,14 +50,15 @@ df_Graph_global_wide <- df_Graph_global %>% spread(key=SCENARIO_f, value=CO2_fue
 write_csv(df_Graph_global, "./df_Graph_global_written.csv") 
 write_csv(df_Graph_global_wide, "./df_Graph_global_wide_written.csv") 
 
-# unlink("./png2", recursive=T)
-# unlink("./png3", recursive=T)
+unlink("./png2", recursive=T)
+unlink("./png3", recursive=T)
 if(!dir.exists("./png2")){ dir.create("./png2") }
 if(!dir.exists("./png3")){ dir.create("./png3") }
 
-# pdf(file=paste("./png2/JSCE_Graph.pdf", sep=""))    
+pdf(file=paste("./png2/JSCE_Graph.pdf", sep=""))    
 for (num in 1:length(x_names)) { #num # XYグラフの出力
-  
+
+  # 図1　世界の排出量  
   if ( num==1 ) {
     df_Graph_plot <- df_Graph_global %>% filter(SCENARIO_f!='Historical' 
     ) %>% mutate(CO2_fuel_Total_scaled=CO2_fuel_Total_scaled/1000000) #kt>Gt-CO2
@@ -70,6 +73,7 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
       "))) 
     plot(g)
     
+  # 図2　GDP/人 vs 指標
   } else if ( num>=2 && num<=4 ) { 
     
     df_Graph_plot <- df_Graph_p %>% filter(SCENARIO_f %in% c('Historical_R17', 'Baseline'))
@@ -82,9 +86,10 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
               labs(color='地域 (a-c)共通') +
               labs(shape='シナリオ (a-c)共通') +
               scale_color_manual(values=c(rep(region_color,3))) +
-              scale_shape_manual(values=c(19,21))"))) # 'Historical_R17', 'Baseline'
+              scale_shape_manual(values=scenario_shape)"))) # 'Historical_R17', 'Baseline'
     plot(g)
     
+  # 図3 (a1)～(b3)　年 vs 指標・その変化率/変化量
   } else if ( num>=5 && num<=10 ) { # XY散布図 by 17地域 vs 17地域
     
     df_Graph_plot <- df_Graph_p %>% filter(SCENARIO_f!='Historical')
@@ -98,20 +103,22 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
               labs(color='地域 (a1-b3)共通') +
               labs(shape='シナリオ (a1-b3)共通') +
               scale_color_manual(values=c(rep(region_color,3))) +
-              scale_shape_manual(values=scenario_shape2)"))) # SCENARIO数
+              scale_shape_manual(values=scenario_shape)"))) # SCENARIO数
     
+    # 図3 (b1)～(b3)　窓の追加
     if ( num>=8 && num<=10 ) { # 窓の追加
       
       vec_data <- eval(parse(text=paste0("df_Graph_plot_HisR$",y_names[num]))) 
-      axis_range <- quantile(vec_data, probs=c(cutoff_prob, (1-cutoff_prob)), na.rm=T)
-      g <- g + eval(parse(text=paste0( "annotate('rect', xmin=",-Inf,", ymin=",axis_range[1], 
-                                       ", xmax=",Inf, ", ymax=",axis_range[2], 
+      window_range <- quantile(vec_data, probs=c(window_prob, (1-window_prob)), na.rm=T)
+      g <- g + eval(parse(text=paste0( "annotate('rect', xmin=",-Inf,", ymin=",window_range[1], 
+                                       ", xmax=",Inf, ", ymax=",window_range[2], 
                                        ", alpha=.22, fill='#329262')"))) 
       
     } # 窓の追加
     # if ( num==9 ) { g <- g + ylim(-10, 5) } #炭素強度の例外処理
     plot(g)
     
+  # 図3 (c1)～(c3)　確率密度分布
   } else if ( num>=11 && num<=13 ) { # 確率密度分布
     
     df_Graph_plot <- df_Graph_p
@@ -124,23 +131,28 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
             geom_density(size=0.7) +
             labs(color='シナリオ (c1-3)共通') +
             scale_color_manual(values=c(scenario_color)) +
-            xlim(-10,10) + 
+          # xlim(-10,10) + 
             ylab('Density (Counts scaled to 1) of Region-Year')")))
+
+    vec_data <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
+    axis_range <- quantile(vec_data, probs=c(cutoff_prob, (1-cutoff_prob)), na.rm=T)
+    g <- g + eval(parse(text=paste0( "xlim(",axis_range[1],", ",axis_range[2],")"))) 
     
     vec_data <- eval(parse(text=paste0("df_Graph_plot_HisR$",indicator))) 
-    axis_range <- quantile(vec_data, probs=c(cutoff_prob, (1-cutoff_prob)), na.rm=T)
-    g <- g + eval(parse(text=paste0( "annotate('rect', xmin=",axis_range[1],", ymin=",-Inf, 
-                                     ", xmax=",axis_range[2], ", ymax=",Inf, 
+    window_range <- quantile(vec_data, probs=c(window_prob, (1-window_prob)), na.rm=T)
+    g <- g + eval(parse(text=paste0( "annotate('rect', xmin=",window_range[1],", ymin=",-Inf, 
+                                     ", xmax=",window_range[2], ", ymax=",Inf, 
                                      ", alpha=.22, fill='#329262')"))) 
     plot(g)
     
-  }  # 確率密度分布
+  }  # 確率密度分布　
   
   if ( y_names_J[num]=='エネルギー起源CO2排出量' ) { 
-    ylab_name <- bquote("エネルギー起源   " ~ CO[2] ~ "排出量  " ~ (Gt-CO[2])) #bquote内では 変数名は文字列とされる
+    ylab_name <- expression("エネルギー起源   " ~ CO[2] ~ "排出量  " ~ (Gt-CO[2])) #bquote内では 変数名は文字列とされる
   } else if ( y_names_J[num]=='エネルギー強度' ) { ylab_name <- paste(y_names_J[num], '(MJ/$)')
-  } else if ( y_names_J[num]=='炭素強度' )     { ylab_name <- bquote('炭素強度　' ~ (10^-8 ~ CO[2]/J) )
   } else if ( y_names_J[num]=='電化率' )       { ylab_name <- paste(y_names_J[num], '(%)')
+  } else if ( y_names_J[num]=='炭素強度' )     { ylab_name <- bquote('炭素強度　' ~ (10^-8 ~ CO[2]/J) )
+  } else if ( y_names_J[num]=='炭素強度の変化量 (unit)' ) { ylab_name <- bquote('炭素強度の変化量　' ~ (10^-8 ~ CO[2]/J) )
   } else { ylab_name <-  y_names_J[num] }
   
   g <- g + xlab(x_names_J[num]) + ylab(ylab_name) + theme_bw() + theme(panel.grid = element_blank()) # + MyThemeLine
@@ -156,6 +168,7 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
 
 }  #num # XYグラフの出力
 
+# 図3 (d1)～(d3)　図4　箱ヒゲ図
 
 for (indicator in y_names_box) { # indicator # 箱ヒゲ図
   df_Graph_plot <- df_Graph_p 
@@ -185,7 +198,7 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
 
 } # indicator # 箱ヒゲ図
 
-# dev.off() 
+dev.off() 
 
 
 
