@@ -54,8 +54,8 @@ df_Graph_p <- df_Graph_p %>% mutate(REGION_f=REGION) %>% mutate(REGION=REGION2)
 
 df_Graph_global <- aggregate(CO2_fuel_Total_scaled~Year+SCENARIO_f+SCENARIO, df_Graph_p, sum) # 集約対象=REGION
 df_Graph_global_wide <- df_Graph_global %>% spread(key=SCENARIO_f, value=CO2_fuel_Total_scaled)
-write_csv(df_Graph_global, "./df_Graph_global_written.csv") 
-write_csv(df_Graph_global_wide, "./df_Graph_global_wide_written.csv") 
+write_csv(df_Graph_global, "./df_Graph_global.csv") 
+write_csv(df_Graph_global_wide, "./df_Graph_global_wide.csv") 
 
 unlink("./png2", recursive=T)
 unlink("./png3", recursive=T)
@@ -177,28 +177,26 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
 }  #num # XYグラフの出力
 
 # 図3 (d1)～(d3)　図4　箱ヒゲ図
-
 for (indicator in y_names_box) { # indicator # 箱ヒゲ図
   df_Graph_plot <- df_Graph_p 
-
+  df_Graph_plot_HisR <- df_Graph_plot %>% filter(SCENARIO_f=='Historical_R17' )
+  
   g <- eval(parse(text=paste0(
     "ggplot(df_Graph_plot, aes(x=SCENARIO, y=",indicator, ", color=SCENARIO)) +
             geom_boxplot() +
             stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
             scale_color_manual(values=c(scenario_color)) ")))
   
-  df_Graph_plot_HisR <- df_Graph_plot %>% filter(SCENARIO_f=='Historical_R17' )
   vec_data <- eval(parse(text=paste0("df_Graph_plot_HisR$",indicator))) 
   window_range <- quantile(vec_data, probs=c(window_prob, (1-window_prob)), na.rm=T)
   g <- g + eval(parse(text=paste0( "annotate('rect', xmin=",1.8,", ymin=",window_range[1], 
                                    ", xmax=",2.2, ", ymax=",window_range[2], 
                                    ", alpha=.26, fill='#329262')"))) 
-  
   vec_data <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
   axis_range <- quantile(vec_data, probs=c(cutoff_prob, (1-cutoff_prob)), na.rm=T)
   g <- g + eval(parse(text=paste0( "ylim(",axis_range[1],", ",axis_range[2],")"))) 
-  g <-  g + guides(color=guide_legend(reverse=TRUE))
-  g <-  g + xlab('') + ylab(j_names_box[indicator]) + labs(color='シナリオ (a-d)共通')
+  g <- g + guides(color=guide_legend(reverse=TRUE))
+  g <- g + xlab('') + ylab(j_names_box[indicator]) + labs(color='シナリオ (a-d)共通')
   ggsave(file=paste("./png3/",filename,"_legend.png", sep=""), width=5.0, height=2.5, dpi=100) # 凡例出力（仮）
   g <-  g + theme_bw() + theme(legend.position="none", panel.grid=element_blank()) 
                        # legend.positionとpanel.grid の順番が逆だとNG
