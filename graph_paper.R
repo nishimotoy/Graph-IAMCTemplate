@@ -44,15 +44,13 @@ df_Graph_p <- df_Graph_p %>% mutate(Energy_Intensity_scaled=Energy_Intensity_sca
 df_Graph_p <- df_Graph_p %>% mutate(SCENARIO2 = recode(SCENARIO, 
                              Historical='歴史的推移\n(国レベル)', Historical_R17='歴史的推移', Baseline='ベースライン'))
 df_Graph_p <- df_Graph_p %>% mutate(SCENARIO_f=SCENARIO) %>% mutate(SCENARIO=SCENARIO2) 
-
 df_Graph_p <- df_Graph_p %>% mutate(REGION2 = recode(REGION
-, USA='アメリカ合衆国' , XE25='EU25' , XER='その他のヨーロッパ' , TUR='トルコ' 
-, XOC='オセアニア' , CHN='中国' , IND='インド' , JPN='日本' , XSE='東南アジア' 
-, XSA='その他のアジア' , CAN='カナダ' , BRA='ブラジル' , XLM='その他の南アメリカ' 
-, CIS='CIS諸国' , XME='中東' , XNF='北アフリカ' , XAF='その他のアフリカ' 
+                                                     , USA='アメリカ合衆国' , XE25='EU25' , XER='その他のヨーロッパ' , TUR='トルコ' 
+                                                     , XOC='オセアニア' , CHN='中国' , IND='インド' , JPN='日本' , XSE='東南アジア' 
+                                                     , XSA='その他のアジア' , CAN='カナダ' , BRA='ブラジル' , XLM='その他の南アメリカ' 
+                                                     , CIS='CIS諸国' , XME='中東' , XNF='北アフリカ' , XAF='その他のアフリカ' 
 ))
 df_Graph_p <- df_Graph_p %>% mutate(REGION_f=REGION) %>% mutate(REGION=REGION2) 
-
 
 df_Graph_global <- aggregate(CO2_fuel_Total_scaled~Year+SCENARIO_f+SCENARIO, df_Graph_p, sum) # 集約対象=REGION
 df_Graph_global_wide <- df_Graph_global %>% spread(key=SCENARIO_f, value=CO2_fuel_Total_scaled)
