@@ -7,19 +7,16 @@ y_names <- c('CO2_fuel_Total_scaled',
              c('ChangeRate_Energy_Intensity','Henkaryo_Carbon_Intensity','Henkaryo_Electricity_Rate_Total'),
              rep('Density',3))
 I_names <- c('エネルギー強度', '炭素強度', '電化率')
-I_names_attach <- c('の変化率 (%)', 'の変化量 (unit)', 'の変化量 (%)')
-I_names_C <- paste(I_names, I_names_attach, sep = "") 
+I_names_C <- c('エネルギー強度の変化率 (%)', '炭素強度の変化量', '電化率の変化量 (%)')
 y_names_J  <- c('エネルギー起源CO2排出量', rep(I_names,2), I_names_C, rep('確率密度',3), I_names_C)
 x_names_J  <- c('年', rep('GDP/人',3), rep('年',6), I_names_C)
-window_prob <- 0.05
-cutoff_prob <- 0.04
 
 y_names_box <- c('ChangeRate_Energy_Intensity','Henkaryo_Carbon_Intensity','Henkaryo_Electricity_Rate_Total',
                  'Henkaryo_Electricity_Rate_Ind','Henkaryo_Electricity_Rate_Tra',
                  'Henkaryo_Electricity_Rate_Res','Henkaryo_Electricity_Rate_Com')
 sec_names <- c('工業部門', '交通部門', '家庭部門', '業務部門')
-j_names_CR_sec  <- paste(sec_names, '電化率の変化量 (%)', sep = "　") 
-j_names_box　 <- c(I_names_C, j_names_CR_sec)
+j_names_C_sec  <- paste(sec_names, '電化率の変化量 (%)', sep = "　") 
+j_names_box　 <- c(I_names_C, j_names_C_sec)
 names(j_names_box) <- y_names_box  # j_names_box[names(j_names_box)]
 
 library(RColorBrewer)
@@ -27,6 +24,9 @@ region_color <- c(brewer.pal(5,"Dark2"),brewer.pal(5,"Set1"),brewer.pal(7,"Paire
 scenario_color <- c('#AAAA11', '#329262', '#FF9900', '#DD4477', '#651067', '#3366CC', '#84919E')
 scenario_shape <- c(19,4,22,23,24,25,1)
 scenario_size <- c(1,4,4,4,4,4,4)
+scenarionames_order <- c('歴史的推移\n(国レベル)','歴史的推移','ベースライン','2.5C','2C','1.5C','WB2C')
+window_prob <- 0.05
+cutoff_prob <- 0.03 
 
 y_names_tmp <- y_names[-which(y_names %in% 'Density')] 
 df_Graph_p <- df_Graph   %>% select('SCENARIO', 'REGION', unique(sort(c(x_names,y_names_tmp, y_names_box)))) 
@@ -94,7 +94,7 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
               scale_color_manual(values=c(rep(region_color,3))) +
               scale_shape_manual(values=scenario_shape) + 
               geom_line() +
-              scale_size_manual(values=c(5.0, rep(1.0, length(scenarionames_order)-1)))  # 無効?
+              scale_size_manual(values=scenario_size)  # 無効?
               "))) 
     plot(g)
     
@@ -155,15 +155,17 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
     
   }  # 確率密度分布　
   
-  if ( y_names_J[num]=='エネルギー起源CO2排出量' ) { 
-    ylab_name <- expression("エネルギー起源   " ~ CO[2] ~ "排出量  " ~ (Gt-CO[2])) #bquote内では 変数名は文字列とされる
-  } else if ( y_names_J[num]=='エネルギー強度' ) { ylab_name <- paste(y_names_J[num], '(MJ/$)')
-  } else if ( y_names_J[num]=='電化率' )       { ylab_name <- paste(y_names_J[num], '(%)')
-  } else if ( y_names_J[num]=='炭素強度' )     { ylab_name <- bquote('炭素強度　' ~ (10^-8 ~ CO[2]/J) )
-  } else if ( y_names_J[num]=='炭素強度の変化量 (unit)' ) { ylab_name <- bquote('炭素強度の変化量　' ~ (10^-8 ~ CO[2]/J) )
-  } else { ylab_name <-  y_names_J[num] }
-  
-  g <- g + xlab(x_names_J[num]) + ylab(ylab_name) + theme_bw() + theme(panel.grid = element_blank()) # + MyThemeLine
+  ylab_name <- y_names_J[num]
+  if ( ylab_name=='エネルギー起源CO2排出量' ) { 
+    ylab_name <- expression("エネルギー起源　" ~ CO[2] ~ "排出量  " ~ (Gt-CO[2])) #bquote内では 変数名は文字列とされる
+  } else if ( ylab_name=='エネルギー強度' ) { ylab_name <- paste(y_names_J[num], '(MJ/$)')
+  } else if ( ylab_name=='電化率' )       { ylab_name <- paste(y_names_J[num], '(%)')
+  } else if ( ylab_name=='炭素強度' )     { ylab_name <- bquote('炭素強度　' ~ (10^-8 ~ CO[2]/J) )
+  } else if ( ylab_name=='炭素強度の変化量' ) { ylab_name <- bquote('炭素強度の変化量　' ~ (10^-8 ~ CO[2]/J) )
+  } 
+  xlab_name <- x_names_J[num]
+  if ( xlab_name=='炭素強度の変化量' ) { xlab_name <- bquote('炭素強度の変化量　' ~ (10^-8 ~ CO[2]/J) ) }
+  g <- g + xlab(xlab_name) + ylab(ylab_name) + theme_bw() + theme(panel.grid = element_blank()) # + MyThemeLine
   plot(g)
   
   filename <- paste("JSCE",num,"_",x_names[num],"-",y_names[num], sep="") # 土木学会用出力
@@ -180,25 +182,36 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
 for (indicator in y_names_box) { # indicator # 箱ヒゲ図
   df_Graph_plot <- df_Graph_p 
   df_Graph_plot_HisR <- df_Graph_plot %>% filter(SCENARIO_f=='Historical_R17' )
-  
-  g <- eval(parse(text=paste0(
-    "ggplot(df_Graph_plot, aes(x=SCENARIO, y=",indicator, ", color=SCENARIO)) +
-            geom_boxplot() +
-            stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
-            scale_color_manual(values=c(scenario_color)) ")))
-  
+
   vec_data <- eval(parse(text=paste0("df_Graph_plot_HisR$",indicator))) 
   window_range <- quantile(vec_data, probs=c(window_prob, (1-window_prob)), na.rm=T)
-  g <- g + eval(parse(text=paste0( "annotate('rect', xmin=",1.8,", ymin=",window_range[1], 
-                                   ", xmax=",2.2, ", ymax=",window_range[2], 
-                                   ", alpha=.26, fill='#329262')"))) 
   vec_data <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
-  axis_range <- quantile(vec_data, probs=c(cutoff_prob, (1-cutoff_prob)), na.rm=T)
-  g <- g + eval(parse(text=paste0( "ylim(",axis_range[1],", ",axis_range[2],")"))) 
-  g <- g + guides(color=guide_legend(reverse=TRUE))
-  g <- g + xlab('') + ylab(j_names_box[indicator]) + labs(color='シナリオ (a-d)共通')
+  ylim_range <- quantile(vec_data, probs=c(cutoff_prob, (1-cutoff_prob)), na.rm=T)
+  
+  g <- eval(parse(text=paste0(
+           "ggplot(df_Graph_plot, aes(x=SCENARIO, y=",indicator, ", color=SCENARIO)) +
+            geom_boxplot() +
+            scale_x_discrete(limit=rev(scenarionames_order)) +  # 系列の順序 # x=SCENARIO 必要
+            stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
+            scale_color_manual(values=c(scenario_color)) +
+            coord_flip(ylim = ylim_range) + 
+            annotate('rect', alpha=.26, fill='#329262', 
+            xmin=",5.8, ", ymin=",window_range[1], ",xmax=",6.2, ", ymax=",window_range[2], ")
+    ")))
+  
+#  g <- g + eval(parse(text=paste0( "xlim(",axis_range[1],", ",axis_range[2],")"))) 
+#  g <- g + eval(parse(text=paste0( "annotate('rect', xmin=",1.8,", ymin=",window_range[1], 
+#                                   ", xmax=",2.2, ", ymax=",window_range[2], 
+#                                   ", alpha=.26, fill='#329262')"))) 
+  # g <- g + guides(color=guide_legend(reverse=TRUE))
+  ylab_name <- j_names_box[indicator]
+  if ( ylab_name=='炭素強度の変化量' ) { 
+    ylab_name <- bquote('炭素強度の変化量 ' ~ (10^-8 ~ CO[2]/J) )
+  } 
+  g <- g + xlab('') + ylab(ylab_name) + labs(color='シナリオ (a-d)共通')
+  plot(g)
   ggsave(file=paste("./png3/",filename,"_legend.png", sep=""), width=5.0, height=2.5, dpi=100) # 凡例出力（仮）
-  g <-  g + theme_bw() + theme(legend.position="none", panel.grid=element_blank()) 
+  g <- g + theme_bw() + theme(legend.position="none", panel.grid=element_blank()) 
                        # legend.positionとpanel.grid の順番が逆だとNG
   plot(g)
   num <- num+1
