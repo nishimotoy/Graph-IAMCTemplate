@@ -31,7 +31,7 @@ cutoff_prob <- 0.03
 y_names_tmp <- y_names[-which(y_names %in% 'Density')] 
 df_Graph_p <- df_Graph   %>% select('SCENARIO', 'REGION', unique(sort(c(x_names,y_names_tmp, y_names_box)))) 
 df_Graph_p <- df_Graph_p %>% mutate(Energy_Intensity_scaled=Energy_Intensity_scaled/1000 #kJ>MJ
-                      ) %>% mutate(Carbon_Intensity_scaled=Carbon_Intensity_scaled*100  #10^-6>10^-8
+                      ) %>% mutate(Carbon_Intensity_scaled=Carbon_Intensity_scaled  #kt-CO2/TJ = g-CO2/kJ
                       ) %>% mutate(Electricity_Rate_Total_scaled=Electricity_Rate_Total_scaled*100 #percent
                       ) %>% mutate(ChangeRate_Energy_Intensity=ChangeRate_Energy_Intensity*100 #percent
                       ) %>% mutate(Henkaryo_Carbon_Intensity=Henkaryo_Carbon_Intensity*100  #10^-6>10^-8
@@ -116,15 +116,12 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
     
     # 図3 (b1)～(b3)　窓の追加
     if ( num>=8 && num<=10 ) { # 窓の追加
-      
       vec_data <- eval(parse(text=paste0("df_Graph_plot_HisR$",y_names[num]))) 
       window_range <- quantile(vec_data, probs=c(window_prob, (1-window_prob)), na.rm=T)
       g <- g + eval(parse(text=paste0( "annotate('rect', xmin=",-Inf,", ymin=",window_range[1], 
                                        ", xmax=",Inf, ", ymax=",window_range[2], 
                                        ", alpha=.22, fill='#329262')"))) 
-      
     } # 窓の追加
-    # if ( num==9 ) { g <- g + ylim(-10, 5) } #炭素強度の例外処理
     plot(g)
     
   # 図3 (c1)～(c3)　確率密度分布
@@ -140,7 +137,6 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
             geom_density(size=0.7) +
             labs(color='シナリオ (c1-3)共通') +
             scale_color_manual(values=c(scenario_color)) +
-          # xlim(-10,10) + 
             ylab('Density (Counts scaled to 1) of Region-Year')")))
     
     vec_data <- eval(parse(text=paste0("df_Graph_plot_HisR$",indicator))) 
@@ -160,11 +156,11 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
     ylab_name <- expression("エネルギー起源　" ~ CO[2] ~ "排出量  " ~ (Gt-CO[2])) #bquote内では 変数名は文字列とされる
   } else if ( ylab_name=='エネルギー強度' ) { ylab_name <- paste(y_names_J[num], '(MJ/$)')
   } else if ( ylab_name=='電化率' )       { ylab_name <- paste(y_names_J[num], '(%)')
-  } else if ( ylab_name=='炭素強度' )     { ylab_name <- bquote('炭素強度　' ~ (10^-8 ~ CO[2]/J) )
-  } else if ( ylab_name=='炭素強度の変化量' ) { ylab_name <- bquote('炭素強度の変化量　' ~ (10^-8 ~ CO[2]/J) )
+  } else if ( ylab_name=='炭素強度' )     { ylab_name <- expression('炭素強度　' ~ (g-CO[2]/kJ))
+  } else if ( ylab_name=='炭素強度の変化量' ) { ylab_name <- expression('炭素強度の変化量　' ~ (g-CO[2]/kJ))
   } 
   xlab_name <- x_names_J[num]
-  if ( xlab_name=='炭素強度の変化量' ) { xlab_name <- bquote('炭素強度の変化量　' ~ (10^-8 ~ CO[2]/J) ) }
+  if ( xlab_name=='炭素強度の変化量' ) { xlab_name <- expression('炭素強度の変化量　' ~ (g-CO[2]/kJ)) }
   g <- g + xlab(xlab_name) + ylab(ylab_name) + theme_bw() + theme(panel.grid = element_blank()) # + MyThemeLine
   plot(g)
   
@@ -206,7 +202,7 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
   # g <- g + guides(color=guide_legend(reverse=TRUE))
   ylab_name <- j_names_box[indicator]
   if ( ylab_name=='炭素強度の変化量' ) { 
-    ylab_name <- bquote('炭素強度の変化量 ' ~ (10^-8 ~ CO[2]/J) )
+    ylab_name <- expression('炭素強度の変化量　' ~ (g-CO[2]/kJ))
   } 
   g <- g + xlab('') + ylab(ylab_name) + labs(color='シナリオ (a-d)共通')
   plot(g)
