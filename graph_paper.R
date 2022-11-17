@@ -42,8 +42,17 @@ df_Graph_p <- df_Graph_p %>% mutate(Energy_Intensity_scaled=Energy_Intensity_sca
                       ) %>% mutate(Henkaryo_Electricity_Rate_Com=Henkaryo_Electricity_Rate_Com*100 #percent
                       ) # which
 df_Graph_p <- df_Graph_p %>% mutate(SCENARIO2 = recode(SCENARIO, 
-                             Historical='歴史的推移(国別)', Historical_R17='歴史的推移', Baseline='ベースライン'))
+                             Historical='歴史的推移\n(国レベル)', Historical_R17='歴史的推移', Baseline='ベースライン'))
 df_Graph_p <- df_Graph_p %>% mutate(SCENARIO_f=SCENARIO) %>% mutate(SCENARIO=SCENARIO2) 
+
+df_Graph_p <- df_Graph_p %>% mutate(REGION2 = recode(REGION
+, USA='アメリカ合衆国' , XE25='EU25' , XER='その他のヨーロッパ' , TUR='トルコ' 
+, XOC='オセアニア' , CHN='中国' , IND='インド' , JPN='日本' , XSE='東南アジア' 
+, XSA='その他のアジア' , CAN='カナダ' , BRA='ブラジル' , XLM='その他の南アメリカ' 
+, CIS='CIS諸国' , XME='中東' , XNF='北アフリカ' , XAF='その他のアフリカ' 
+))
+df_Graph_p <- df_Graph_p %>% mutate(REGION_f=REGION) %>% mutate(REGION=REGION2) 
+
 
 df_Graph_global <- aggregate(CO2_fuel_Total_scaled~Year+SCENARIO_f+SCENARIO, df_Graph_p, sum) # 集約対象=REGION
 df_Graph_global_wide <- df_Graph_global %>% spread(key=SCENARIO_f, value=CO2_fuel_Total_scaled)
@@ -81,12 +90,14 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
     g <- eval(parse(text=paste0("
               ggplot(df_Graph_plot, aes(x=",x_names[num],",y=",y_names[num], 
                                 ",color=REGION, shape=SCENARIO)) +
-              geom_line() +
               geom_point() + 
               labs(color='地域 (a-c)共通') +
-              labs(shape='シナリオ (a-c)共通') +
+              labs(shape='シナリオ (a-c)共通',size='シナリオ (a-c)共通') +
               scale_color_manual(values=c(rep(region_color,3))) +
-              scale_shape_manual(values=scenario_shape)"))) # 'Historical_R17', 'Baseline'
+              scale_shape_manual(values=scenario_shape) + 
+              geom_line() +
+              scale_size_manual(values=c(5.0, rep(1.0, length(scenarionames_order)-1)))  # 無効?
+              "))) 
     plot(g)
     
   # 図3 (a1)～(b3)　年 vs 指標・その変化率/変化量
@@ -133,16 +144,15 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
             scale_color_manual(values=c(scenario_color)) +
           # xlim(-10,10) + 
             ylab('Density (Counts scaled to 1) of Region-Year')")))
-
-    vec_data <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
-    axis_range <- quantile(vec_data, probs=c(cutoff_prob, (1-cutoff_prob)), na.rm=T)
-    g <- g + eval(parse(text=paste0( "xlim(",axis_range[1],", ",axis_range[2],")"))) 
     
     vec_data <- eval(parse(text=paste0("df_Graph_plot_HisR$",indicator))) 
     window_range <- quantile(vec_data, probs=c(window_prob, (1-window_prob)), na.rm=T)
     g <- g + eval(parse(text=paste0( "annotate('rect', xmin=",window_range[1],", ymin=",-Inf, 
                                      ", xmax=",window_range[2], ", ymax=",Inf, 
                                      ", alpha=.22, fill='#329262')"))) 
+    vec_data <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
+    axis_range <- quantile(vec_data, probs=c(cutoff_prob, (1-cutoff_prob)), na.rm=T)
+    g <- g + eval(parse(text=paste0( "xlim(",axis_range[1],", ",axis_range[2],")"))) 
     plot(g)
     
   }  # 確率密度分布　
@@ -172,7 +182,7 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
 
 for (indicator in y_names_box) { # indicator # 箱ヒゲ図
   df_Graph_plot <- df_Graph_p 
-  
+
   g <- eval(parse(text=paste0(
     "ggplot(df_Graph_plot, aes(x=SCENARIO, y=",indicator, ", color=SCENARIO)) +
             geom_boxplot() +
@@ -181,14 +191,17 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
   
   df_Graph_plot_HisR <- df_Graph_plot %>% filter(SCENARIO_f=='Historical_R17' )
   vec_data <- eval(parse(text=paste0("df_Graph_plot_HisR$",indicator))) 
-  axis_range <- quantile(vec_data, probs=c(cutoff_prob, (1-cutoff_prob)), na.rm=T)
-  g <- g + eval(parse(text=paste0( "annotate('rect', xmin=",1.8,", ymin=",axis_range[1], 
-                                   ", xmax=",2.2, ", ymax=",axis_range[2], 
+  window_range <- quantile(vec_data, probs=c(window_prob, (1-window_prob)), na.rm=T)
+  g <- g + eval(parse(text=paste0( "annotate('rect', xmin=",1.8,", ymin=",window_range[1], 
+                                   ", xmax=",2.2, ", ymax=",window_range[2], 
                                    ", alpha=.26, fill='#329262')"))) 
   
-  g <-  g + coord_flip(ylim = c(-10, 10)) + guides(color=guide_legend(reverse=TRUE))
+  vec_data <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
+  axis_range <- quantile(vec_data, probs=c(cutoff_prob, (1-cutoff_prob)), na.rm=T)
+  g <- g + eval(parse(text=paste0( "ylim(",axis_range[1],", ",axis_range[2],")"))) 
+  g <-  g + guides(color=guide_legend(reverse=TRUE))
   g <-  g + xlab('') + ylab(j_names_box[indicator]) + labs(color='シナリオ (a-d)共通')
-  ggsave(file=paste("./png3/",filename,"_legend.png", sep=""), width=4, height=2.5, dpi=100) # 凡例出力（仮）
+  ggsave(file=paste("./png3/",filename,"_legend.png", sep=""), width=5.0, height=2.5, dpi=100) # 凡例出力（仮）
   g <-  g + theme_bw() + theme(legend.position="none", panel.grid=element_blank()) 
                        # legend.positionとpanel.grid の順番が逆だとNG
   plot(g)
