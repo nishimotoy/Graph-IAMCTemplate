@@ -246,10 +246,10 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理1   # テスト後に戻す (i i
     
     df_Graph <- df_Graph %>% group_by(SCENARIO,Country) %>% arrange(SCENARIO,Country,Year)
     df_Graph<- eval(parse(text=paste0(
-      "df_Graph %>% mutate(",indicator,"_scaled=",indicator,"/",indicator,"[Year==0]*",indicator,"[Year==1]
-              ) %>% mutate(",numerator,"_scaled=",numerator,"/",numerator,"[Year==0]*",numerator,"[Year==1]
-              ) %>% mutate(",denominator,"_scaled=",denominator,"/",denominator,"[Year==0]*",denominator,"[Year==1])"
-    )))                     # indicator_scaled = I(t,F/H)/I(t=BaseYear,F/H)*I(t=BaseYear,H)  # 基準年の Historical に合わせる
+      "df_Graph %>% mutate(",numerator,"_scaled=",numerator,"/",numerator,"[Year==0]*",numerator,"[Year==1]
+              ) %>% mutate(",denominator,"_scaled=",denominator,"/",denominator,"[Year==0]*",denominator,"[Year==1]
+              ) %>% mutate(",indicator,"_scaled=",numerator,"_scaled/",denominator,"_scaled
+              )")))                      # _scaled=基準年の Historical に合わせる
     while (0) {  # 基準年値=1 とする場合（このloopを活かすと直前の上書き）
       df_Graph<- eval(parse(text=paste0(
         "df_Graph %>% mutate(",indicator,"_scaled=",indicator,"/",indicator,"[Year==0]
