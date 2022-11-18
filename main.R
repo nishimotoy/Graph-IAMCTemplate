@@ -264,15 +264,14 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理1   # テスト後に戻す (i i
 } # 指標毎の処理1
 df_Graph$SCENARIO <- factor(df_Graph$SCENARIO, levels=scenarionames_order)
 #        levels=c('Historical','Historical_R17','Baseline','2.5C','2C','1.5C','WB2C'))
-df_Graph <- df_Graph %>% group_by(SCENARIO,Country) %>% arrange(SCENARIO,Country,Year)
 write_csv(df_Graph, "./df_Graph_afterfulljoin.csv") 
 df_Graph <- df_Graph %>% filter(Year!=0 & Year!=1) 
+df_Graph <- df_Graph %>% group_by(SCENARIO,Country) %>% arrange(SCENARIO,Country,Year)
 
 # Change rate ------------------------------------------------------
 for (i in 1:ncol(df_vni)) { # 指標毎の処理2   # テスト後に戻す (i in 1:ncol(df_vni))
 
   indicator   <- df_vni[1,i]
-  
   # 指標の変化率（t年比）　
   df_Graph <- eval(parse(text=paste0(
         "df_Graph %>%  mutate(ChangeRateBY_",indicator,
@@ -292,12 +291,26 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理2   # テスト後に戻す (i i
  #    /(abs(",indicator,")+abs(lag(",indicator,",n=1)))*2     ABS2
  #    /(sqrt(",indicator,"^2)+sqrt(lag(",indicator,",n=1)^2))*2 
 
-  # 指標の変化量（前の期からの変化量）　Henkaryo_Carbon_Intensity, Henkaryo_Electricity_Rate_Total
+  while (0) { # 指標の変化量（前の期からの変化量）# 前ver
   df_Graph <- eval(parse(text=paste0(
     "df_Graph %>%  mutate(Henkaryo_",indicator,
     "=(",indicator,"_scaled-lag(",indicator,"_scaled, n=1))/(Year-lag(Year, n=1)))"
                   )))
+  } #  指標の変化量 # 前ver
 } # 指標毎の処理2
+
+for (i in 1:ncol(df_vni)) { # 指標毎の処理3  (新)変化量
+  indicator   <- df_vni[1,i]
+  numerator   <- df_vni[2,i]
+  denominator <- df_vni[3,i]
+  
+  # 変化量 Henkaryo_I(t) = [numerator(t)-numerator(t-1)]/denominator(t-1)
+  df_Graph<- eval(parse(text=paste0(
+    "df_Graph %>% mutate(Henkaryo_",indicator,
+    "=(",numerator,"_scaled-lag(",numerator,"_scaled, n=1))
+      /lag(",denominator,"_scaled, n=1)/(Year-lag(Year, n=1))
+        )"))) 
+} # 指標毎の処理3
 
 while (0) { # 正負切替直後のna置換 <炭素強度のみ>
     df_Graph <- df_Graph %>% mutate(CR_Carbon_Intensity_inv
