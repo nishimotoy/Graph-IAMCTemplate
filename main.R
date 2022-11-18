@@ -35,6 +35,9 @@ indicators <- c(  # 出力対象の指標
   ,'Henkaryo_Energy_Intensity','Henkaryo_Carbon_Intensity','Henkaryo_Electricity_Rate_Total'
   ,'Henkaryo_Electricity_Rate_Ind','Henkaryo_Electricity_Rate_Tra'
   ,'Henkaryo_Electricity_Rate_Res','Henkaryo_Electricity_Rate_Com'
+  ,'HenkaryoBY_Energy_Intensity','HenkaryoBY_Carbon_Intensity','HenkaryoBY_Electricity_Rate_Total'
+  ,'HenkaryoBY_Electricity_Rate_Ind','HenkaryoBY_Electricity_Rate_Tra'
+  ,'HenkaryoBY_Electricity_Rate_Res','HenkaryoBY_Electricity_Rate_Com'
   ,'ChangeRate_Energy_Intensity','ChangeRate_Carbon_Intensity','ChangeRate_Electricity_Rate_Total'
   ,'ChangeRate_Electricity_Rate_Ind','ChangeRate_Electricity_Rate_Tra'
   ,'ChangeRate_Electricity_Rate_Res','ChangeRate_Electricity_Rate_Com'
@@ -294,7 +297,15 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理2   # テスト後に戻す (i i
     "df_Graph %>%  mutate(Henkaryo_",indicator,
     "=(",indicator,"_scaled-lag(",indicator,"_scaled, n=1))/(Year-lag(Year, n=1))
                   )")))
-  
+
+  while (0) { # 変化量を基準年値で割る 
+    df_Graph <- eval(parse(text=paste0(
+      "df_Graph %>%  mutate(HenkaryoBY_",indicator,
+      "=Henkaryo_",indicator,"/",indicator,"[Year==0]
+                  )")))
+    
+  }
+    
 } # 指標毎の処理2
 
 while (0) { # 正負切替直後のna置換 <炭素強度のみ>
