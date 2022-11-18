@@ -298,7 +298,7 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理2   # テスト後に戻す (i i
     "=(",indicator,"_scaled-lag(",indicator,"_scaled, n=1))/(Year-lag(Year, n=1))
                   )")))
 
-  while (0) { # 変化量を基準年値で割る 
+  while (1) { # 変化量を基準年値で割る 
     df_Graph <- eval(parse(text=paste0(
       "df_Graph %>%  mutate(HenkaryoBY_",indicator,
       "=Henkaryo_",indicator,"/",indicator,"[Year==0]
