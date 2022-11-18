@@ -62,7 +62,7 @@ unlink("./png3", recursive=T)
 if(!dir.exists("./png2")){ dir.create("./png2") }
 if(!dir.exists("./png3")){ dir.create("./png3") }
 
-pdf(file=paste("./png2/JSCE_Graph.pdf", sep=""))    
+# pdf(file=paste("./png2/JSCE_Graph.pdf", sep=""))    
 for (num in 1:length(x_names)) { #num # XYグラフの出力
 
   # 図1　世界の排出量  
@@ -75,10 +75,11 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
                                 ", color=SCENARIO, size=SCENARIO)) +
               geom_line() +
               labs(color='シナリオ',size='シナリオ') +  # 凡例を指定しながらまとめる
+              scale_x_continuous(breaks=seq(1980,2100,30)) +
               scale_color_manual(values=c(scenario_color[-1]))+
               scale_size_manual(values=c(2.2, rep(1.2, length(df_Graph_plot$SCENARIO)-1))) 
       "))) 
-    plot(g)
+    # plot(g)
     
   # 図2　GDP/人 vs 指標
   } else if ( num>=2 && num<=4 ) { 
@@ -96,7 +97,7 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
               geom_line() +
               scale_size_manual(values=scenario_size)  # 無効?
               "))) 
-    plot(g)
+    # plot(g)
     
   # 図3 (a1)～(b3)　年 vs 指標・その変化率/変化量
   } else if ( num>=5 && num<=10 ) { # XY散布図 by 17地域 vs 17地域
@@ -111,6 +112,7 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
               geom_line() +
               labs(color='地域 (a1-b3)共通') +
               labs(shape='シナリオ (a1-b3)共通') +
+              scale_x_continuous(breaks=seq(1980,2100,30)) +
               scale_color_manual(values=c(rep(region_color,3))) +
               scale_shape_manual(values=scenario_shape)"))) # SCENARIO数
     
@@ -122,7 +124,7 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
                                        ", xmax=",Inf, ", ymax=",window_range[2], 
                                        ", alpha=.22, fill='#329262')"))) 
     } # 窓の追加
-    plot(g)
+    # plot(g)
     
   # 図3 (c1)～(c3)　確率密度分布
   } else if ( num>=11 && num<=13 ) { # 確率密度分布
@@ -147,13 +149,13 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
     vec_data <- eval(parse(text=paste0("df_Graph_plot$",indicator))) 
     axis_range <- quantile(vec_data, probs=c(cutoff_prob, (1-cutoff_prob)), na.rm=T)
     g <- g + eval(parse(text=paste0( "xlim(",axis_range[1],", ",axis_range[2],")"))) 
-    plot(g)
+    # plot(g)
     
   }  # 確率密度分布　
   
   ylab_name <- y_names_J[num]
   if ( ylab_name=='エネルギー起源CO2排出量' ) { 
-    ylab_name <- expression("エネルギー起源　" ~ CO[2] ~ "排出量  " ~ (Gt-CO[2])) #bquote内では 変数名は文字列とされる
+    ylab_name <- expression("エネルギー起源　" ~ CO[2] ~ "排出量  " ~ (Gt-CO[2])) 
   } else if ( ylab_name=='エネルギー強度' ) { ylab_name <- paste(y_names_J[num], '(MJ/$)')
   } else if ( ylab_name=='電化率' )       { ylab_name <- paste(y_names_J[num], '(%)')
   } else if ( ylab_name=='炭素強度' )     { ylab_name <- expression('炭素強度　' ~ (g-CO[2]/kJ))
@@ -162,7 +164,7 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
   xlab_name <- x_names_J[num]
   if ( xlab_name=='炭素強度の変化量' ) { xlab_name <- expression('炭素強度の変化量　' ~ (g-CO[2]/kJ)) }
   g <- g + xlab(xlab_name) + ylab(ylab_name) + theme_bw() + theme(panel.grid = element_blank()) # + MyThemeLine
-  plot(g)
+  # plot(g)
   
   filename <- paste("JSCE",num,"_",x_names[num],"-",y_names[num], sep="") # 土木学会用出力
   if ( num>=11 && num<=13 ) { 
@@ -190,7 +192,8 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
             scale_x_discrete(limit=rev(scenarionames_order)) +  # 系列の順序 # x=SCENARIO 必要
             stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
             scale_color_manual(values=c(scenario_color)) +
-            coord_flip(ylim = ylim_range) + 
+          # coord_flip(ylim = ylim_range) + 
+            coord_flip(ylim = c(-2.0, 3.0)) + 
             annotate('rect', alpha=.26, fill='#329262', 
             xmin=",5.8, ", ymin=",window_range[1], ",xmax=",6.2, ", ymax=",window_range[2], ")
     ")))
@@ -205,18 +208,18 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
     ylab_name <- expression('炭素強度の変化量　' ~ (g-CO[2]/kJ))
   } 
   g <- g + xlab('') + ylab(ylab_name) + labs(color='シナリオ (a-d)共通')
-  plot(g)
+  # plot(g)
   ggsave(file=paste("./png3/",filename,"_legend.png", sep=""), width=5.0, height=2.5, dpi=100) # 凡例出力（仮）
   g <- g + theme_bw() + theme(legend.position="none", panel.grid=element_blank()) 
                        # legend.positionとpanel.grid の順番が逆だとNG
-  plot(g)
+  # plot(g)
   num <- num+1
   filename <- paste("JSCE",num,"_", indicator, sep="") # 土木学会用出力
   ggsave(file=paste("./png2/",filename,".png", sep=""), width=4.55, height=2, dpi=100) # 箱ヒゲ図 width=4.56
 
 } # indicator # 箱ヒゲ図
 
-dev.off() 
+# dev.off() 
 
 
 
