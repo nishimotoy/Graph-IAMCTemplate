@@ -297,17 +297,6 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理2   # テスト後に戻す (i i
     "df_Graph %>%  mutate(Henkaryo_",indicator,
     "=(",indicator,"_scaled-lag(",indicator,"_scaled, n=1))/(Year-lag(Year, n=1)))"
                   )))
-
-  while (0) { # 変化量を基準年値で割る   # 未解決 incomplete 
-    df_Graph_BaseYear <- df_Graph %>% filter(Year==BaseYear) %>% mutate(Year=0)
-    df_Graph <- df_Graph %>% rbind(df_Graph_BaseYear)
-    df_Graph <- eval(parse(text=paste0(
-      "df_Graph %>% select(HenkaryoBY_",indicator,
-      " =if_else(anyNA(",indicator,"[Year==0]), NA_real_,   # is.na(",indicator,"[Year==0])
-        Henkaryo_",indicator,"/",indicator,"[Year==0]))"
-    )))
-  }
-    
 } # 指標毎の処理2
 
 while (0) { # 正負切替直後のna置換 <炭素強度のみ>
