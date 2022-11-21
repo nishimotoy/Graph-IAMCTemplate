@@ -290,21 +290,18 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理2   # テスト後に戻す (i i
  #    /(abs(",indicator,")+abs(lag(",indicator,",n=1)))*2     ABS2
  #    /(sqrt(",indicator,"^2)+sqrt(lag(",indicator,",n=1)^2))*2 
 
-  while (0) { # 指標の変化量（旧式）
   df_Graph <- eval(parse(text=paste0(
     "df_Graph %>%  mutate(Henkaryo_",indicator,
     "=(",indicator,"_scaled-lag(",indicator,"_scaled, n=1))/(Year-lag(Year, n=1)))"
     )))
-  } # 指標の変化量（旧式）
 } # 指標毎の処理2
 
 # Henkaryo ------------------------------------------------------
-for (i in 1:ncol(df_vni)) { # 指標毎の処理3
   indicator   <- df_vni[1,i]
   numerator   <- df_vni[2,i]
   denominator <- df_vni[3,i]
   
-  # 指標の変化量（新式）　
+  # 指標の変化量（新式） Henkaryo_I(t) = [numerator(t)-numerator(t-1)]/denominator(t-1)
   df_Graph <- eval(parse(text=paste0(
     "df_Graph %>% mutate(Henkaryo_",indicator,
     "=(",numerator,"_scaled-lag(",numerator,"_scaled ,n=1))
