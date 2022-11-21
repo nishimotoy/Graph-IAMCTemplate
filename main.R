@@ -299,17 +299,6 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理2   # テスト後に戻す (i i
                   )))
 } # 指標毎の処理2
 
-while (0) { # 正負切替直後のna置換 <炭素強度のみ>
-    df_Graph <- df_Graph %>% mutate(CR_Carbon_Intensity_inv
-      =if_else(condition=(Carbon_Intensity*lag(Carbon_Intensity,n=1))<0, 
-               true= NA_real_, 
-               false=ChangeRate_Carbon_Intensity)
-        ) %>% mutate(ChangeRate_Carbon_Intensity=CR_Carbon_Intensity_inv)
-#   df_check <- df_Graph %>% select(SCENARIO,Country,Year,ChangeRate_Carbon_Intensity,CR_Carbon_Intensity_inv) 
-#   write_csv(df_check, "./df_check.csv") 
-
-} # 正負切替直後のna置換
-
 df_Graph <- df_Graph %>% ungroup() %>% arrange(SCENARIO,Country,Year)
 # df_Graph <- df_Graph %>% ungroup() %>% group_by(SCENARIO,REGION) %>% arrange(SCENARIO,Country,Year)
 # View(df_Graph)
