@@ -275,9 +275,7 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理2   # テスト後に戻す (i i
   
   # 指標の変化率（t年比）　
   df_Graph <- eval(parse(text=paste0(
-        "df_Graph %>%  mutate(ChangeRateBY_",indicator,
-        "=(",indicator,"_scaled-lag(",indicator,"_scaled, n=1))/(Year-lag(Year, n=1))
-                ) %>% mutate(ChangeRate_",indicator,
+        "df_Graph %>% mutate(ChangeRate_",indicator,
         "=(",indicator,"-lag(",indicator,",n=1))
               /abs(lag(",indicator,",n=1))
               /(Year-lag(Year, n=1))
