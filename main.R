@@ -8,7 +8,7 @@ root <- 'C:/_Nishimoto/R/WBAL_R02/'
 Titlerow1 <- c('MODEL','SCENARIO','REGION','VARIABLE','UNIT')
 Titlerow2 <- c('REGION','Country','VARIABLE','SCENARIO')
 Titlerow3 <- c('SCENARIO','Country','REGION','Year')
-scenarionames_order <- c('Historical','Historical_R17','Baseline','2.5C','2C','1.5C','WB2C')
+scenarionames_order <- c('Historical','Historical_R17','Baseline','2.5C','2C','1.5C','WB2C') # ,'AnnexB'
 BaseYear <- 2010  # %>% as.numeric()  # 基準年値
 Sample_Country <- c('Former Soviet Union','Former Yugoslavia','South Sudan','Bosnia and Herzegovina')  # GDP(2010)が無い国
 Interpolate_NA <- 'fill'   # 'fill_latest_or_first_existing_value'
@@ -62,6 +62,10 @@ df_CC <- rename(df_CC, 'Country'='IEA国名')
 Region_Code        <- df_CC$AIM17
 names(Region_Code) <- df_CC$Country
 # Region_Code[names(Region_Code)]
+B_flag <- as.character(df_CC$AnnexB)
+names(B_flag) <- df_CC$Country
+# B[names(B)]
+# Usage : B[['Japan']] > 1
 
 # タイトル行（ダミー）の作成
 df_past <- read_csv("./POP_IEA.csv") 
@@ -318,6 +322,15 @@ df_Graph <- df_Graph %>% ungroup() %>% arrange(SCENARIO,Country,Year)
 # View(df_Graph)
 write_csv(df_Graph, "./df_Graph.csv") 
 
+# Annex-B ------------------------------------------------------
+df_Graph_B <- df_Graph %>% filter(SCENARIO=='Historical')
+df_Graph_B <- df_Graph_B %>% mutate('B_flag'=B_flag[df_Graph_B$Country]
+                       ) %>% drop_na('B_flag'
+                       ) %>% select(-'B_flag'
+                       ) %>% mutate(SCENARIO='Historical_B')
+df_Graph <- df_Graph %>% rbind(df_Graph_B)
+scenarionames_order[length(scenarionames_order)+1] <- c('Historical_B')
+                                  
 #Summary ------------------------------------------------------
 
 # ここで置換 df_Graph のうち Inf を NA に
