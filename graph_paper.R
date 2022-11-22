@@ -22,7 +22,8 @@ names(j_names_box) <- y_names_box  # j_names_box[names(j_names_box)]
 library(RColorBrewer)
 region_color <- c(brewer.pal(5,"Dark2"),brewer.pal(5,"Set1"),brewer.pal(7,"Paired"))  
 scenario_color <- c('#AAAA11', '#329262', '#FF9900', '#DD4477', '#651067', '#3366CC', '#84919E')
-scenario_shape <- c(19,4,22,23,24,25,1)
+scenario_shape <- c(19,21,22,23,24,25,1)
+scenario_fill <- c('white','red','white','white','white','white','white')
 scenario_size <- c(1,4,4,4,4,4,4)
 scenarionames_order <- c('歴史的推移\n(国レベル)','歴史的推移','ベースライン','2.5C','2C','1.5C','WB2C')
 window_prob <- 0.05
@@ -89,13 +90,14 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
     g <- eval(parse(text=paste0("
               ggplot(df_Graph_plot, aes(x=",x_names[num],",y=",y_names[num], 
                                 ",color=REGION, shape=SCENARIO)) +
+              geom_line() +
+              scale_size_manual(values=c(2.2, rep(1.2, length(df_Graph_plot$SCENARIO)-1))) +  # 無効?
               geom_point() + 
               labs(color='地域 (a-c)共通') +
               labs(shape='シナリオ (a-c)共通',size='シナリオ (a-c)共通') +
               scale_color_manual(values=c(rep(region_color,3))) +
               scale_shape_manual(values=scenario_shape) + 
-              geom_line() +
-              scale_size_manual(values=scenario_size)  # 無効?
+              scale_fill_manual(values=scenario_fill)  # 無効?
               "))) 
     # plot(g)
     
