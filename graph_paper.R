@@ -21,10 +21,10 @@ names(j_names_box) <- y_names_box  # j_names_box[names(j_names_box)]
 
 library(RColorBrewer)
 region_color <- c(brewer.pal(5,"Dark2"),brewer.pal(5,"Set1"),brewer.pal(7,"Paired"))  
-scenario_color <- c('#AAAA11', '#329262', '#FF9900', '#DD4477', '#651067', '#3366CC', '#84919E')
-scenario_shape <- c(19,21,22,23,24,25,1)
-scenario_fill <- c('white','red','white','white','white','white','white')
-scenario_size <- c(1,4,4,4,4,4,4)
+scenario_color <- c('#AAAA11', '#329262', '#FF9900', '#DD4477', '#651067', '#3366CC', '#84919E','#AAAA11')
+scenario_shape <- c(19,21,22,23,24,25,1,19)
+scenario_fill <- c('white','red','white','white','white','white','white','white')
+scenario_size <- c(1,4,4,4,4,4,4,1)
 scenarionames_order <- c('歴史的推移\n(国レベル)','歴史的推移','ベースライン','2.5C','2C','1.5C','WB2C','歴史的推移\n(Annex-B)')
 window_prob <- 0.05
 cutoff_prob <- 0.03 
