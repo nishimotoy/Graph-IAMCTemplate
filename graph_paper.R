@@ -26,6 +26,8 @@ scenario_shape <- c(19,21,22,23,24,25,1,19)
 scenario_fill <- c('white','red','white','white','white','white','white','white')
 scenario_size <- c(1,4,4,4,4,4,4,1)
 scenarionames_order <- c('歴史的推移\n(国レベル)','歴史的推移','ベースライン','2.5C','2C','1.5C','WB2C','歴史的推移\n(Annex-B)')
+belt <- '歴史的推移'
+belt_whinch <- length(scenarionames_order) - which(scenarionames_order==belt) +1
 window_prob <- 0.05
 cutoff_prob <- 0.03 
 
@@ -200,6 +202,8 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
             coord_flip(ylim = ylim_range) + 
           # coord_flip(ylim = c(-2.0, 3.0)) + 
             annotate('rect', alpha=.26, fill='#329262', 
+            xmin=", (belt_whinch-0.2), ",xmax=",(belt_whinch+0.2), 
+            ", ymin=",window_range[1], ", ymax=",window_range[2], ")
     ")))
   
 #  g <- g + eval(parse(text=paste0( "xlim(",axis_range[1],", ",axis_range[2],")"))) 
