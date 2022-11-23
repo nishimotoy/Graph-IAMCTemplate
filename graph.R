@@ -7,9 +7,12 @@ for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
   ) # rep('REGION',length(indicators)),
   y_names <- c(rep(indicators,2)) #3
   # scenario_color <- c('#3366CC', '#66AA00', '#0099C6', '#DD4477', '#BB2E2E', '#990099', '#651067', '#22AA99')
-  scenario_color <- c('#AAAA11', '#329262', '#FF9900', '#DD4477', '#651067', '#3366CC', '#84919E')
-  scenario_shape1 <- c(19,19,21,21,21,21,21)
-  scenario_shape2 <- c(19,21,22,23,24,25,1)
+  scenario_color <- c('#AAAA11', '#329262', '#FF9900', '#DD4477', '#651067', '#3366CC', '#84919E', '#dda0dd') # df_Graph登場順
+  scenario_shape <- c(19,21,22,23,24,25,1,19)
+  scenario_fill <- c('white','red','white','white','white','white','white','white')
+  scenario_size <- c(1,4,4,4,4,4,4,1)
+  scenario_shape1 <- c(19,19,21,21,21,21,21,19)
+  scenario_shape2 <- c(19,21,22,23,24,25,1,19)
   axis_cutoff_prob <- 0.01   # 軸の表示において切り捨てる分位範囲 （0.01: 両端1% cutoff）
   
   # scenarionames <- levels(df_Graph$SCENARIO)    # c('Baseline','2C','1.5C','2.5C','WB2C') # 'Historical'
