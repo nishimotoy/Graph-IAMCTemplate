@@ -26,8 +26,8 @@ scenario_color <- c('#AAAA11', '#329262', '#FF9900', '#DD4477', '#651067', '#336
 scenario_shape <- c(19,21,22,23,24,25,1,19)
 scenario_fill <- c('white','red','white','white','white','white','white','white')
 scenario_size <- c(1,4,4,4,4,4,4,1)
-scenarionames_order <- c('歴史的推移\n(国レベル)','(Annex-B)','(17地域)','ベースライン','2.5C','2C','1.5C','WB2C')
-belt <- '(17地域)'
+scenarionames_order <- c('歴史的推移\n(国レベル)','歴史的推移','ベースライン','2.5C','2C','1.5C','WB2C','Annex-B\n(1995-2015)')
+belt <- '歴史的推移'
 belt_whinch <- length(scenarionames_order) - which(scenarionames_order==belt) +1
 window_prob <- 0.05
 cutoff_prob <- 0.03 
@@ -47,8 +47,8 @@ df_Graph_p <- df_Graph_p %>% mutate(Energy_Intensity_scaled=Energy_Intensity_sca
                       ) # which
 df_Graph_p <- df_Graph_p %>% mutate(SCENARIO2 = recode(SCENARIO, 
                              Historical='歴史的推移\n(国レベル)', 
-                             Historical_R17='(17地域)', 
-                             Historical_B='(Annex-B)', 
+                             Historical_R17='歴史的推移', 
+                             Historical_B='Annex-B\n(1995-2015)', 
                              Baseline='ベースライン'))
 df_Graph_p <- df_Graph_p %>% mutate(SCENARIO_f=SCENARIO) %>% mutate(SCENARIO=SCENARIO2) 
 df_Graph_p <- df_Graph_p %>% mutate(REGION2 = recode(REGION
@@ -146,7 +146,7 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
       "ggplot(df_Graph_plot, aes(x=",indicator, ",color=SCENARIO)) +
             geom_density(size=0.7) +
             labs(color='シナリオ (c1-3)共通') +
-            scale_color_manual(values=c(scenario_color)) +
+            scale_color_manual(values=c(scenario_color))+
             ylab('Density (Counts scaled to 1) of Region-Year')")))
     
     vec_data <- eval(parse(text=paste0("df_Graph_plot_HisR$",indicator))) 
