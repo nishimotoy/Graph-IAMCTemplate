@@ -327,6 +327,7 @@ df_Graph_B <- df_Graph %>% filter(SCENARIO=='Historical')
 df_Graph_B <- df_Graph_B %>% mutate('B_flag'=B_flag[df_Graph_B$Country]
                        ) %>% drop_na('B_flag'
                        ) %>% select(-'B_flag'
+                       ) %>% filter(Year>=1995
                        ) %>% mutate(SCENARIO='Historical_B')
 df_Graph <- df_Graph %>% rbind(df_Graph_B)
 scenarionames_order[length(scenarionames_order)+1] <- c('Historical_B')
