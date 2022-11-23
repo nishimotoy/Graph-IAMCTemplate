@@ -197,10 +197,9 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
             scale_x_discrete(limit=rev(scenarionames_order)) +  # 系列の順序 # x=SCENARIO 必要
             stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
             scale_color_manual(values=c(scenario_color)) +
-          # coord_flip(ylim = ylim_range) + 
-            coord_flip(ylim = c(-2.0, 3.0)) + 
+            coord_flip(ylim = ylim_range) + 
+          # coord_flip(ylim = c(-2.0, 3.0)) + 
             annotate('rect', alpha=.26, fill='#329262', 
-            xmin=",5.8, ", ymin=",window_range[1], ",xmax=",6.2, ", ymax=",window_range[2], ")
     ")))
   
 #  g <- g + eval(parse(text=paste0( "xlim(",axis_range[1],", ",axis_range[2],")"))) 
