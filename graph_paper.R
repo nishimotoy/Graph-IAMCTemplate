@@ -74,7 +74,7 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
 
   # 図1　世界の排出量  
   if ( num==1 ) {
-    df_Graph_plot <- df_Graph_global %>% filter(SCENARIO_f!='Historical' 
+    df_Graph_plot <- df_Graph_global %>% filter(SCENARIO_f!='Historical' & SCENARIO_f!='Historical_B'
     ) %>% mutate(CO2_fuel_Total_scaled=CO2_fuel_Total_scaled/1000000) #kt>Gt-CO2
     
     g <- eval(parse(text=paste0("
@@ -110,7 +110,7 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
   # 図3 (a1)～(b3)　年 vs 指標・その変化率/変化量
   } else if ( num>=5 && num<=10 ) { # XY散布図 by 17地域 vs 17地域
     
-    df_Graph_plot <- df_Graph_p %>% filter(SCENARIO_f!='Historical')
+    df_Graph_plot <- df_Graph_p %>% filter(SCENARIO_f!='Historical' & SCENARIO_f!='Historical_B')
     df_Graph_plot_HisR <- df_Graph_plot %>% filter(SCENARIO_f=='Historical_R17' )
     
     g <- eval(parse(text=paste0(
