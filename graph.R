@@ -1,6 +1,11 @@
 #Graph output ------------------------------------------------------
 for (dummyloop in 1) {  # グラフ出力 for (dummyloop in 1) while (0)
   
+  # AnnexB 対応が中途半端なので。
+  df_Graph <- df_Graph %>% filter(SCENARIO!='Historical_B')
+  scenarionames_order <- scenarionames_order[-which(scenarionames_order %in% 'Historical_B')]
+  
+  
   # 出力対象のXY軸を指定する　x_names(n) vs y_names(n)のグラフが出力される
   x_names <- c(rep('Year',length(indicators)),
                rep('GDP_Capita',length(indicators)) 
