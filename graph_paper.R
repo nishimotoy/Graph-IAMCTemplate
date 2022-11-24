@@ -96,7 +96,7 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
     g <- eval(parse(text=paste0("
               ggplot(df_Graph_plot, aes(x=",x_names[num],",y=",y_names[num], 
                                 ",color=REGION, shape=SCENARIO)) +
-              geom_line() +
+            # geom_line() +
               geom_point() + 
               labs(color='地域 (a-c)共通') +
               labs(shape='シナリオ (a-c)共通',size='シナリオ (a-c)共通') +
@@ -115,7 +115,7 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
       "ggplot(df_Graph_plot, aes(x=",x_names[num],",y=",y_names[num], 
       ",color=REGION, shape=SCENARIO)) +
               geom_point() + 
-              geom_line() +
+            # geom_line() +
               labs(color='地域 (a1-b3)共通') +
               labs(shape='シナリオ (a1-b3)共通') +
               scale_x_continuous(breaks=seq(1980,2100,30)) +
@@ -210,7 +210,7 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
   # plot(g)
   num <- num+1
   filename <- paste("JSCE",num,"_", indicator, sep="") # 土木学会用出力
-  g <- g + theme_bw() + theme(panel.grid=element_blank()) 
+  g <- g + theme_bw() + theme(panel.grid=element_blank(), text=element_text(size=24)) 
   ggsave(file=paste("./png3/",filename,"_legend.png", sep=""), width=4.6, height=2.2, dpi=100) # 凡例出力（仮）
   g <- g + theme(legend.position="none") 
   ggsave(file=paste("./png2/",filename,".png", sep=""), width=4.5, height=2.2, dpi=100) # 箱ヒゲ図 width=4.56
