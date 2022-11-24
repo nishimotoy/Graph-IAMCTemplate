@@ -161,7 +161,7 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
   
   ylab_name <- y_names_J[num]
   if ( ylab_name=='エネルギー起源CO2排出量' ) { 
-    ylab_name <- expression("エネルギー起源　" ~ CO[2] ~ "排出量  " ~ (Gt-CO[2])) 
+    ylab_name <- expression("エネルギー起源 　" ~ CO[2] ~ "排出量  " ~ (Gt-CO[2])) 
   } else if ( ylab_name=='エネルギー強度' ) { ylab_name <- paste(y_names_J[num], '(MJ/$)')
   } else if ( ylab_name=='電化率' )       { ylab_name <- paste(y_names_J[num], '(%)')
   } else if ( ylab_name=='炭素強度' )     { ylab_name <- expression('炭素強度　' ~ (g-CO[2]/MJ))
@@ -173,7 +173,7 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
   # plot(g)
   
   filename <- paste("JSCE",num,"_",x_names[num],"-",y_names[num], sep="") # 土木学会用出力
-  ggsave(file=paste("./png3/",filename,".png", sep=""), width=4.6, height=7, dpi=100) # 凡例の出力(縦長)
+  ggsave(file=paste("./png3/",filename,".png", sep=""), width=4.6, height=8.5, dpi=100) # 凡例の出力(縦長)
   g <- g + theme(legend.position="none") 
   ggsave(file=paste("./png2/",filename,".png", sep=""), width=3.6, height=3.5, dpi=100) # XYグラフ
 
@@ -195,8 +195,8 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
             scale_x_discrete(limit=rev(scenarionames_order)) +  # 系列の順序 # x=SCENARIO 必要
             stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
             scale_color_manual(values=c(scenario_color)) +
-          # coord_flip(ylim = ylim_range) + 
-            coord_flip(ylim = c(-1.0, 3.0)) +  # 図4 部門別の比較用
+            coord_flip(ylim = ylim_range) + 
+          # coord_flip(ylim = c(-1.0, 3.0)) +  # 図4 部門別の比較用
             annotate('rect', alpha=.26, fill='#329262', 
              xmin=",(window_num-0.2), ", ymin=",window_range[1], 
            ",xmax=",(window_num+0.2), ", ymax=",window_range[2], ")"
