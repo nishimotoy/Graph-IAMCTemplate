@@ -205,11 +205,6 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
            ",xmax=",(window_num+0.2), ", ymax=",window_range[2], ")"
            )))
   
-#  g <- g + eval(parse(text=paste0( "xlim(",axis_range[1],", ",axis_range[2],")"))) 
-#  g <- g + eval(parse(text=paste0( "annotate('rect', xmin=",1.8,", ymin=",window_range[1], 
-#                                   ", xmax=",2.2, ", ymax=",window_range[2], 
-#                                   ", alpha=.26, fill='#329262')"))) 
-  # g <- g + guides(color=guide_legend(reverse=TRUE))
   ylab_name <- j_names_box[indicator]
   if ( ylab_name=='炭素強度の変化量' ) { 
     ylab_name <- expression('炭素強度の変化量　' ~ (g-CO[2]/kJ))
