@@ -35,7 +35,7 @@ cutoff_prob <- 0.03
 y_names_tmp <- y_names[-which(y_names %in% 'Density')] 
 df_Graph_p <- df_Graph   %>% select('SCENARIO', 'REGION', unique(sort(c(x_names,y_names_tmp, y_names_box)))) 
 df_Graph_p <- df_Graph_p %>% mutate(Energy_Intensity_scaled=Energy_Intensity_scaled/1000 #kJ>MJ
-                      ) %>% mutate(Carbon_Intensity_scaled=Carbon_Intensity_scaled  #kt-CO2/TJ = g-CO2/kJ
+                      ) %>% mutate(Carbon_Intensity_scaled=Carbon_Intensity_scaled*1000  #kt-CO2/TJ = g-CO2/kJ > g-CO2/MJ
                       ) %>% mutate(Electricity_Rate_Total_scaled=Electricity_Rate_Total_scaled*100 #percent
                       ) %>% mutate(ChangeRate_Energy_Intensity=ChangeRate_Energy_Intensity*100 #percent
                       ) %>% mutate(Henkaryo_Carbon_Intensity=Henkaryo_Carbon_Intensity*100  #10^-6>10^-8
@@ -164,12 +164,12 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
     ylab_name <- expression("エネルギー起源　" ~ CO[2] ~ "排出量  " ~ (Gt-CO[2])) 
   } else if ( ylab_name=='エネルギー強度' ) { ylab_name <- paste(y_names_J[num], '(MJ/$)')
   } else if ( ylab_name=='電化率' )       { ylab_name <- paste(y_names_J[num], '(%)')
-  } else if ( ylab_name=='炭素強度' )     { ylab_name <- expression('炭素強度　' ~ (g-CO[2]/kJ))
-  } else if ( ylab_name=='炭素強度の変化量' ) { ylab_name <- expression('炭素強度の変化量　' ~ (g-CO[2]/kJ))
+  } else if ( ylab_name=='炭素強度' )     { ylab_name <- expression('炭素強度　' ~ (g-CO[2]/MJ))
+  } else if ( ylab_name=='炭素強度の変化量' ) { ylab_name <- expression('炭素強度の変化量　' ~ (g-CO[2]/MJ))
   } 
   xlab_name <- x_names_J[num]
-  if ( xlab_name=='炭素強度の変化量' ) { xlab_name <- expression('炭素強度の変化量　' ~ (g-CO[2]/kJ)) }
-  g <- g + xlab(xlab_name) + ylab(ylab_name) + theme_bw() + theme(panel.grid=element_blank()) # + MyThemeLine
+  if ( xlab_name=='炭素強度の変化量' ) { xlab_name <- expression('炭素強度の変化量　' ~ (g-CO[2]/MJ)) }
+  g <- g + xlab(xlab_name) + ylab(ylab_name) + theme_bw() + theme(panel.grid=element_blank(), text=element_text(size=14, face='plain')) 
   # plot(g)
   
   filename <- paste("JSCE",num,"_",x_names[num],"-",y_names[num], sep="") # 土木学会用出力
@@ -204,7 +204,7 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
   
   ylab_name <- j_names_box[indicator]
   if ( ylab_name=='炭素強度の変化量' ) { 
-    ylab_name <- expression('炭素強度の変化量　' ~ (g-CO[2]/kJ))
+    ylab_name <- expression('炭素強度の変化量　' ~ (g-CO[2]/MJ))
   } 
   g <- g + xlab('') + ylab(ylab_name) + labs(color='シナリオ (d1-3)共通')
   # plot(g)
