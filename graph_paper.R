@@ -206,14 +206,20 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
   if ( ylab_name=='炭素強度の変化量' ) { 
     ylab_name <- expression('炭素強度の変化量　' ~ (g-CO[2]/MJ))
   } 
-  g <- g + xlab('') + ylab(ylab_name) + labs(color='シナリオ (d1-3)共通')
+  g <- g + xlab('') + ylab(ylab_name) + theme_bw() + theme(panel.grid=element_blank())
   # plot(g)
   num <- num+1
   filename <- paste("JSCE",num,"_", indicator, sep="") # 土木学会用出力
-  g <- g + theme_bw() + theme(panel.grid=element_blank(), text=element_text(size=24)) 
-  ggsave(file=paste("./png3/",filename,"_legend.png", sep=""), width=4.6, height=2.2, dpi=100) # 凡例出力（仮）
+  g <- g + labs(color='シナリオ (d1-3)共通') + theme(text=element_text(size=14, face='plain')) 
+  ggsave(file=paste("./png3/",filename,"_legend.png", sep=""), width=5.6, height=3, dpi=100) # 凡例出力
   g <- g + theme(legend.position="none") 
   ggsave(file=paste("./png2/",filename,".png", sep=""), width=4.5, height=2.2, dpi=100) # 箱ヒゲ図 width=4.56
+  
+  g <- g + theme(legend.position="right") 
+  g <- g + labs(color='シナリオ (a-d)共通') + theme(text=element_text(size=12, face='plain')) 
+  ggsave(file=paste("./png3/",filename,"_legend2.png", sep=""), width=5.6, height=3, dpi=100) # 凡例出力2
+  g <- g + theme(legend.position="none") 
+  ggsave(file=paste("./png2/",filename,"_2.png", sep=""), width=4.5, height=2.2, dpi=100) # 箱ヒゲ図 width=4.56
 
 } # indicator # 箱ヒゲ図
 
