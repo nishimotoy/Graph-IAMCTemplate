@@ -23,7 +23,7 @@ library(RColorBrewer)
 region_color <- c(brewer.pal(5,"Dark2"),brewer.pal(5,"Set1"),brewer.pal(7,"Paired"))  
 # scenario_color <- c('#AAAA11', '#329262', '#FF9900', '#DD4477', '#651067', '#3366CC', '#84919E','#22AA99') # df_Graph登場順
 scenario_color <- c('#AAAA11', '#329262', '#FF9900', '#DD4477', '#651067', '#3366CC', '#84919E','#dda0dd') # df_Graph登場順
-scenario_shape <- c(19,21,22,23,24,25,1,19)
+scenario_shape <- c(19,4,22,23,24,25,1,19)
 scenario_fill <- c('white','red','white','white','white','white','white','white')
 scenario_size <- c(1,4,4,4,4,4,4,1)
 scenarionames_order <- c('歴史的推移\n(国レベル)','歴史的推移','ベースライン','2.5C','2C','1.5C','WB2C','Annex-B\n(1995-2015)')
@@ -169,16 +169,13 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
   } 
   xlab_name <- x_names_J[num]
   if ( xlab_name=='炭素強度の変化量' ) { xlab_name <- expression('炭素強度の変化量　' ~ (g-CO[2]/kJ)) }
-  g <- g + xlab(xlab_name) + ylab(ylab_name) + theme_bw() + theme(panel.grid = element_blank()) # + MyThemeLine
+  g <- g + xlab(xlab_name) + ylab(ylab_name) + theme_bw() + theme(panel.grid=element_blank()) # + MyThemeLine
   # plot(g)
   
   filename <- paste("JSCE",num,"_",x_names[num],"-",y_names[num], sep="") # 土木学会用出力
-  if ( num>=11 && num<=13 ) { 
-    ggsave(file=paste("./png2/",filename,".png", sep=""), width=5.35, height=3.6, dpi=100) # 確率密度分布
-  } else { 
-    ggsave(file=paste("./png2/",filename,".png", sep=""), width=5.34, height=3.6, dpi=100) # XYグラフ
-    ggsave(file=paste("./png3/",filename,".png", sep=""), width=5, height=7, dpi=100) # 凡例の出力(縦長)
-  } 
+  ggsave(file=paste("./png3/",filename,".png", sep=""), width=4.6, height=7, dpi=100) # 凡例の出力(縦長)
+  g <- g + theme(legend.position="none") 
+  ggsave(file=paste("./png2/",filename,".png", sep=""), width=3.6, height=3.5, dpi=100) # XYグラフ
 
 }  #num # XYグラフの出力
 
@@ -198,8 +195,8 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
             scale_x_discrete(limit=rev(scenarionames_order)) +  # 系列の順序 # x=SCENARIO 必要
             stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
             scale_color_manual(values=c(scenario_color)) +
-            coord_flip(ylim = ylim_range) + 
-          # coord_flip(ylim = c(-2.0, 3.0)) + 
+          # coord_flip(ylim = ylim_range) + 
+            coord_flip(ylim = c(-1.0, 3.0)) +  # 図4 部門別の比較用
             annotate('rect', alpha=.26, fill='#329262', 
              xmin=",(window_num-0.2), ", ymin=",window_range[1], 
            ",xmax=",(window_num+0.2), ", ymax=",window_range[2], ")"
@@ -209,15 +206,14 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
   if ( ylab_name=='炭素強度の変化量' ) { 
     ylab_name <- expression('炭素強度の変化量　' ~ (g-CO[2]/kJ))
   } 
-  g <- g + xlab('') + ylab(ylab_name) + labs(color='シナリオ (a-d)共通')
-  # plot(g)
-  ggsave(file=paste("./png3/",filename,"_legend.png", sep=""), width=5.0, height=2.5, dpi=100) # 凡例出力（仮）
-  g <- g + theme_bw() + theme(legend.position="none", panel.grid=element_blank()) 
-                       # legend.positionとpanel.grid の順番が逆だとNG
+  g <- g + xlab('') + ylab(ylab_name) + labs(color='シナリオ (d1-3)共通')
   # plot(g)
   num <- num+1
   filename <- paste("JSCE",num,"_", indicator, sep="") # 土木学会用出力
-  ggsave(file=paste("./png2/",filename,".png", sep=""), width=4.55, height=2, dpi=100) # 箱ヒゲ図 width=4.56
+  g <- g + theme_bw() + theme(panel.grid=element_blank()) 
+  ggsave(file=paste("./png3/",filename,"_legend.png", sep=""), width=4.6, height=2.2, dpi=100) # 凡例出力（仮）
+  g <- g + theme(legend.position="none") 
+  ggsave(file=paste("./png2/",filename,".png", sep=""), width=4.5, height=2.2, dpi=100) # 箱ヒゲ図 width=4.56
 
 } # indicator # 箱ヒゲ図
 
