@@ -97,14 +97,12 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
               ggplot(df_Graph_plot, aes(x=",x_names[num],",y=",y_names[num], 
                                 ",color=REGION, shape=SCENARIO)) +
               geom_line() +
-              scale_size_manual(values=c(2.2, rep(1.2, length(df_Graph_plot$SCENARIO)-1))) +  # 無効?
               geom_point() + 
               labs(color='地域 (a-c)共通') +
               labs(shape='シナリオ (a-c)共通',size='シナリオ (a-c)共通') +
               scale_color_manual(values=c(rep(region_color,3))) +
-              scale_shape_manual(values=scenario_shape) + 
-              scale_fill_manual(values=scenario_fill)  # 無効?
-              "))) 
+              scale_shape_manual(values=scenario_shape)
+            "))) 
     # plot(g)
     
   # 図3 (a1)～(b3)　年 vs 指標・その変化率/変化量
