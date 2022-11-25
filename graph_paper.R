@@ -52,7 +52,7 @@ df_Graph_p <- df_Graph_p %>% mutate(SCENARIO2 = recode(SCENARIO,
                              Baseline='ベースライン'))
 df_Graph_p <- df_Graph_p %>% mutate(SCENARIO_f=SCENARIO) %>% mutate(SCENARIO=SCENARIO2) 
 
-region_order <- c('USA' , 'EU25' , 'XER' , 'TUR' , 'XOC' , 'CHN' , 'IND' , 'JPN' , 'XSE' , 'XSA' , 'CAN' 
+region_order <- c('USA' , 'XE25' , 'XER' , 'TUR' , 'XOC' , 'CHN' , 'IND' , 'JPN' , 'XSE' , 'XSA' , 'CAN' 
                   , 'BRA' , 'XLM' , 'CIS' , 'XME' , 'XNF' , 'XAF' )
 region_labels <- c('アメリカ合衆国' , 'EU25' , 'その他のヨーロッパ' , 'トルコ' , 'オセアニア' , '中国' , 'インド' 
                    , '日本' , '東南アジア' , 'その他のアジア' , 'カナダ' , 'ブラジル' , 'その他の南アメリカ' 
