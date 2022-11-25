@@ -134,10 +134,11 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
   # 図3 (c1)～(c3)　確率密度分布
   } else if ( num>=11 && num<=13 ) { # 確率密度分布
     
-    df_Graph_plot <- df_Graph_p
+    indicator <- x_names[num]
+    df_Graph_plot <- df_Graph_p 
+    # df_Graph_plot <- eval(parse(text=paste0("mutate(df_Graph_plot, ", indicator,"=", indicator,"*100)")))
     df_Graph_plot_HisR <- df_Graph_plot %>% filter(SCENARIO_f=='Historical_R17' )
     
-    indicator <- x_names[num]
     
     g <- eval(parse(text=paste0(
       "ggplot(df_Graph_plot, aes(x=",indicator, ",color=SCENARIO)) +
@@ -231,7 +232,6 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
     g <- g + theme(legend.position="right") 
     ggsave(file=paste("./png3/",filename,"_right.png", sep=""), width=5.6, height=3, dpi=100) # 凡例出力2
   }
-
 } # indicator # 箱ヒゲ図
 
 # dev.off() 
