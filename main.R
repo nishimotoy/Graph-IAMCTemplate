@@ -346,7 +346,7 @@ write_csv(df_indicator, "./df_indicator.csv")  # Year, Country, REGION入りの�
 df_summary <- df_indicator %>% select(-c(Year, Country, REGION)
   ) %>% group_by(SCENARIO
   ) %>% summarise_at(vars(everything()),
-                     funs(n=length(na.omit(.)), min(., na.rm=T), max(., na.rm=T), 
+                     funs(length, n=length(na.omit(.)), min(., na.rm=T), max(., na.rm=T), 
                           median(., na.rm=T), mean(., na.rm=T), sd(., na.rm=T),
                           'q95%'=quantile(., probs=0.95, na.rm=T), 
                           'q05%'=quantile(., probs=0.05, na.rm=T), 
