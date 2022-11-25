@@ -44,7 +44,7 @@ df_Graph_p <- df_Graph_p %>% mutate(Energy_Intensity_scaled=Energy_Intensity_sca
                       ) %>% mutate(Henkaryo_Electricity_Rate_Tra=Henkaryo_Electricity_Rate_Tra*100 #percent
                       ) %>% mutate(Henkaryo_Electricity_Rate_Res=Henkaryo_Electricity_Rate_Res*100 #percent
                       ) %>% mutate(Henkaryo_Electricity_Rate_Com=Henkaryo_Electricity_Rate_Com*100 #percent
-                      ) # which
+                      ) 
 df_Graph_p <- df_Graph_p %>% mutate(SCENARIO2 = recode(SCENARIO, 
                              Historical='歴史的推移\n(国レベル)', 
                              Historical_R17='歴史的推移', 
@@ -61,7 +61,6 @@ df_Graph_p <- df_Graph_p %>% mutate(REGION=factor(REGION, levels=region_order, l
 
 df_Graph_global <- aggregate(CO2_fuel_Total_scaled~Year+SCENARIO_f+SCENARIO, df_Graph_p, sum) # 集約対象=REGION
 df_Graph_global_wide <- df_Graph_global %>% spread(key=SCENARIO_f, value=CO2_fuel_Total_scaled)
-write_csv(df_Graph_global, "./df_Graph_global.csv") 
 write_csv(df_Graph_global_wide, "./df_Graph_global_wide.csv") 
 
 unlink("./png2", recursive=T)
