@@ -169,7 +169,7 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
   } 
   xlab_name <- x_names_J[num]
   if ( xlab_name=='炭素強度の変化量' ) { xlab_name <- expression('炭素強度の変化量　' ~ (g-CO[2]/MJ)) }
-  g <- g + xlab(xlab_name) + ylab(ylab_name) + theme_bw() + theme(panel.grid=element_blank(), text=element_text(size=14, face='plain')) 
+  g <- g + xlab(xlab_name) + ylab(ylab_name) + theme_bw() + theme(panel.grid=element_blank(), text=element_text(size=12, face='plain')) 
   # plot(g)
   
   filename <- paste("JSCE",num,"_",x_names[num],"-",y_names[num], sep="") # 土木学会用出力
@@ -179,7 +179,10 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
   g <- g + theme(legend.position="right") 
   ggsave(file=paste("./png3/",filename,"_right.png", sep=""), width=3.6, height=7, dpi=100) # 凡例出力
   g <- g + theme(legend.position="none") 
-  ggsave(file=paste("./png2/",filename,".png", sep=""), width=3.6, height=3.5, dpi=100) # XYグラフ
+  ggsave(file=paste("./png2/",filename,".png", sep=""), width=3.4, height=3.4, dpi=100) # XYグラフ
+  if ( regexpr('^確率密度', ylab_name)==1 ) { 
+    ggsave(file=paste("./png2/",filename,".png", sep=""), width=3.4, height=3.0, dpi=100) # 確率密度グラフ
+  }
 
 }  #num # XYグラフの出力
 
@@ -202,8 +205,8 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
             coord_flip(ylim = ylim_range) + 
           # coord_flip(ylim = c(-1.0, 3.0)) +  # 図4 部門別の比較用
             annotate('rect', alpha=.26, fill='#329262', 
-             xmin=",(window_num-0.2), ", ymin=",window_range[1], 
-           ",xmax=",(window_num+0.2), ", ymax=",window_range[2], ")"
+             xmin=",(window_num-0.3), ", ymin=",window_range[1], 
+           ",xmax=",(window_num+0.3), ", ymax=",window_range[2], ")"
            )))
   
   ylab_name <- j_names_box[indicator]
@@ -214,9 +217,9 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
   # plot(g)
   num <- num+1
   filename <- paste("JSCE",num,"_", indicator, sep="") # 土木学会用出力
-  g <- g + labs(color='シナリオ (d1-3)共通') + theme(text=element_text(size=14, face='plain')) 
+  g <- g + labs(color='シナリオ (d1-3)共通') + theme(text=element_text(size=12, face='plain')) 
   g <- g + theme(legend.position="none") 
-  ggsave(file=paste("./png2/",filename,".png", sep=""), width=4.5, height=2.2, dpi=100) # 箱ヒゲ図 width=4.56
+  ggsave(file=paste("./png2/",filename,".png", sep=""), width=4.3, height=2.4, dpi=100) # 箱ヒゲ図 width=4.56
   while (0) {
     g <- g + theme(legend.position="top") 
     ggsave(file=paste("./png3/",filename,"_top.png", sep=""), width=5.6, height=3, dpi=100) # 凡例出力
@@ -224,13 +227,13 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
     ggsave(file=paste("./png3/",filename,"_right.png", sep=""), width=5.6, height=3, dpi=100) # 凡例出力
   }
   
-  g <- g + labs(color='シナリオ (a-d)共通') + theme(text=element_text(size=12, face='plain')) 
-  g <- g + theme(legend.position="none") 
-  ggsave(file=paste("./png2/",filename,"_2.png", sep=""), width=4.5, height=2.2, dpi=100) # 箱ヒゲ図 width=4.56
-
-  while (0) {
+    g <- g + coord_flip(ylim = c(-1.0, 3.0))   # 図4 部門別の比較用
+    g <- g + labs(color='シナリオ (a-d)共通') + theme(text=element_text(size=12, face='plain')) 
+    g <- g + theme(legend.position="none") 
+    ggsave(file=paste("./png2/",filename,"_sec.png", sep=""), width=4.3, height=2.4, dpi=100) # 箱ヒゲ図 width=4.56
     g <- g + theme(legend.position="right") 
     ggsave(file=paste("./png3/",filename,"_right.png", sep=""), width=5.6, height=3, dpi=100) # 凡例出力2
+  while (0) {
   }
 } # indicator # 箱ヒゲ図
 
