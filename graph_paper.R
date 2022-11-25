@@ -172,7 +172,11 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
   # plot(g)
   
   filename <- paste("JSCE",num,"_",x_names[num],"-",y_names[num], sep="") # 土木学会用出力
-  ggsave(file=paste("./png3/",filename,".png", sep=""), width=4.6, height=8.5, dpi=100) # 凡例の出力(縦長)
+  g <- g + theme(legend.position="top") 
+  ggsave(file=paste("./png3/",filename,"_top1.png", sep=""), width=15, height=4.6, dpi=100) # 凡例出力
+  ggsave(file=paste("./png3/",filename,"_top2.png", sep=""), width=6, height=5.6, dpi=100) # 凡例出力
+  g <- g + theme(legend.position="right") 
+  ggsave(file=paste("./png3/",filename,"_right.png", sep=""), width=3.6, height=7, dpi=100) # 凡例出力
   g <- g + theme(legend.position="none") 
   ggsave(file=paste("./png2/",filename,".png", sep=""), width=3.6, height=3.5, dpi=100) # XYグラフ
 
@@ -210,15 +214,23 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
   num <- num+1
   filename <- paste("JSCE",num,"_", indicator, sep="") # 土木学会用出力
   g <- g + labs(color='シナリオ (d1-3)共通') + theme(text=element_text(size=14, face='plain')) 
-  ggsave(file=paste("./png3/",filename,"_legend.png", sep=""), width=5.6, height=3, dpi=100) # 凡例出力
   g <- g + theme(legend.position="none") 
   ggsave(file=paste("./png2/",filename,".png", sep=""), width=4.5, height=2.2, dpi=100) # 箱ヒゲ図 width=4.56
+  while (0) {
+    g <- g + theme(legend.position="top") 
+    ggsave(file=paste("./png3/",filename,"_top.png", sep=""), width=5.6, height=3, dpi=100) # 凡例出力
+    g <- g + theme(legend.position="right") 
+    ggsave(file=paste("./png3/",filename,"_right.png", sep=""), width=5.6, height=3, dpi=100) # 凡例出力
+  }
   
-  g <- g + theme(legend.position="right") 
   g <- g + labs(color='シナリオ (a-d)共通') + theme(text=element_text(size=12, face='plain')) 
-  ggsave(file=paste("./png3/",filename,"_legend2.png", sep=""), width=5.6, height=3, dpi=100) # 凡例出力2
   g <- g + theme(legend.position="none") 
   ggsave(file=paste("./png2/",filename,"_2.png", sep=""), width=4.5, height=2.2, dpi=100) # 箱ヒゲ図 width=4.56
+
+  while (0) {
+    g <- g + theme(legend.position="right") 
+    ggsave(file=paste("./png3/",filename,"_right.png", sep=""), width=5.6, height=3, dpi=100) # 凡例出力2
+  }
 
 } # indicator # 箱ヒゲ図
 
