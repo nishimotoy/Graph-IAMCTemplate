@@ -38,7 +38,7 @@ df_Graph_p <- df_Graph_p %>% mutate(Energy_Intensity_scaled=Energy_Intensity_sca
                       ) %>% mutate(Carbon_Intensity_scaled=Carbon_Intensity_scaled*1000  #kt-CO2/TJ = g-CO2/kJ > g-CO2/MJ
                       ) %>% mutate(Electricity_Rate_Total_scaled=Electricity_Rate_Total_scaled*100 #percent
                       ) %>% mutate(ChangeRate_Energy_Intensity=ChangeRate_Energy_Intensity*100 #percent
-                      ) %>% mutate(Henkaryo_Carbon_Intensity=Henkaryo_Carbon_Intensity*100  #10^-6>10^-8
+                      ) %>% mutate(Henkaryo_Carbon_Intensity=Henkaryo_Carbon_Intensity*1000  #kt-CO2/TJ = g-CO2/kJ > g-CO2/MJ
                       ) %>% mutate(Henkaryo_Electricity_Rate_Total=Henkaryo_Electricity_Rate_Total*100 #percent
                       ) %>% mutate(Henkaryo_Electricity_Rate_Ind=Henkaryo_Electricity_Rate_Ind*100 #percent
                       ) %>% mutate(Henkaryo_Electricity_Rate_Tra=Henkaryo_Electricity_Rate_Tra*100 #percent
