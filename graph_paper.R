@@ -169,7 +169,7 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
   } 
   xlab_name <- x_names_J[num]
   if ( xlab_name=='炭素強度の変化量' ) { xlab_name <- expression('炭素強度の変化量　' ~ (g-CO[2]/MJ)) }
-  g <- g + xlab(xlab_name) + ylab(ylab_name) + theme_bw() + theme(panel.grid=element_blank(), text=element_text(size=12, face='plain')) 
+  g <- g + xlab(xlab_name) + ylab(ylab_name) + theme_bw() + theme(panel.grid=element_blank(), text=element_text(size=14, face='plain')) 
   # plot(g)
   
   filename <- paste("JSCE",num,"_",x_names[num],"-",y_names[num], sep="") # 土木学会用出力
@@ -211,13 +211,13 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
   
   ylab_name <- j_names_box[indicator]
   if ( ylab_name=='炭素強度の変化量' ) { 
-    ylab_name <- expression('炭素強度の変化量　' ~ (g-CO[2]/MJ))
+    ylab_name <- expression('炭素強度の変化量 ' ~ (g-CO[2]/MJ))
   } 
   g <- g + xlab('') + ylab(ylab_name) + theme_bw() + theme(panel.grid=element_blank())
   # plot(g)
   num <- num+1
   filename <- paste("JSCE",num,"_", indicator, sep="") # 土木学会用出力
-  g <- g + labs(color='シナリオ (d1-3)共通') + theme(text=element_text(size=12, face='plain')) 
+  g <- g + labs(color='シナリオ (d1-3)共通') + theme(text=element_text(size=14, face='plain')) 
   g <- g + theme(legend.position="none") 
   ggsave(file=paste("./png2/",filename,".png", sep=""), width=4.3, height=2.4, dpi=100) # 箱ヒゲ図 width=4.56
   while (0) {
@@ -238,6 +238,4 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
 } # indicator # 箱ヒゲ図
 
 # dev.off() 
-
-
 
