@@ -25,9 +25,9 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
               geom_point() + 
               scale_color_manual(values=c(rep(region_color,3))) +
               scale_shape_manual(values=scenario_shape)"))) # SCENARIO数
-  if ( regexpr('^Electricity_Rate_*', x_names[num])==1 ) { 
-    g <-  g + scale_x_continuous(breaks=seq(0,1.0,0.2)) 
-  }
+  # if ( regexpr('^Electricity_Rate_*', x_names[num])==1 ) { 
+  #   g <-  g + scale_x_continuous(breaks=seq(0,1.0,0.2)) 
+  # }
   # 窓の追加
   vec_data <- eval(parse(text=paste0("df_Graph_plot_HisR$",y_names[num]))) 
   window_range <- quantile(vec_data, probs=c(window_prob, (1-window_prob)), na.rm=T)
