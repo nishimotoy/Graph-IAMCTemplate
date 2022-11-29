@@ -1,8 +1,5 @@
 # 検証用
-x_names <- c('Energy_Intensity_scaled','Carbon_Intensity_scaled','Electricity_Rate_Total_scaled',
-             'Electricity_Rate_Ind_scaled','Electricity_Rate_Tra_scaled',
-             'Electricity_Rate_Res_scaled','Electricity_Rate_Com_scaled')
-x_names <- c('Energy_Intensity','Carbon_Intensity','Electricity_Rate_Total',
+x_names <- c('Energy_Intensity_scaled','Carbon_Intensity_scaled','Electricity_Rate_Total',
              'Electricity_Rate_Ind','Electricity_Rate_Tra',
              'Electricity_Rate_Res','Electricity_Rate_Com')
 y_names <- c('ChangeRate_Energy_Intensity','Henkaryo_Carbon_Intensity','Henkaryo_Electricity_Rate_Total',
@@ -10,9 +7,7 @@ y_names <- c('ChangeRate_Energy_Intensity','Henkaryo_Carbon_Intensity','Henkaryo
              'Henkaryo_Electricity_Rate_Res','Henkaryo_Electricity_Rate_Com') # y_names_box in graph_paper.R
 
 df_Graph_p <- df_Graph %>% select('SCENARIO', 'REGION', 'Year', unique(sort(c(x_names,y_names)))) 
-df_Graph_p <- df_Graph_p %>% mutate(Energy_Intensity_scaled=Energy_Intensity,
-                                  Carbon_Intensity_scaled=Carbon_Intensity,
-                                  Electricity_Rate_Total_scaled=Electricity_Rate_Total,
+df_Graph_p <- df_Graph_p %>% mutate(Electricity_Rate_Total_scaled=Electricity_Rate_Total,
                                   Electricity_Rate_Ind_scaled=Electricity_Rate_Ind,
                                   Electricity_Rate_Tra_scaled=Electricity_Rate_Tra,
                                   Electricity_Rate_Res_scaled=Electricity_Rate_Res,
