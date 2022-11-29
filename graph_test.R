@@ -30,11 +30,10 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
               geom_point() + 
               scale_color_manual(values=c(rep(region_color,3))) +
               scale_shape_manual(values=scenario_shape)"))) # SCENARIO数
-  # if ( regexpr('^Electricity_Rate_*', x_names[num])==1 ) { 
-  #   g <-  g + scale_x_continuous(breaks=seq(0,1.0,0.2)) 
-  # }
-  # 窓の追加
-  vec_data <- eval(parse(text=paste0("df_Graph_plot_HisR$",y_names[num]))) 
+  if ( regexpr('^Electricity_Rate_*', x_names[num])==1 ) {
+    g <- g + xlim(0,1) + ylim(-0.1,0.1)
+  }
+  vec_data <- eval(parse(text=paste0("df_Graph_plot_HisR$",y_names[num])))  # 窓の追加
   window_range <- quantile(vec_data, probs=c(window_prob, (1-window_prob)), na.rm=T)
   g <- g + eval(parse(text=paste0( "annotate('rect', xmin=",-Inf,", ymin=",window_range[1], 
                                    ", xmax=",Inf, ", ymax=",window_range[2], 
@@ -48,11 +47,10 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
               scale_color_manual(values=scenario_color[-1]) +
               scale_shape_manual(values=dummy_shape)"))) # SCENARIO数
   
-# if ( regexpr('^Electricity_Rate_*', x_names[num])==1 ) { 
-#   g <-  g + scale_x_continuous(breaks=seq(0,1.0,0.2)) 
-# }
-  # 窓の追加
-  vec_data <- eval(parse(text=paste0("df_Graph_plot_HisR$",y_names[num]))) 
+  if ( regexpr('^Electricity_Rate_*', x_names[num])==1 ) {
+    g <- g + xlim(0,1) + ylim(-0.1,0.1)
+  }
+  vec_data <- eval(parse(text=paste0("df_Graph_plot_HisR$",y_names[num])))  # 窓の追加
   window_range <- quantile(vec_data, probs=c(window_prob, (1-window_prob)), na.rm=T)
   g <- g + eval(parse(text=paste0( "annotate('rect', xmin=",-Inf,", ymin=",window_range[1], 
                                    ", xmax=",Inf, ", ymax=",window_range[2], 
@@ -99,6 +97,7 @@ g <- eval(parse(text=paste0(
   "ggplot(df_Graph_sector, aes(x=","Electricity_Rate",",y=","Henkaryo_Electricity_Rate", 
   ",color=Sector, shape=SCENARIO)) +
               geom_point() + 
+              xlim(0,1) + ylim(-0.1,0.1) +
               scale_color_manual(values=scenario_color[c(2,3,5,6,7)]) +
               scale_shape_manual(values=scenario_shape)"))) 
 plot(g)
@@ -107,6 +106,7 @@ g <- eval(parse(text=paste0(
   "ggplot(df_Graph_sector, aes(x=","Electricity_Rate",",y=","Henkaryo_Electricity_Rate", 
   ",color=SCENARIO, shape=Sector)) +
               geom_point() + 
+              xlim(0,1) + ylim(-0.1,0.1) +
               scale_color_manual(values=scenario_color[-1]) +
               scale_shape_manual(values=scenario_shape)"))) 
 plot(g)
@@ -115,6 +115,7 @@ g <- eval(parse(text=paste0(
   "ggplot(df_Graph_sector, aes(x=","Electricity_Rate",",y=","Henkaryo_Electricity_Rate", 
   ",color=Sector)) +
               geom_point() + 
+              xlim(0,1) + ylim(-0.1,0.1) +
               scale_color_manual(values=scenario_color[c(2,3,5,6,7)]) +
               scale_shape_manual(values=scenario_shape)"))) 
 plot(g)
