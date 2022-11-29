@@ -29,7 +29,7 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
     ",color=REGION, shape=SCENARIO)) +
               geom_point() + 
               scale_color_manual(values=c(rep(region_color,3))) +
-              scale_shape_manual(values=scenario_shape)"))) # SCENARIO数
+              scale_shape_manual(values=scenario_shape)"))) 
   if ( regexpr('^Electricity_Rate_*', x_names[num])==1 ) {
     g <- g + xlim(0,1) + ylim(-0.1,0.1)
   }
@@ -57,7 +57,28 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
                                    ", alpha=.22, fill='#329262')"))) 
   plot(g)
   
+  # boxplot
+  g <- eval(parse(text=paste0(
+    "ggplot(df_Graph_plot, aes(x=SCENARIO, y=",x_names[num], ", color=SCENARIO)) +
+            geom_boxplot() +
+          # scale_x_discrete(limit=rev(scenarionames_order)) +  # 系列の順序 # x=SCENARIO 必要
+          # coord_flip(ylim = c(-1.0, 3.0)) + # 指定する場合
+            stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
+            scale_color_manual(values=c(scenario_color[-1])) 
+           ")))
+  plot(g)
+  
+  # boxplot
+  g <- eval(parse(text=paste0(
+    "ggplot(df_Graph_plot, aes(x=SCENARIO, y=",y_names[num], ", color=SCENARIO)) +
+            geom_boxplot() +
+            stat_boxplot(geom='errorbar', width=0.3) + # ヒゲ先端の横線
+            scale_color_manual(values=c(scenario_color[-1])) 
+           ")))
+  plot(g)
+  
 }  #num # XYグラフの出力
+
 
 # 部門別プロット
 df_Graph_sector <- df_Graph_plot  %>% select('SCENARIO', 'REGION', 'Year', 'Electricity_Rate_Total', 'Henkaryo_Electricity_Rate_Total'
