@@ -100,7 +100,7 @@ g <- eval(parse(text=paste0(
   ",color=Sector, shape=SCENARIO)) +
               geom_point() + 
               scale_color_manual(values=scenario_color[-1]) +
-              scale_shape_manual(values=scenario_shape)"))) # SCENARIO数
+              scale_shape_manual(values=scenario_shape)"))) 
 plot(g)
 
 g <- eval(parse(text=paste0(
@@ -108,15 +108,15 @@ g <- eval(parse(text=paste0(
   ",color=SCENARIO, shape=Sector)) +
               geom_point() + 
               scale_color_manual(values=scenario_color[-1]) +
-              scale_shape_manual(values=scenario_shape)"))) # SCENARIO数
+              scale_shape_manual(values=scenario_shape)"))) 
 plot(g)
 
 g <- eval(parse(text=paste0(
   "ggplot(df_Graph_sector, aes(x=","Electricity_Rate",",y=","Henkaryo_Electricity_Rate", 
   ",color=Sector)) +
               geom_point() + 
-              scale_color_manual(values=scenario_color[-1]) +
-              scale_shape_manual(values=scenario_shape)"))) # SCENARIO数
+              scale_color_manual(values=scenario_color[c(2,3,5,6,7)]) +
+              scale_shape_manual(values=scenario_shape)"))) 
 plot(g)
 
 dev.off() 
