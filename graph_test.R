@@ -7,13 +7,6 @@ y_names <- c('ChangeRate_Energy_Intensity','Henkaryo_Carbon_Intensity','Henkaryo
              'Henkaryo_Electricity_Rate_Res','Henkaryo_Electricity_Rate_Com') # y_names_box in graph_paper.R
 
 df_Graph_p <- df_Graph %>% select('SCENARIO', 'REGION', 'Year', unique(sort(c(x_names,y_names)))) 
-df_Graph_p <- df_Graph_p %>% mutate(Electricity_Rate_Total_scaled=Electricity_Rate_Total,
-                                  Electricity_Rate_Ind_scaled=Electricity_Rate_Ind,
-                                  Electricity_Rate_Tra_scaled=Electricity_Rate_Tra,
-                                  Electricity_Rate_Res_scaled=Electricity_Rate_Res,
-                                  Electricity_Rate_Com_scaled=Electricity_Rate_Com
-                                  )
-# df_Graph_p <- df_Graph_p %>% select('SCENARIO', 'REGION', 'Year', unique(sort(c(x_names,y_names)))) 
 
 
 library(RColorBrewer)
@@ -69,41 +62,41 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
 }  #num # XYグラフの出力
 
 # 部門別プロット
-df_Graph_sector <- df_Graph_plot  %>% select('SCENARIO', 'REGION', 'Year', 'Electricity_Rate_Total_scaled', 'Henkaryo_Electricity_Rate_Total'
+df_Graph_sector <- df_Graph_plot  %>% select('SCENARIO', 'REGION', 'Year', 'Electricity_Rate_Total', 'Henkaryo_Electricity_Rate_Total'
 ) %>% mutate(Sector='Total'
-) %>% rename('Electricity_Rate_scaled'='Electricity_Rate_Total_scaled'
+) %>% rename('Electricity_Rate'='Electricity_Rate_Total'
 ) %>% rename('Henkaryo_Electricity_Rate'='Henkaryo_Electricity_Rate_Total'
 )
-df_Graph_sec   <- df_Graph_plot   %>% select('SCENARIO', 'REGION', 'Year', 'Electricity_Rate_Ind_scaled', 'Henkaryo_Electricity_Rate_Ind'
+df_Graph_sec   <- df_Graph_plot   %>% select('SCENARIO', 'REGION', 'Year', 'Electricity_Rate_Ind', 'Henkaryo_Electricity_Rate_Ind'
 ) %>% mutate(Sector='Industory'
-) %>% rename('Electricity_Rate_scaled'='Electricity_Rate_Ind_scaled'
+) %>% rename('Electricity_Rate'='Electricity_Rate_Ind'
 ) %>% rename('Henkaryo_Electricity_Rate'='Henkaryo_Electricity_Rate_Ind'
 ) %>% rbind(df_Graph_sector)
 df_Graph_sector <- df_Graph_sec
 
-df_Graph_sec   <- df_Graph_plot   %>% select('SCENARIO', 'REGION', 'Year', 'Electricity_Rate_Tra_scaled', 'Henkaryo_Electricity_Rate_Tra'
+df_Graph_sec   <- df_Graph_plot   %>% select('SCENARIO', 'REGION', 'Year', 'Electricity_Rate_Tra', 'Henkaryo_Electricity_Rate_Tra'
 ) %>% mutate(Sector='Transport'
-) %>% rename('Electricity_Rate_scaled'='Electricity_Rate_Tra_scaled'
+) %>% rename('Electricity_Rate'='Electricity_Rate_Tra'
 ) %>% rename('Henkaryo_Electricity_Rate'='Henkaryo_Electricity_Rate_Tra'
 ) %>% rbind(df_Graph_sector)
 df_Graph_sector <- df_Graph_sec
 
-df_Graph_sec   <- df_Graph_plot   %>% select('SCENARIO', 'REGION', 'Year', 'Electricity_Rate_Res_scaled', 'Henkaryo_Electricity_Rate_Res'
+df_Graph_sec   <- df_Graph_plot   %>% select('SCENARIO', 'REGION', 'Year', 'Electricity_Rate_Res', 'Henkaryo_Electricity_Rate_Res'
 ) %>% mutate(Sector='Residential'
-) %>% rename('Electricity_Rate_scaled'='Electricity_Rate_Res_scaled'
+) %>% rename('Electricity_Rate'='Electricity_Rate_Res'
 ) %>% rename('Henkaryo_Electricity_Rate'='Henkaryo_Electricity_Rate_Res'
 ) %>% rbind(df_Graph_sector)
 df_Graph_sector <- df_Graph_sec
 
-df_Graph_sec   <- df_Graph_plot   %>% select('SCENARIO', 'REGION', 'Year', 'Electricity_Rate_Com_scaled', 'Henkaryo_Electricity_Rate_Com'
+df_Graph_sec   <- df_Graph_plot   %>% select('SCENARIO', 'REGION', 'Year', 'Electricity_Rate_Com', 'Henkaryo_Electricity_Rate_Com'
 ) %>% mutate(Sector='Commercial'
-) %>% rename('Electricity_Rate_scaled'='Electricity_Rate_Com_scaled'
+) %>% rename('Electricity_Rate'='Electricity_Rate_Com'
 ) %>% rename('Henkaryo_Electricity_Rate'='Henkaryo_Electricity_Rate_Com'
 ) %>% rbind(df_Graph_sector)
 df_Graph_sector <- df_Graph_sec
 
 g <- eval(parse(text=paste0(
-  "ggplot(df_Graph_sector, aes(x=","Electricity_Rate_scaled",",y=","Henkaryo_Electricity_Rate", 
+  "ggplot(df_Graph_sector, aes(x=","Electricity_Rate",",y=","Henkaryo_Electricity_Rate", 
   ",color=Sector, shape=SCENARIO)) +
               geom_point() + 
               scale_color_manual(values=scenario_color[-1]) +
@@ -111,13 +104,20 @@ g <- eval(parse(text=paste0(
 plot(g)
 
 g <- eval(parse(text=paste0(
-  "ggplot(df_Graph_sector, aes(x=","Electricity_Rate_scaled",",y=","Henkaryo_Electricity_Rate", 
+  "ggplot(df_Graph_sector, aes(x=","Electricity_Rate",",y=","Henkaryo_Electricity_Rate", 
   ",color=SCENARIO, shape=Sector)) +
               geom_point() + 
               scale_color_manual(values=scenario_color[-1]) +
               scale_shape_manual(values=scenario_shape)"))) # SCENARIO数
 plot(g)
 
+g <- eval(parse(text=paste0(
+  "ggplot(df_Graph_sector, aes(x=","Electricity_Rate",",y=","Henkaryo_Electricity_Rate", 
+  ",color=Sector)) +
+              geom_point() + 
+              scale_color_manual(values=scenario_color[-1]) +
+              scale_shape_manual(values=scenario_shape)"))) # SCENARIO数
+plot(g)
 
 dev.off() 
 
