@@ -2,14 +2,31 @@
 x_names <- c('Energy_Intensity_scaled','Carbon_Intensity_scaled','Electricity_Rate_Total_scaled',
              'Electricity_Rate_Ind_scaled','Electricity_Rate_Tra_scaled',
              'Electricity_Rate_Res_scaled','Electricity_Rate_Com_scaled')
-y_names <- y_names_box
+x_names <- c('Energy_Intensity','Carbon_Intensity','Electricity_Rate_Total',
+             'Electricity_Rate_Ind','Electricity_Rate_Tra',
+             'Electricity_Rate_Res','Electricity_Rate_Com')
+y_names <- c('ChangeRate_Energy_Intensity','Henkaryo_Carbon_Intensity','Henkaryo_Electricity_Rate_Total',
+             'Henkaryo_Electricity_Rate_Ind','Henkaryo_Electricity_Rate_Tra',
+             'Henkaryo_Electricity_Rate_Res','Henkaryo_Electricity_Rate_Com') # y_names_box in graph_paper.R
+
 df_Graph_p <- df_Graph %>% select('SCENARIO', 'REGION', 'Year', unique(sort(c(x_names,y_names)))) 
+df_Graph_p <- df_Graph_p %>% mutate('Energy_Intensity_scaled'='Energy_Intensity',
+                                  'Carbon_Intensity_scaled'='Carbon_Intensity',
+                                  'Electricity_Rate_Total_scaled'='Electricity_Rate_Total',
+                                  'Electricity_Rate_Ind_scaled'='Electricity_Rate_Ind',
+                                  'Electricity_Rate_Tra_scaled'='Electricity_Rate_Tra',
+                                  'Electricity_Rate_Res_scaled'='Electricity_Rate_Res',
+                                  'Electricity_Rate_Com_scaled'='Electricity_Rate_Com'
+                                  )
+# df_Graph_p <- df_Graph_p %>% select('SCENARIO', 'REGION', 'Year', unique(sort(c(x_names,y_names)))) 
+
 
 library(RColorBrewer)
 region_color <- c(brewer.pal(5,"Dark2"),brewer.pal(5,"Set1"),brewer.pal(7,"Paired"))  
 scenario_color <- c('#AAAA11', '#329262', '#FF9900', '#DD4477', '#651067', '#3366CC', '#84919E','#dda0dd') # df_Graph登場順
 scenario_shape <- c(19,4,22,23,24,25,1,19)
 dummy_shape <- rep(19,length(scenario_color))
+window_prob <- 0.05
 
 df_Graph_plot <- df_Graph_p %>% filter(SCENARIO!='Historical' & SCENARIO!='Historical_B') # 
 df_Graph_plot_HisR <- df_Graph_plot %>% filter(SCENARIO=='Historical_R17' )
