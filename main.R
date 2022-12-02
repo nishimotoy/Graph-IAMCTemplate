@@ -362,6 +362,7 @@ write.csv(t(df_summary), "./df_summary.csv")
 write.csv(t(df_summary_ChangeRate), "./df_summary_ChangeRate.csv") 
 write.csv(t(df_summary_quantile), "./df_summary_quantile.csv") 
 
+df_indicator <- df_indicator %>% ungroup()
 
 #Feasibility Test ------------------------------------------------------
 for (dummyloop in 1) { # Feasibility Test
@@ -409,8 +410,40 @@ for (dummyloop in 1) { # Feasibility Test
 
 # Test範囲外リスト ------------------------------------------------------
 for (dummyloop in 1) { # Test範囲外リスト
+  test_items <- c('ChangeRate_Energy_Intensity', 'Henkaryo_Carbon_Intensity', 'Henkaryo_Electricity_Rate_Total')
+  # test_items <- indicators
+  future_scenarios <- levels(df_Graph$SCENARIO)
+  future_scenarios <- future_scenarios[-which(future_scenarios %in% c('Historical', 'Historical_B'))] 
+  vector_Rate_test_OK <- future_scenarios
+  df_test_NG <- data.frame()
 
+  for (item in test_items) {
+    # item <- 'Energy_Intensity_scaled'
+    df_feasibility_window <- df_indicator %>% filter(SCENARIO=='Historical_R17' # 注意直接指定
+                                        ) %>% select(all_of(item),-SCENARIO
+                                        ) %>% rename('Target'=item) 
+    vector_feasibility_window <- as.vector(df_feasibility_window$Target) %>% na.omit()
+    qua_05 <- quantile(vector_feasibility_window, probs=0.05, na.rm=T)
+    qua_95 <- quantile(vector_feasibility_window, probs=0.95, na.rm=T)
+    names(qua_05) <- NULL
+    names(qua_95) <- NULL
+    
+    for (scenarioname in future_scenarios) {
+      # scenarioname <- 'Baseline'
+      
+      df_test_item <- df_indicator  %>% filter(SCENARIO==scenarioname
+                   ) %>% select(c(Year, SCENARIO, REGION, all_of(item))
+                   ) %>% rename(Value=item
+                   ) %>% drop_na(Value)
+      
+      df_test_under <- df_test_item %>% filter(Value<qua_05
+                   ) %>% mutate('item'=paste(item, '_under05_',qua_05))
+      df_test_over <- df_test_item %>% filter(Value>qua_95
+                    ) %>% mutate('item'=paste(item,  '_over95_',qua_95))
+      df_test_NG <- df_test_NG %>% rbind(df_test_under, df_test_over) 
+    } # scenarioname
+  } # item
+  write.csv(df_test_NG, "./df_test_NG.csv") 
   
 } # Test範囲外リスト
-
 
