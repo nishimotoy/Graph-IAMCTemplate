@@ -370,7 +370,7 @@ for (dummyloop in 1) { # Feasibility Test
   future_scenarios <- levels(df_Graph$SCENARIO) #  'Historical', 'Historical_R17'
   vector_Rate_test_OK <- future_scenarios
   
-for (item in test_items) {
+  for (item in test_items) {
     # item <- 'ChangeRate_Energy_Intensity'
     df_feasibility_window <- df_indicator %>% filter(SCENARIO=='Historical_R17' # 注意直接指定
                                         ) %>% select(all_of(item),-SCENARIO
@@ -407,18 +407,10 @@ for (item in test_items) {
   
 } # Feasibility Test
 
-#相関係数 ------------------------------------------------------
-for (dummyloop in 1) { # 相関係数
-  CR <- c('Year', 'ChangeRate_Energy_Intensity', 'ChangeRate_Carbon_Intensity', 'ChangeRate_Electricity_Rate_Total')
+# Test範囲外リスト ------------------------------------------------------
+for (dummyloop in 1) { # Test範囲外リスト
+
   
-  df_His_C <- df_Graph %>% filter(SCENARIO=='Historical') %>% select('Year', 'ChangeRate_Carbon_Intensity')
-  (df_His_C.lm<-lm(ChangeRate_Carbon_Intensity~.,data=df_His_C ))
-  summary( df_His_C.lm )
-  
-  df_His_R <- df_Graph %>% filter(SCENARIO=='Historical_R17') %>% select('Year', 'ChangeRate_Carbon_Intensity')
-  (df_His_R.lm<-lm(ChangeRate_Carbon_Intensity~.,data=df_His_R ))
-  summary( df_His_R.lm )
-  
-} # 相関係数
+} # Test範囲外リスト
 
 
