@@ -1,18 +1,18 @@
 # 検証用
 x_names <- c(
-  'Year', 'Energy_Intensity_scaled', 'TES_Total_scaled', 'GDP_IEA_scaled' 
-  , 'Year', 'Carbon_Intensity_scaled', 'CO2_fuel_Total_scaled', 'TES_Total_scaled' 
-  , 'Year', 'Electricity_Rate_Total', 'TFC_Elec_Total_scaled', 'TFC_Total_Total_scaled'
-  , 'Year', 'Energy_Intensity_scaled', 'TES_Total_scaled', 'GDP_IEA_scaled' 
-  , 'Year', 'Carbon_Intensity_scaled', 'CO2_fuel_Total_scaled', 'TES_Total_scaled' 
-  , 'Year', 'Electricity_Rate_Total', 'TFC_Elec_Total_scaled', 'TFC_Total_Total_scaled'
+  'Year', 'Year', 'Energy_Intensity_scaled', 'TES_Total_scaled', 'GDP_IEA_scaled' 
+  , 'Year', 'Year', 'Carbon_Intensity_scaled', 'CO2_fuel_Total_scaled', 'TES_Total_scaled' 
+  , 'Year', 'Year', 'Electricity_Rate_Total', 'TFC_Elec_Total_scaled', 'TFC_Total_Total_scaled'
+  , 'Year', 'Year', 'Energy_Intensity_scaled', 'TES_Total_scaled', 'GDP_IEA_scaled' 
+  , 'Year', 'Year', 'Carbon_Intensity_scaled', 'CO2_fuel_Total_scaled', 'TES_Total_scaled' 
+  , 'Year', 'Year', 'Electricity_Rate_Total', 'TFC_Elec_Total_scaled', 'TFC_Total_Total_scaled'
 ) 
-y_names <- c( rep('ChangeRate_Energy_Intensity',4)
-              ,rep('ChangeRate_Carbon_Intensity',4)
-              ,rep('ChangeRate_Electricity_Rate_Total',4)
-              ,rep('Henkaryo_Energy_Intensity',4)
-              ,rep('Henkaryo_Carbon_Intensity',4)
-              ,rep('Henkaryo_Electricity_Rate_Total',4)
+y_names <- c( 'Energy_Intensity_scaled', rep('ChangeRate_Energy_Intensity',4)
+              ,'Carbon_Intensity_scaled', rep('ChangeRate_Carbon_Intensity',4)
+              ,'Electricity_Rate_Total', rep('ChangeRate_Electricity_Rate_Total',4)
+              ,'Energy_Intensity_scaled', rep('Henkaryo_Energy_Intensity',4)
+              ,'Carbon_Intensity_scaled', rep('Henkaryo_Carbon_Intensity',4)
+              ,'Electricity_Rate_Total', rep('Henkaryo_Electricity_Rate_Total',4)
 ) 
 
 library(RColorBrewer)
@@ -80,33 +80,33 @@ for (dummyloop in 1) { # item 指定出力
     filename <- paste(scenarioname,num,"_",x_names[num],"-",y_names[num], sep="")
     # ggsave(file=paste("./png/R17_",filename,".png", sep=""), width=5, height=4, dpi=100)
     
-    if (y_names[num]=='ChangeRate_Carbon_Intensity') { #CI
-      y_axis_top <- y_axis_val[2]-0.1*(y_axis_val[2]-y_axis_val[1])
-      annotate_text_ylim <- eval(parse(text=paste0(
-        "annotate('text', x=",x_axis_right,", y=",y_axis_top,", 
-        label='y-percentile:" ,100*cutoff_prob,"-",100*(1-cutoff_prob),"%\n", 
-        round(100*axis_range[2], digits=2),"%\n",
-        round(100*axis_range[1], digits=2),"%\n')"
-      ))) 
-      g <- g + ylim(c(y_axis_val[1], y_axis_val[2])) + annotate_text_ylim 
-      plot(g)
-    } #CI
+    # if (y_names[num]=='ChangeRate_Carbon_Intensity') { #CI
+    #   y_axis_top <- y_axis_val[2]-0.1*(y_axis_val[2]-y_axis_val[1])
+    #   annotate_text_ylim <- eval(parse(text=paste0(
+    #     "annotate('text', x=",x_axis_right,", y=",y_axis_top,", 
+    #     label='y-percentile:" ,100*cutoff_prob,"-",100*(1-cutoff_prob),"%\n", 
+    #     round(100*axis_range[2], digits=2),"%\n",
+    #     round(100*axis_range[1], digits=2),"%\n')"
+    #   ))) 
+    #   g <- g + ylim(c(y_axis_val[1], y_axis_val[2])) + annotate_text_ylim 
+    #   plot(g)
+    # } #CI
     
-    if (x_names[num]=='Year') { #Year
-      g <- eval(parse(text=paste0(
-        "ggplot(df_Graph_plotXY_His, aes(x=",x_names[num],",y=",y_names[num], 
-        ", shape=SCENARIO)) +
-              geom_smooth(method=lm) +
-              geom_point() + 
-              xlim(",1970, ", ",2100, ") "))) 
-      g <- g + geom_hline(yintercept=c(axis_range[1], axis_range[2]))
-      g <- g + stat_poly_eq(formula=y~x, aes(label=paste(
-        "atop(", paste(stat(eq.label),stat(rr.label),stat(adj.rr.label),sep="~~~"), ",",
-        paste(stat(f.value.label),stat(p.value.label),stat(AIC.label),stat(BIC.label),sep="~~~"),
-        ")", sep="")),
-        label.x="right", parse=TRUE)
-      plot(g)
-    } #Year
+    # if (x_names[num]=='Year') { #Year
+    #   g <- eval(parse(text=paste0(
+    #     "ggplot(df_Graph_plotXY_His, aes(x=",x_names[num],",y=",y_names[num], 
+    #     ", shape=SCENARIO)) +
+    #           geom_smooth(method=lm) +
+    #           geom_point() + 
+    #           xlim(",1970, ", ",2100, ") "))) 
+    #   g <- g + geom_hline(yintercept=c(axis_range[1], axis_range[2]))
+    #   g <- g + stat_poly_eq(formula=y~x, aes(label=paste(
+    #     "atop(", paste(stat(eq.label),stat(rr.label),stat(adj.rr.label),sep="~~~"), ",",
+    #     paste(stat(f.value.label),stat(p.value.label),stat(AIC.label),stat(BIC.label),sep="~~~"),
+    #     ")", sep="")),
+    #     label.x="right", parse=TRUE)
+    #   plot(g)
+    # } #Year
   } #num
   dev.off() 
 } # item 指定出力
