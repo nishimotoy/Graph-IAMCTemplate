@@ -168,7 +168,8 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
   
   ylab_name <- y_names_J[num]
   if ( ylab_name=='エネルギー起源CO2排出量' ) { 
-    ylab_name <- expression("エネルギー起源 　" ~ CO[2] ~ "排出量  " ~ (Gt-CO[2])) 
+    ylab_name <- expression("エネルギー起源 " ~ CO[2]~ "排出量" ~ (Gt-CO[2])) 
+  # ylab_name <- expression("エネルギー起源 　" ~ CO[2] ~ "排出量  " ~ (Gt-CO[2])) # text size=12
   } else if ( ylab_name=='エネルギー強度' ) { ylab_name <- paste(y_names_J[num], '(MJ/$)')
   } else if ( ylab_name=='電化率' )       { ylab_name <- paste(y_names_J[num], '(%)')
   } else if ( ylab_name=='炭素強度' )     { ylab_name <- expression('炭素強度　' ~ (g-CO[2]/MJ))
@@ -234,7 +235,7 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
     ggsave(file=paste("./png3/",filename,"_right.png", sep=""), width=5.6, height=3, dpi=100) # 凡例出力
   }
   
-    g <- g + coord_flip(ylim = c(-1.0, 3.0))   # 図4 部門別の比較用
+    g <- g + coord_flip(ylim = c(-5.0, 10.0))   # 図4 部門別の比較用
     g <- g + labs(color='シナリオ (a-d)共通') + theme(text=element_text(size=12, face='plain')) 
     g <- g + theme(legend.position="none") 
     ggsave(file=paste("./png2/",filename,"_sec.png", sep=""), width=4.3, height=2.4, dpi=100) # 箱ヒゲ図 width=4.56
