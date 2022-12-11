@@ -1,21 +1,22 @@
 # 土木学会用日本語出力 査読対応 # 変化率の式Kタイプ
 
 x_names <- c('Year', rep('GDP_Capita',3), rep('Year',6),
-             'ChangeRate_Energy_Intensity','Henkaryo_Carbon_Intensity','Henkaryo_Electricity_Rate_Total' )
+             'ChangeRate_Energy_Intensity','ChangeRate_Carbon_Intensity','ChangeRate_Electricity_Rate_Total' ) # Henkaryo
 y_names <- c('CO2_fuel_Total_scaled', 
              rep(c('Energy_Intensity_scaled','Carbon_Intensity_scaled','Electricity_Rate_Total_scaled'),2), 
-             c('ChangeRate_Energy_Intensity','Henkaryo_Carbon_Intensity','Henkaryo_Electricity_Rate_Total'),
+             c('ChangeRate_Energy_Intensity','ChangeRate_Carbon_Intensity','ChangeRate_Electricity_Rate_Total'),
              rep('Density',3))
 I_names <- c('エネルギー強度', '炭素強度', '電化率')
-I_names_C <- c('エネルギー強度の変化率 (%)', '炭素強度の変化量', '電化率の変化量 (%)')
+# I_names_C <- c('エネルギー強度の変化率 (%)', '炭素強度の変化量', '電化率の変化量 (%)')
+I_names_C <- paste(I_names, 'の変化率 (%)')
 y_names_J  <- c('エネルギー起源CO2排出量', rep(I_names,2), I_names_C, rep('確率密度',3), I_names_C)
 x_names_J  <- c('年', rep('GDP/人',3), rep('年',6), I_names_C)
 
-y_names_box <- c('ChangeRate_Energy_Intensity','Henkaryo_Carbon_Intensity','Henkaryo_Electricity_Rate_Total',
-                 'Henkaryo_Electricity_Rate_Ind','Henkaryo_Electricity_Rate_Tra',
-                 'Henkaryo_Electricity_Rate_Res','Henkaryo_Electricity_Rate_Com')
+y_names_box <- c('ChangeRate_Energy_Intensity','ChangeRate_Carbon_Intensity','ChangeRate_Electricity_Rate_Total',
+                 'ChangeRate_Electricity_Rate_Ind','ChangeRate_Electricity_Rate_Tra',
+                 'ChangeRate_Electricity_Rate_Res','ChangeRate_Electricity_Rate_Com') # Henkaryo
 sec_names <- c('工業部門', '交通部門', '家庭部門', '業務部門')
-j_names_C_sec  <- paste(sec_names, '電化率の変化量 (%)', sep = "　") 
+j_names_C_sec  <- paste(sec_names, '電化率の変化率 (%)', sep = "　") # '電化率の変化量 (%)',
 j_names_box　 <- c(I_names_C, j_names_C_sec)
 names(j_names_box) <- y_names_box  # j_names_box[names(j_names_box)]
 
@@ -33,11 +34,16 @@ window_prob <- 0.05
 cutoff_prob <- 0.03 
 
 y_names_tmp <- y_names[-which(y_names %in% 'Density')] 
-df_Graph_p <- df_Graph   %>% select('SCENARIO', 'REGION', unique(sort(c(x_names,y_names_tmp, y_names_box)))) 
-df_Graph_p <- df_Graph_p %>% mutate(Energy_Intensity_scaled=Energy_Intensity_scaled/1000 #kJ>MJ
+df_Graph_p <- df_Graph  %>% mutate(Energy_Intensity_scaled=Energy_Intensity_scaled/1000 #kJ>MJ
                       ) %>% mutate(Carbon_Intensity_scaled=Carbon_Intensity_scaled*1000  #kt-CO2/TJ = g-CO2/kJ > g-CO2/MJ
                       ) %>% mutate(Electricity_Rate_Total_scaled=Electricity_Rate_Total_scaled*100 #percent
                       ) %>% mutate(ChangeRate_Energy_Intensity=ChangeRate_Energy_Intensity*100 #percent
+                      ) %>% mutate(ChangeRate_Carbon_Intensity=ChangeRate_Carbon_Intensity*100 #percent
+                      ) %>% mutate(ChangeRate_Electricity_Rate_Total=ChangeRate_Electricity_Rate_Total*100 #percent
+                      ) %>% mutate(ChangeRate_Electricity_Rate_Ind=ChangeRate_Electricity_Rate_Ind*100 #percent
+                      ) %>% mutate(ChangeRate_Electricity_Rate_Tra=ChangeRate_Electricity_Rate_Tra*100 #percent
+                      ) %>% mutate(ChangeRate_Electricity_Rate_Res=ChangeRate_Electricity_Rate_Res*100 #percent
+                      ) %>% mutate(ChangeRate_Electricity_Rate_Com=ChangeRate_Electricity_Rate_Com*100 #percent
                       ) %>% mutate(Henkaryo_Carbon_Intensity=Henkaryo_Carbon_Intensity*1000  #kt-CO2/TJ = g-CO2/kJ > g-CO2/MJ
                       ) %>% mutate(Henkaryo_Electricity_Rate_Total=Henkaryo_Electricity_Rate_Total*100 #percent
                       ) %>% mutate(Henkaryo_Electricity_Rate_Ind=Henkaryo_Electricity_Rate_Ind*100 #percent
@@ -45,6 +51,7 @@ df_Graph_p <- df_Graph_p %>% mutate(Energy_Intensity_scaled=Energy_Intensity_sca
                       ) %>% mutate(Henkaryo_Electricity_Rate_Res=Henkaryo_Electricity_Rate_Res*100 #percent
                       ) %>% mutate(Henkaryo_Electricity_Rate_Com=Henkaryo_Electricity_Rate_Com*100 #percent
                       ) 
+df_Graph_p <- df_Graph_p   %>% select('SCENARIO', 'REGION', unique(sort(c(x_names,y_names_tmp, y_names_box)))) 
 df_Graph_p <- df_Graph_p %>% mutate(SCENARIO2 = recode(SCENARIO, 
                              Historical='歴史的推移\n(国レベル)', 
                              Historical_R17='歴史的推移', 
