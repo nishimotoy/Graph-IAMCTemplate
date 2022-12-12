@@ -31,7 +31,7 @@ scenarionames_order <- c('歴史的推移\n(国レベル)','歴史的推移','�
 window <- '歴史的推移'
 window_num <- length(scenarionames_order) - which(scenarionames_order==window) +1 # for boxplot
 window_prob <- 0.05
-cutoff_prob <- 0.03 
+cutoff_prob <- 0.04 
 
 y_names_tmp <- y_names[-which(y_names %in% 'Density')] 
 df_Graph_p <- df_Graph  %>% mutate(Energy_Intensity_scaled=Energy_Intensity_scaled/1000 #kJ>MJ
