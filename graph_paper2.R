@@ -137,7 +137,8 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
                                        ", xmax=",Inf, ", ymax=",window_range[2], 
                                        ", alpha=.22, fill='#329262')"))) 
     } # 窓の追加
-    if ( indicator=='ChangeRate_Carbon_Intensity' ) { g <- g + ylim(-14,7) }
+    vec_data <- eval(parse(text=paste0("df_Graph_plot$",y_names[num]))) 
+    if ( min(vec_data, na.rm = TRUE) < -1 ) { g <- g + ylim(-16,8) }
     # plot(g)
     
   # 図3 (c1)～(c3)　確率密度分布
