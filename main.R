@@ -273,7 +273,7 @@ write_csv(df_Graph, "./df_Graph_afterfulljoin.csv")
 df_Graph <- df_Graph %>% filter(Year!=0 & Year!=1) 
 
 # Change rate ------------------------------------------------------
-K_value <- c(0, 0, 1, 1, 1, 1, 1, 1)  # df_vni の行に対応
+K_value <- c(0, 0, -1, 1, 1, 1, 1, 1)  # df_vni の行に対応
 # -200(Carbon_Intensity)  -2(Carbon_Intensity_scaled) 
 df_Graph <- df_Graph  %>% mutate(Carbon_Intensity_saved=Carbon_Intensity 
                     ) %>% mutate(Carbon_Intensity=Carbon_Intensity_scaled) # for K-type 
@@ -287,8 +287,8 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理2   # テスト後に戻す (i i
   df_Graph <- eval(parse(text=paste0(
         "df_Graph %>% mutate(ChangeRate_",indicator,
         "=(",indicator,"-lag(",indicator,",n=1))
- #            /(K-lag(",indicator,", n=1)) # Ｋタイプ変化率
-              /abs(lag(",indicator,",n=1)) # 旧タイプ変化率
+              /(K-lag(",indicator,", n=1)) # Ｋタイプ変化率
+ #            /abs(lag(",indicator,",n=1)) # 旧タイプ変化率
               /(Year-lag(Year, n=1))
                   )")))
  
@@ -301,11 +301,10 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理2   # テスト後に戻す (i i
  #    /(abs(",indicator,")+abs(lag(",indicator,",n=1)))*2     ABS2
  #    /(sqrt(",indicator,"^2)+sqrt(lag(",indicator,",n=1)^2))*2 
 
-# while (0) { # 指標の変化量（K型）
+# while (0) { # 指標の変化量
   df_Graph <- eval(parse(text=paste0(
     "df_Graph %>%  mutate(Henkaryo_",indicator,
     "=(",indicator,"_scaled-lag(",indicator,"_scaled, n=1))
-#    /(K-lag(",indicator,"_scaled, n=1)) # Eq type-ER {I(t)-I(t-1)}/{K-I(t-1)}
      /(Year-lag(Year, n=1)))"  
     )))  
 #  } # 指標の変化量（旧式）

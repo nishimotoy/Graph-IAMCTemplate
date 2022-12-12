@@ -98,7 +98,6 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
   } else if ( num>=2 && num<=4 ) { 
     
     df_Graph_plot <- df_Graph_p %>% filter(SCENARIO_f %in% c('Historical_R17', 'Baseline'))
-    
     g <- eval(parse(text=paste0("
               ggplot(df_Graph_plot, aes(x=",x_names[num],",y=",y_names[num], 
                                 ",color=REGION, shape=SCENARIO)) +
@@ -136,9 +135,9 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
       g <- g + eval(parse(text=paste0( "annotate('rect', xmin=",-Inf,", ymin=",window_range[1], 
                                        ", xmax=",Inf, ", ymax=",window_range[2], 
                                        ", alpha=.22, fill='#329262')"))) 
+      vec_data <- eval(parse(text=paste0("df_Graph_plot$",y_names[num]))) 
+      if ( min(vec_data, na.rm = TRUE) < -20 ) { g <- g + ylim(-16,8) }
     } # 窓の追加
-    vec_data <- eval(parse(text=paste0("df_Graph_plot$",y_names[num]))) 
-    if ( min(vec_data, na.rm = TRUE) < -1 ) { g <- g + ylim(-16,8) }
     # plot(g)
     
   # 図3 (c1)～(c3)　確率密度分布
