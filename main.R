@@ -355,10 +355,13 @@ write_csv(df_indicator, "./df_indicator.csv")  # Year, Country, REGION入りの�
 df_summary <- df_indicator %>% select(-c(Year, Country, REGION)
   ) %>% group_by(SCENARIO
   ) %>% summarise_at(vars(everything()),
-                     funs(length, n=length(na.omit(.)), min(., na.rm=T), max(., na.rm=T), 
-                          median(., na.rm=T), mean(., na.rm=T), sd(., na.rm=T),
-                          'q95%'=quantile(., probs=0.95, na.rm=T), 
-                          'q05%'=quantile(., probs=0.05, na.rm=T), 
+                     funs('01_length'=length, '02_n'=length(na.omit(.)), '03_min'=min(., na.rm=T), '04_max'=max(., na.rm=T), 
+                          '05_median'=median(., na.rm=T), '06_mean'=mean(., na.rm=T), '07_sd'=sd(., na.rm=T),
+                          '08_q05%'=quantile(., probs=0.05, na.rm=T), 
+                          '09_q95%'=quantile(., probs=0.95, na.rm=T), 
+                          '10_q25%'=quantile(., probs=0.25, na.rm=T), 
+                          '11_q50%'=quantile(., probs=0.50, na.rm=T), 
+                          '12_q75%'=quantile(., probs=0.75, na.rm=T), 
                      )
   ) # %>% arrange(colnames(df_summary ))
 
@@ -375,8 +378,8 @@ df_indicator <- df_indicator %>% ungroup()
 
 #Feasibility Test ------------------------------------------------------
 for (dummyloop in 1) { # Feasibility Test
-  # test_items <- c('ChangeRate_Energy_Intensity', 'ChangeRate_Carbon_Intensity', 'ChangeRate_Electricity_Rate_Total')
-  test_items <- indicators
+  test_items <- c('ChangeRate_Energy_Intensity', 'ChangeRate_Carbon_Intensity', 'ChangeRate_Electricity_Rate_Total')
+  # test_items <- indicators
   future_scenarios <- levels(df_Graph$SCENARIO) #  'Historical', 'Historical_R17'
   vector_Rate_test_OK <- future_scenarios
   
