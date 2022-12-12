@@ -114,6 +114,7 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
   # 図3 (a1)～(b3)　年 vs 指標・その変化率/変化量
   } else if ( num>=5 && num<=10 ) { # XY散布図 by 17地域 vs 17地域
     
+    indicator <- y_names[num]
     df_Graph_plot <- df_Graph_p %>% filter(SCENARIO_f!='Historical' & SCENARIO_f!='Historical_B')
     df_Graph_plot_HisR <- df_Graph_plot %>% filter(SCENARIO_f=='Historical_R17' )
     
@@ -136,6 +137,7 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
                                        ", xmax=",Inf, ", ymax=",window_range[2], 
                                        ", alpha=.22, fill='#329262')"))) 
     } # 窓の追加
+    if ( indicator=='ChangeRate_Carbon_Intensity' ) { g <- g + ylim(-14,7) }
     # plot(g)
     
   # 図3 (c1)～(c3)　確率密度分布
@@ -145,7 +147,6 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
     df_Graph_plot <- df_Graph_p 
     # df_Graph_plot <- eval(parse(text=paste0("mutate(df_Graph_plot, ", indicator,"=", indicator,"*100)")))
     df_Graph_plot_HisR <- df_Graph_plot %>% filter(SCENARIO_f=='Historical_R17' )
-    
     
     g <- eval(parse(text=paste0(
       "ggplot(df_Graph_plot, aes(x=",indicator, ",color=SCENARIO)) +
