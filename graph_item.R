@@ -23,7 +23,7 @@ scenario_fill <- c('white','red','white','white','white','white','white','white'
 scenario_size <- c(1,4,4,4,4,4,4,1)
 scenario_shape1 <- c(19,19,21,21,21,21,21,19)
 scenario_shape2 <- c(19,21,22,23,24,25,1,19)
-axis_cutoff_prob <- 0.01   # 軸の表示において切り捨てる分位範囲 （0.01: 両端1% cutoff）
+cutoff_prob <- 0.04   # 軸の表示において切り捨てる分位範囲 （0.01: 両端1% cutoff）
 
 df_Graph_plot <- df_Graph %>% filter(SCENARIO=='Historical_R17')
 
@@ -43,7 +43,6 @@ for (dummyloop in 1) { # item 指定出力
     x_axis_max <- max(eval(parse(text=paste0("df_Graph_plotXY$",x_names[num]))), na.rm=T)
     y_axis_min <- min(eval(parse(text=paste0("df_Graph_plotXY$",y_names[num]))), na.rm=T)
     y_axis_max <- max(eval(parse(text=paste0("df_Graph_plotXY$",y_names[num]))), na.rm=T)
-    cutoff_prob <- 0.05
     vec_data <- eval(parse(text=paste0("df_Graph_plotXY_His$",y_names[num]))) 
     axis_range <- quantile(vec_data, probs=c(cutoff_prob, (1-cutoff_prob)), na.rm=T)
     
