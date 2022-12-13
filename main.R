@@ -286,11 +286,12 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理2   # テスト後に戻す (i i
   # 指標の変化率（t年比）　
   df_Graph <- eval(parse(text=paste0(
         "df_Graph %>% mutate(ChangeRate_",indicator,
-        "=(",indicator,"-lag(",indicator,",n=1))
+        "=if_else(lag(",indicator,", n=1)==", K, ", NA_real_, 
+          ((",indicator,"-lag(",indicator,",n=1))
               /abs(lag(",indicator,", n=1)-", K, ") # Ｋタイプ変化率
  #            /abs(lag(",indicator,",n=1)) # 旧タイプ変化率
-              /(Year-lag(Year, n=1))
-                  )")))
+              /(Year-lag(Year, n=1)))
+                  ))")))
  
  #  指標の変化率  過去の試み
  #  "=(",indicator,"/lag(",indicator,",n=1)-1)  t-1 期で割る
