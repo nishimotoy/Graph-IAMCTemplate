@@ -236,7 +236,7 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
     ggsave(file=paste("./png3/",filename,"_right.png", sep=""), width=5.6, height=3, dpi=100) # 凡例出力
   }
   
-    g <- g + coord_flip(ylim = c(-3.0, 6.0))   # 図4 部門別の比較用
+    g <- g + coord_flip(ylim = c(-2.0, 6.0))   # 図4 部門別の比較用
     g <- g + labs(color='シナリオ (a-d)共通') + theme(text=element_text(size=12, face='plain')) 
     g <- g + theme(legend.position="none") 
     ggsave(file=paste("./png2/",filename,"_sec.png", sep=""), width=4.3, height=2.4, dpi=100) # 箱ヒゲ図 width=4.56
