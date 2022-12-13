@@ -379,8 +379,8 @@ df_indicator <- df_indicator %>% ungroup()
 
 #Feasibility Test ------------------------------------------------------
 for (dummyloop in 1) { # Feasibility Test
-  test_items <- c('ChangeRate_Energy_Intensity', 'ChangeRate_Carbon_Intensity', 'ChangeRate_Electricity_Rate_Total')
-  # test_items <- indicators
+  # test_items <- c('ChangeRate_Energy_Intensity', 'ChangeRate_Carbon_Intensity', 'ChangeRate_Electricity_Rate_Total')
+  test_items <- indicators
   future_scenarios <- levels(df_Graph$SCENARIO) #  'Historical', 'Historical_R17'
   vector_Rate_test_OK <- future_scenarios
   
