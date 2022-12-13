@@ -459,3 +459,5 @@ for (dummyloop in 1) { # Test範囲外リスト
   
 } # Test範囲外リスト
 
+setwd(paste(root,"3_prog", sep="")) 
+source("graph_paper2.r", encoding="utf-8")
