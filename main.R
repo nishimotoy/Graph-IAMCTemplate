@@ -287,7 +287,7 @@ for (i in 1:ncol(df_vni)) { # 指標毎の処理2   # テスト後に戻す (i i
   df_Graph <- eval(parse(text=paste0(
         "df_Graph %>% mutate(ChangeRate_",indicator,
         "=(",indicator,"-lag(",indicator,",n=1))
-              /(K-lag(",indicator,", n=1)) # Ｋタイプ変化率
+              /abs(lag(",indicator,", n=1)-", K, ") # Ｋタイプ変化率
  #            /abs(lag(",indicator,",n=1)) # 旧タイプ変化率
               /(Year-lag(Year, n=1))
                   )")))
