@@ -1,14 +1,14 @@
 # 土木学会用日本語出力 査読対応 # 変化率の式Kタイプ
 
 x_names <- c('Year', rep('GDP_Capita',3), rep('Year',6),
-             'ChangeRate_Energy_Intensity','ChangeRate_Carbon_Intensity','ChangeRate_Electricity_Rate_Total' ) # Henkaryo
+             'ChangeRate_Energy_Intensity','Henkaryo_Carbon_Intensity','Henkaryo_Electricity_Rate_Total' ) 
 y_names <- c('CO2_fuel_Total_scaled', 
              rep(c('Energy_Intensity_scaled','Carbon_Intensity_scaled','Electricity_Rate_Total_scaled'),2), 
-             c('ChangeRate_Energy_Intensity','ChangeRate_Carbon_Intensity','ChangeRate_Electricity_Rate_Total'),
+             c('ChangeRate_Energy_Intensity','Henkaryo_Carbon_Intensity','Henkaryo_Electricity_Rate_Total'),
              rep('Density',3))
 I_names <- c('エネルギー強度', '炭素強度', '電化率')
-# I_names_C <- c('エネルギー強度の変化率 (%)', '炭素強度の変化量', '電化率の変化量 (%)')
-I_names_C <- paste(I_names, 'の変化率 (%)')
+I_names_C <- c('エネルギー強度の変化率 (%/年)', '炭素強度の変化速度', '電化率の変化速度(%/年)')
+# I_names_C <- paste(I_names, 'の変化率 (%)')
 y_names_J  <- c('エネルギー起源CO2排出量', rep(I_names,2), I_names_C, rep('確率密度',3), I_names_C)
 x_names_J  <- c('年', rep('GDP/人',3), rep('年',6), I_names_C)
 
@@ -16,7 +16,7 @@ y_names_box <- c('ChangeRate_Energy_Intensity','ChangeRate_Carbon_Intensity','Ch
                  'ChangeRate_Electricity_Rate_Ind','ChangeRate_Electricity_Rate_Tra',
                  'ChangeRate_Electricity_Rate_Res','ChangeRate_Electricity_Rate_Com') # Henkaryo
 sec_names <- c('工業部門', '交通部門', '家庭部門', '業務部門')
-j_names_C_sec  <- paste(sec_names, '電化率の変化率 (%)', sep = "　") # '電化率の変化量 (%)',
+j_names_C_sec  <- paste(sec_names, '電化率の変化速度 (%/年)', sep = "　") # '電化率の変化率 (%)',
 j_names_box　 <- c(I_names_C, j_names_C_sec)
 names(j_names_box) <- y_names_box  # j_names_box[names(j_names_box)]
 
@@ -110,7 +110,7 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
             "))) 
     # plot(g)
     
-  # 図3 (a1)～(b3)　年 vs 指標・その変化率/変化量
+  # 図3 (a1)～(b3)　年 vs 指標・その変化率/変化速度
   } else if ( num>=5 && num<=10 ) { # XY散布図 by 17地域 vs 17地域
     
     indicator <- y_names[num]
@@ -174,11 +174,14 @@ for (num in 1:length(x_names)) { #num # XYグラフの出力
   } else if ( ylab_name=='エネルギー強度' ) { ylab_name <- paste(y_names_J[num], '(MJ/$)')
   } else if ( ylab_name=='電化率' )       { ylab_name <- paste(y_names_J[num], '(%)')
   } else if ( ylab_name=='炭素強度' )     { ylab_name <- expression('炭素強度　' ~ (g-CO[2]/MJ))
-  } else if ( ylab_name=='炭素強度の変化量' ) { ylab_name <- expression('炭素強度の変化量　' ~ (g-CO[2]/MJ))
+  } else if ( ylab_name=='炭素強度の変化速度' ) { ylab_name <- expression('炭素強度の変化速度　　'~' (g-'~CO[2]~'/MJ/年)')
   } 
   xlab_name <- x_names_J[num]
-  if ( xlab_name=='炭素強度の変化量' ) { xlab_name <- expression('炭素強度の変化量　' ~ (g-CO[2]/MJ)) }
-  g <- g + xlab(xlab_name) + ylab(ylab_name) + theme_bw() + theme(panel.grid=element_blank(), text=element_text(size=14, face='plain')) 
+  if ( xlab_name=='炭素強度の変化速度' ) { xlab_name <- expression('炭素強度の変化速度'~'(g-'~CO[2]~'/MJ/年)') }
+  g <- g + xlab(xlab_name) + ylab(ylab_name) + theme_bw() +
+      theme(panel.grid=element_blank(), text=element_text(size=14, face='plain')) +
+      theme(axis.title.y = element_text(size=12), axis.title.x = element_text(size=13)) 
+  # if ( num==9 ) { g <- g + theme(axis.title.y = element_text(size=11)) }
   # plot(g)
   
   filename <- paste("JSCE",num,"_",x_names[num],"-",y_names[num], sep="") # 土木学会用出力
@@ -219,14 +222,18 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
            )))
   
   ylab_name <- j_names_box[indicator]
-  if ( ylab_name=='炭素強度の変化量' ) { 
-    ylab_name <- expression('炭素強度の変化量 ' ~ (g-CO[2]/MJ))
+  if ( ylab_name=='炭素強度の変化速度' ) { 
+    ylab_name <- expression('炭素強度の変化速度' ~ (g-CO[2]/MJ/年))
   } 
-  g <- g + xlab('') + ylab(ylab_name) + theme_bw() + theme(panel.grid=element_blank())
+  g <- g + xlab('')+ ylab(ylab_name) + theme_bw() +
+    theme(panel.grid=element_blank(), text=element_text(size=14, face='plain')) +
+    theme(axis.title.y = element_text(size=12), axis.title.x = element_text(size=12)) 
+  
   # plot(g)
   num <- num+1
   filename <- paste("JSCE",num,"_", indicator, sep="") # 土木学会用出力
-  g <- g + labs(color='シナリオ (d1-3)共通') + theme(text=element_text(size=14, face='plain')) 
+  g <- g + labs(color='シナリオ (d1-3)共通') + theme(text=element_text(size=14, face='plain')) +
+            theme(axis.title.y = element_text(size=12), axis.title.x = element_text(size=12)) 
   g <- g + theme(legend.position="none") 
   ggsave(file=paste("./png2/",filename,".png", sep=""), width=4.3, height=2.4, dpi=100) # 箱ヒゲ図 width=4.56
   while (0) {
