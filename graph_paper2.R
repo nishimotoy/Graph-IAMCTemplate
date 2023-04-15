@@ -223,7 +223,7 @@ for (indicator in y_names_box) { # indicator # 箱ヒゲ図
   
   ylab_name <- j_names_box[indicator]
   if ( ylab_name=='炭素強度の変化速度' ) { 
-    ylab_name <- expression('炭素強度の変化速度' ~ (g-CO[2]/MJ/年))
+    ylab_name <- expression('炭素強度の変化速度'~'(g-'~CO[2]~'/MJ/年)')
   } 
   g <- g + xlab('')+ ylab(ylab_name) + theme_bw() +
     theme(panel.grid=element_blank(), text=element_text(size=14, face='plain')) +
