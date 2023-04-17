@@ -1,6 +1,5 @@
 # 相関係数 ------------------------------------------------------
-  # 相関係数 ------------------------------------------------------
-  
+
   test_items <- c(    'Energy_Intensity'
                       , 'ChangeRate_Energy_Intensity'
                       , 'Henkaryo_Energy_Intensity'
