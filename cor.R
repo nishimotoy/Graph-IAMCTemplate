@@ -41,6 +41,10 @@
       cat(" item=", item, " region=", region, "\n", 
           "cor_year_item_region=", cor_year_item, "\n\n", 
           file="cor.txt", append=TRUE)
+      eval(parse(text=paste0("
+        plot(", item, " ~ Year, main='", region," cor=", cor_year_item,"')
+        abline(lm(", item, " ~ Year), col='red')
+          "))) 
       detach(df_His_R_item_region)
     } # region
   } # item
