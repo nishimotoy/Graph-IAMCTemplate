@@ -28,9 +28,11 @@
   cat(" END \n\n", file="cor.txt", append=TRUE)
   
   # Regional
+  df_cor <- data.frame('REGION'=region_order)
   cat(" START regional cor(Year, item) \n\n", file="cor.txt", append=TRUE)
   for (item in test_items) {
     # item <- 'Energy_Intensity' #
+    vec_item <- vector()
     for (region in region_order) {
       # region <- 'JPN' #  
       df_His_R_item_region <- eval(parse(text=paste0("
@@ -41,11 +43,14 @@
       cat(" item=", item, " region=", region, "\n", 
           "cor_year_item_region=", cor_year_item, "\n\n", 
           file="cor.txt", append=TRUE)
+      vec_item <- vec_item  %>% append(cor_year_item)
       eval(parse(text=paste0("
         plot(", item, " ~ Year, main='", region," cor=", cor_year_item,"')
         abline(lm(", item, " ~ Year), col='red')
           "))) 
       detach(df_His_R_item_region)
     } # region
+    eval(parse(text=paste0("df_cor$", item, " <- vec_item"))) 
   } # item
   cat(" END \n\n", file="cor.txt", append=TRUE)
+  write.csv(df_cor, "./df_cor.csv") 
