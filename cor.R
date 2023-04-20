@@ -28,6 +28,10 @@
   cat(" END \n\n", file="cor.txt", append=TRUE)
   
   # Regional
+  test_items <- c(    'Energy_Intensity'
+                      , 'Carbon_Intensity'
+                      , 'Electricity_Rate_Total'
+                  )
   df_cor <- data.frame('REGION'=region_order)
   cat(" START regional cor(Year, item) \n\n", file="cor.txt", append=TRUE)
   for (item in test_items) {
@@ -40,14 +44,19 @@
         "))) 
       attach(df_His_R_item_region)
       cor_year_item <- eval(parse(text=paste0(" cor(Year, ", item, ", use='complete.obs')"))) 
+      cor_year_item <- format(cor_year_item, digits=3)
       cat(" item=", item, " region=", region, "\n", 
           "cor_year_item_region=", cor_year_item, "\n\n", 
           file="cor.txt", append=TRUE)
       vec_item <- vec_item  %>% append(cor_year_item)
       eval(parse(text=paste0("
+        png(filename='png/cor/cor_",item,"_",region,".jpg', width=300, height=300)
+          "))) 
+      eval(parse(text=paste0("
         plot(", item, " ~ Year, main='", region," cor=", cor_year_item,"')
         abline(lm(", item, " ~ Year), col='red')
           "))) 
+      dev.off()
       detach(df_His_R_item_region)
     } # region
     eval(parse(text=paste0("df_cor$", item, " <- vec_item"))) 
